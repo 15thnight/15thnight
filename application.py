@@ -1,5 +1,5 @@
-from app import flaskapp
+from app import flaskapp as application
 
 
 if __name__ == '__main__':
-    flaskapp.run(debug=True)
+    application.run(debug=True)

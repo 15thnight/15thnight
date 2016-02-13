@@ -1,6 +1,4 @@
-"""
-Data Models
-"""
+"""Data Models."""
 from datetime import datetime
 
 from sqlalchemy import (
@@ -33,6 +31,7 @@ class User(Model):
     other = Column(Boolean, nullable=False, default='')
     role = Column(String(20), default='admin')
     alerts = relationship("Alert", backref='user', lazy='dynamic')
+    responses = relationship("responses")
 
     def __init__(self, email, password, phone_number, other, food, clothes, shelter, role):
         self.email = email.lower()
@@ -45,22 +44,26 @@ class User(Model):
         self.role = role
 
     def check_password(self, password):
-        """Check a user's password (includes salt)"""
+        """Check a user's password (includes salt)."""
         return check_password_hash(self.password, password)
 
     @property
     def is_authenticated(self):
+        """Authenticaition check."""
         return True
 
     @property
     def is_active(self):
+        """Active check."""
         return True
 
     @property
     def is_anonymous(self):
+        """Anonimity check."""
         return True
 
     def get_id(self):
+        """Get the User id in unicode or ascii."""
         try:
             return unicode(self.id)
         except NameError:
@@ -68,21 +71,24 @@ class User(Model):
 
     @classmethod
     def get_by_email(cls, email):
+        """Return user based on email."""
         return cls.query.filter(cls.email == email).first()
 
     def set_password(self, password):
-        self.password = generate_password_hash(password=password,
-                                               method='pbkdf2:sha512',
-                                               salt_length=128)
+        """Using pbkdf2:sha512, hash 'password'."""
+        self.password = generate_password_hash(
+            password=password,
+            method='pbkdf2:sha512',
+            salt_length=128
+        )
 
     def __repr__(self):
+        """Return <User: %(id)."""
         return '<User %r>' % (self.id)
 
 
 class Alert(Model):
-    """
-    Alert Model for alertering users.
-    """
+    """Alert Model for alertering users."""
 
     __tablename__ = 'alerts'
     id = Column(Integer, primary_key=True)
@@ -93,3 +99,14 @@ class Alert(Model):
     food = Column(Boolean, nullable=False, default=False)
     other = Column(Text, nullable=False, default='')
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    responses = relationship("responses")
+
+
+class Response(Model):
+    """Response model."""
+
+    __tablename__ = 'responses'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(ForeignKey('users.id'), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    alert_id = Column(ForeignKey('alerts.id'), nullable=False)

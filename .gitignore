@@ -119,3 +119,4 @@ fabric.properties
 # App specific ignore
 venv/
 env/
+test.db

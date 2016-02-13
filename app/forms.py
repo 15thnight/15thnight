@@ -14,25 +14,25 @@ class RegisterForm(Form):
 
 	"""
 	email = TextField(
-		'email',
+		'Email Address',
 		validators=[DataRequired(), Email(message=None), Length(min=6, max=40)]
 		)
 	phone_number = TextField(
-		'number',
+		'Phone Number',
 		validators=[DataRequired(), Length(min=10)])
 	password = PasswordField(
-        'password',
+        'Password',
         validators=[DataRequired(), Length(min=2, max=25)]
     )
 	confirm = PasswordField(
-		'Repeat password',
+		'Confirm Password',
 		validators=[DataRequired(), EqualTo('password', message='Passwords muct match.')]
 		)
-	role = SelectField('role', choices=USER_ROLES)
-	other = BooleanField('other')
-	clothes = BooleanField('clothes')
-	shelter = BooleanField('shelter')
-	food = BooleanField('food')
+	role = SelectField('User Role', choices=USER_ROLES)
+	clothes = BooleanField('Clothes')
+	shelter = BooleanField('Shelter')
+	food = BooleanField('Food')
+	other = BooleanField('Other')
 
 class LoginForm(Form):
 	email = TextField('Email', validators=[DataRequired()])

@@ -30,8 +30,6 @@ class User(Model):
     food = Column(Boolean, nullable=False, default=False)
     other = Column(Boolean, nullable=False, default='')
     role = Column(String(20), default='admin')
-    alerts = relationship("Alert", backref='user', lazy='dynamic')
-    responses = relationship("Response", back_populates="providers")
 
     def __init__(self, email, password, phone_number, other, food, clothes, shelter, role):
         self.email = email.lower()
@@ -60,7 +58,7 @@ class User(Model):
     @property
     def is_anonymous(self):
         """Anonimity check."""
-        return True
+        return False
 
     def get_id(self):
         """Get the User id in unicode or ascii."""
@@ -99,7 +97,7 @@ class Alert(Model):
     food = Column(Boolean, nullable=False, default=False)
     other = Column(Boolean, nullable=False, default='')
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    responses = relationship("Response", back_populates="alerts")
+    user = relationship('User', backref='alerts')
 
 
 class Response(Model):
@@ -108,5 +106,7 @@ class Response(Model):
     __tablename__ = 'responses'
     id = Column(Integer, primary_key=True)
     user_id = Column(ForeignKey('users.id'))
+    user = relationship('User', backref='responses')
     created_at = Column(DateTime, default=datetime.utcnow)
     alert_id = Column(ForeignKey('alerts.id'))
+    alert = relationship('Alert', backref='responses')

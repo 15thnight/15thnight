@@ -32,3 +32,11 @@ To update the database to the latest version, run this command:
     $ ./manage.py runserver -dr
 
 Go to [localhost:5000](http://localhost:5000) in your browser.
+
+# Creating a user
+
+    $ ./manage.py <email> <password> <role>
+
+Example:
+
+    $ ./manage.py user@example.com password admin

@@ -24,23 +24,25 @@ class User(Model):
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated = Column(DateTime, default=datetime.utcnow)
-    email = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=False, unique=True)
     password = Column(Text, nullable=False)
     phone_number = Column(String(20), nullable=False)
     shelter = Column(Boolean, nullable=False, default=False)
     clothes = Column(Boolean, nullable=False, default=False)
     food = Column(Boolean, nullable=False, default=False)
-    other = Column(Text, nullable=False, default='')
+    other = Column(Boolean, nullable=False, default='')
+    role = Column(String(20), default='admin')
     alerts = relationship("Alert", backref='user', lazy='dynamic')
 
-    def __init__(self, email, password, phone_number, other, food, clothes, shelter):
-        self.email = email
+    def __init__(self, email, password, phone_number, other, food, clothes, shelter, role):
+        self.email = email.lower()
         self.set_password(password)
         self.phone_number = phone_number
         self.other = other
         self.shelter = shelter
         self.clothes = clothes
         self.food = food
+        self.role = role
 
     def check_password(self, password):
         """Check a user's password (includes salt)"""
@@ -63,6 +65,10 @@ class User(Model):
             return unicode(self.id)
         except NameError:
             return str(self.id)
+
+    @classmethod
+    def get_by_email(cls, email):
+        return cls.query.filter(cls.email == email).first()
 
     def set_password(self, password):
         self.password = generate_password_hash(password=password,

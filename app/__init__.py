@@ -1,16 +1,15 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash, g
 from functools import wraps
 from flask.ext.login import login_user, logout_user, current_user, login_required, LoginManager
-from sqlalchemy import or_
 
 from app import database 
 from app.forms import RegisterForm, LoginForm, AlertForm
 from app.models import User, Alert
-
+from twilio_client import send_sms
 from functools import wraps
 import gc
 
-from twilio_client import send_sms
+
 
 flaskapp = Flask(__name__)
 try:
@@ -28,11 +27,15 @@ login_manager.login_view = 'login'
 def load_user(id):
     return User.query.get(int(id))
 
+@flaskapp.teardown_appcontext
+def shutdown_session(response):
+    database.session.remove()
+
 # login required decorator
 def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
-        if 'logged_in' in session:
+        if current_user.is_authenticated:
             return f(*args, **kwargs)
         else:
             flash('You need to login first.')
@@ -41,7 +44,9 @@ def login_required(f):
 
 @flaskapp.route('/')
 def index():
-    return render_template('base.html')
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
 @flaskapp.route('/register', methods=['GET','POST'])
 def register():
@@ -56,11 +61,10 @@ def register():
             other=form.other.data,
             shelter=form.shelter.data,
             food=form.food.data,
-            clothes=form.clothes.data
-            )
-        
-        database.db_session.add(user)
-        database.db_session.commit()
+            clothes=form.clothes.data,
+            role=form.role.data
+        )
+        user.save()
         
         session['logged_in'] = True
         login_user(user)
@@ -87,13 +91,12 @@ def login():
     return render_template('login.html',form=form, error=error)
 
 
-
 @flaskapp.route('/dashboard', methods=['GET','POST'])
-#@login_required
+@login_required
 def dashboard():
     #alerts = database.db_session.query(Alert).all()
-    user = User.query.filter_by(id=1).first()
-    alerts = user.alerts.all()
+    user = User.query.filter_by(id=current_user.id).first()
+    alerts = user.alerts
     form = AlertForm()
     if request.method == 'POST' and form.validate_on_submit():
         alert = Alert(
@@ -102,10 +105,9 @@ def dashboard():
             shelter=form.shelter.data,
             food=form.food.data,
             clothes=form.clothes.data,
-            user_id= 1 #user id
+            user_id= current_user.id #user id
             )
-        database.db_session.add(alert)
-        database.db_session.commit()
+        alert.save()
         users_to_notify = User.query.filter(or_(
                 User.food == alert.food,
                           User.shelter == alert.shelter,
@@ -114,9 +116,9 @@ def dashboard():
         for user in users_to_notify:
             print("found user to notify {}".format(user))
             send_sms(to_number=user.phone_number, body="There is a new 15th night alert. Go to <link> to check it out.")
-
     
     return render_template('dashboard.html',form=form, alerts=alerts)
+
 
 @flaskapp.route("/logout")
 @login_required

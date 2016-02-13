@@ -1,95 +1,22 @@
 {% extends "base.html" %}
+{% from "render_form.html" import render_form %}
 
 {% block body %}
 
-<div class="form"> <!-- edit this class to edit register form -->
-<div class="container text-center">
-<h1>Please Register</h1>
-<br>
-<div class="row">
-  <div class="col-sm-4"></div>
-  <div class="col-sm-4">
-<form class="form-signin" role="form" method="post" action="">
-  {{ form.csrf_token }}
-  <p>
-    {{ form.email(placeholder="email") }}
-    <span class="error">
-      {% if form.email.errors %}
-        {% for error in form.email.errors %}
-          {{ error }}
-        {% endfor %}
-      {% endif %}
-    </span>
-  </p>
-  <p>
-  {{ form.phone_number(placeholder="phone_number") }}
-    <span class="error">
-      {% if form.phone_number.errors %}
-        {% for error in form.phone_number.errors %}
-          {{ error }}
-        {% endfor %}
-      {% endif %}
-    </span>
-  </p>
-  <p>
-  {{ form.password(placeholder="password") }}
-    <span class="error">
-      {% if form.password.errors %}
-        {% for error in form.password.errors %}
-          {{ error }}
-        {% endfor %}
-      {% endif %}
-    </span>
-  </p>
-  <p>
-  {{ form.confirm(placeholder="confirm") }}
-    <span class="error">
-      {% if form.confirm.errors %}
-        {% for error in form.confirm.errors %}
-          {{ error }}
-        {% endfor %}
-      {% endif %}
-    </span>
-  </p>
-
-  
-  <p>
-  {{ form.food(placeholder="food") }}
-    <span class="error">
-      {% if form.food.errors %}
-        {% for error in form.food.errors %}
-          {{ error }}
-        {% endfor %}
-      {% endif %}
-    </span>
-  </p>
-  {{ form.shelter(placeholder="shelter") }}
-    <span class="error">
-      {% if form.shelter.errors %}
-        {% for error in form.shelter.errors %}
-          {{ error }}
-        {% endfor %}
-      {% endif %}
-    </span>
-  </p>
-  {{ form.clothes(placeholder="clothes") }}
-    <span class="error">
-      {% if form.clothes.errors %}
-        {% for error in form.clothes.errors %}
-          {{ error }}
-        {% endfor %}
-      {% endif %}
-    </span>
-  </p>
-  
-  <button class="btn btn-sm btn-success" type="submit">Register!</button>
-</form>
-
-
-</div>
-<div class="col-sm-4"></div>
-</div>
-</div>
+<div id="register_form" class="container text-center form">
+  <h1>User Registration Form</h1>
+  <br>
+  <div class="row">
+    <div class="col-sm-3"></div>
+    <div class="col-sm-6">
+      <form class="form-signin" role="form" method="post" action="">
+        {{ form.csrf_token }}
+        {{ render_form(form) }}
+        <button class="btn btn-sm btn-success" type="submit">Register</button>
+      </form>
+    </div>
+    <div class="col-sm-3"></div>
+    </div>
 </div>
 
 {% endblock %}

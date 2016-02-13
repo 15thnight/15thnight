@@ -1,4 +1,4 @@
-from __init__ import db
+from application import db
 
 
 db.create_all()

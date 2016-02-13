@@ -1,7 +1,11 @@
 from flask_wtf import Form
-from wtforms import TextField, PasswordField, BooleanField, SubmitField, TextAreaField
+from wtforms import TextField, PasswordField, BooleanField, SubmitField, TextAreaField, \
+	SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, Required
 
+
+
+USER_ROLES = [('admin', 'ADMIN'), ('advocate', 'ADVOCATE'), ('provider', 'PROVIDER')]
 
 class RegisterForm(Form):
 	"""
@@ -24,6 +28,7 @@ class RegisterForm(Form):
 		'Repeat password',
 		validators=[DataRequired(), EqualTo('password', message='Passwords muct match.')]
 		)
+	role = SelectField('role', choices=USER_ROLES)
 	other = BooleanField('other')
 	clothes = BooleanField('clothes')
 	shelter = BooleanField('shelter')

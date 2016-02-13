@@ -1,4 +1,7 @@
 from __future__ import with_statement
+
+import re
+
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
@@ -50,6 +53,22 @@ def run_migrations_offline():
     with context.begin_transaction():
         context.run_migrations()
 
+def compare_type(context, inspected_column,
+            metadata_column, inspected_type, metadata_type):
+    replace = dict(
+        VARCHAR='String',
+        TINYINT='Boolean',
+        BOOLEAN='Boolean',
+        DATETIME='DateTime',
+        INTEGER='Integer',
+        TEXT='Text'
+    )
+    pattern = re.compile( '|'.join(replace.keys()))
+    left = pattern.sub(lambda x: replace[x.group()],
+        inspected_column.type.__class__.__name__)
+    right = pattern.sub(lambda x: replace[x.group()],
+        metadata_column.type.__class__.__name__)
+    return left != right
 
 def run_migrations_online():
     """Run migrations in 'online' mode.
@@ -66,7 +85,8 @@ def run_migrations_online():
     connection = engine.connect()
     context.configure(
                 connection=connection,
-                target_metadata=target_metadata
+                target_metadata=target_metadata,
+                compare_type=compare_type
                 )
 
     try:

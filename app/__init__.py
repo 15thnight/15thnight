@@ -74,7 +74,7 @@ def login():
     form = LoginForm(request.form) #creates instance of form
     if request.method == 'POST':
         if form.validate_on_submit():
-            user = User.query.filter_by(email=request.form['email']).first()
+            user = User.get_by_email(request.form['email'].lower())
             if user is not None and user.check_password(request.form['password']):
                 session['logged_in'] = True #session cookie in browser
                 login_user(user)

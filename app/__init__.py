@@ -9,7 +9,7 @@ from app.models import User, Alert
 from functools import wraps
 import gc
 
-
+from twilio_client import send_sms
 
 flaskapp = Flask(__name__)
 try:
@@ -86,8 +86,9 @@ def login():
     return render_template('login.html',form=form, error=error)
 
 
-@login_required
+
 @flaskapp.route('/dashboard', methods=['GET','POST'])
+@login_required
 def dashboard():
     #alerts = database.db_session.query(Alert).all()
     user = User.query.filter_by(id=current_user.id).first()
@@ -104,11 +105,20 @@ def dashboard():
             )
         database.db_session.add(alert)
         database.db_session.commit()
+        users_to_notify = User.query.filter_by(
+                food=alert.food,
+                shelter=alert.shelter,
+                clothes=alert.clothes,
+                other=alert.other
+        )
+        for user in users_to_notify:
+            send_sms(to_number=user.phone_number, body="There is a new 15th night alert. Go to <link> to check it out.")
+
     
     return render_template('dashboard.html',form=form, alerts=alerts)
 
-@login_required
 @flaskapp.route("/logout")
+@login_required
 def logout():
     session.clear()
     gc.collect()

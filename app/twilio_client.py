@@ -11,4 +11,5 @@ from_number = TWILIO_FROM_NUMBER
 twilio_client = TwilioRestClient(account_sid, auth_token)
 
 def send_sms(to_number=None, body=None):
-    twilio_client.messages.create(body=body, to=to_number, from_=from_number)
+    res = twilio_client.messages.create(body=body, to='+1'+to_number, from_=from_number)
+    print("twilio response: {}".format(res))

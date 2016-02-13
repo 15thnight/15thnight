@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash, g
 from functools import wraps
 from flask.ext.login import login_user, logout_user, current_user, login_required, LoginManager
+from sqlalchemy import or_
 
 from app import database 
 from app.forms import RegisterForm, LoginForm, AlertForm
@@ -88,10 +89,10 @@ def login():
 
 
 @flaskapp.route('/dashboard', methods=['GET','POST'])
-@login_required
+#@login_required
 def dashboard():
     #alerts = database.db_session.query(Alert).all()
-    user = User.query.filter_by(id=current_user.id).first()
+    user = User.query.filter_by(id=1).first()
     alerts = user.alerts.all()
     form = AlertForm()
     if request.method == 'POST' and form.validate_on_submit():
@@ -101,17 +102,17 @@ def dashboard():
             shelter=form.shelter.data,
             food=form.food.data,
             clothes=form.clothes.data,
-            user_id= current_user.id #user id
+            user_id= 1 #user id
             )
         database.db_session.add(alert)
         database.db_session.commit()
-        users_to_notify = User.query.filter_by(
-                food=alert.food,
-                shelter=alert.shelter,
-                clothes=alert.clothes,
-                other=alert.other
-        )
+        users_to_notify = User.query.filter(or_(
+                User.food == alert.food,
+                          User.shelter == alert.shelter,
+                           User.clothes == alert.clothes
+        ))
         for user in users_to_notify:
+            print("found user to notify {}".format(user))
             send_sms(to_number=user.phone_number, body="There is a new 15th night alert. Go to <link> to check it out.")
 
     

@@ -1,1 +1,3 @@
+*.db
+app/__pycache__
 .idea

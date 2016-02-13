@@ -1,8 +1,6 @@
-from __init__ import db
-
+"""Initialize/Create the 15th Night database."""
+from . import db
 
 db.create_all()
-
-
 
 db.session.commit()

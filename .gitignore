@@ -120,3 +120,4 @@ fabric.properties
 venv/
 env/
 test.db
+config.py

@@ -21,3 +21,4 @@ wheel==0.29.0
 WTForms==2.1
 twilio==5.3.0
 boto==2.39.0
+MySQL-python==1.2.5

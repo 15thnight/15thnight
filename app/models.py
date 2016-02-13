@@ -110,3 +110,4 @@ class Response(Model):
     created_at = Column(DateTime, default=datetime.utcnow)
     alert_id = Column(ForeignKey('alerts.id'))
     alert = relationship('Alert', backref='responses')
+    message = Column(Text(1000), nullable=False, default='')

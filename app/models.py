@@ -31,7 +31,7 @@ class User(Model):
     other = Column(Boolean, nullable=False, default='')
     role = Column(String(20), default='admin')
     alerts = relationship("Alert", backref='user', lazy='dynamic')
-    responses = relationship("responses", back_populates="providers")
+    responses = relationship("Response", back_populates="providers")
 
     def __init__(self, email, password, phone_number, other, food, clothes, shelter, role):
         self.email = email.lower()
@@ -99,7 +99,7 @@ class Alert(Model):
     food = Column(Boolean, nullable=False, default=False)
     other = Column(Boolean, nullable=False, default='')
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    responses = relationship("responses", back_populates="alerts")
+    responses = relationship("Response", back_populates="alerts")
 
 
 class Response(Model):

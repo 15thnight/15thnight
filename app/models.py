@@ -91,5 +91,5 @@ class Alert(Model):
     shelter = Column(Boolean, nullable=False, default=False)
     clothes = Column(Boolean, nullable=False, default=False)
     food = Column(Boolean, nullable=False, default=False)
-    other = Column(Text, nullable=False, default='')
+    other = Column(Boolean, nullable=False, default='')
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)

@@ -35,7 +35,7 @@ def upgrade():
     sa.Column('shelter', sa.Boolean(), nullable=False),
     sa.Column('clothes', sa.Boolean(), nullable=False),
     sa.Column('food', sa.Boolean(), nullable=False),
-    sa.Column('other', sa.Text(), nullable=False),
+    sa.Column('other', sa.Boolean(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')

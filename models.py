@@ -1,7 +1,7 @@
 from sqlalchemy import Column, DateTime, Integer, String, Boolean, Text, \
     ForeignKey, or_, desc
 
-from __init__ import db, bcrypt
+from application import db, bcrypt
 from sqlalchemy.orm import relationship
 """
 test data tables

@@ -1,3 +1,4 @@
+setuptools==5.5.1
 alembic==0.8.4
 bcrypt==2.0.0
 cffi==1.5.2
@@ -18,3 +19,5 @@ SQLAlchemy==1.0.11
 Werkzeug==0.11.3
 wheel==0.29.0
 WTForms==2.1
+twilio=5.3.0
+boto==2.39.0

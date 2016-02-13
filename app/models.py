@@ -2,7 +2,7 @@
 from datetime import datetime
 
 from sqlalchemy import (
-    Column, DateTime, Integer, String, Boolean, Text, ForeignKey
+    Column, DateTime, Integer, String, Boolean, Text, ForeignKey, Enum
 )
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -25,11 +25,11 @@ class User(Model):
     email = Column(String(255), nullable=False, unique=True)
     password = Column(Text, nullable=False)
     phone_number = Column(String(20), nullable=False)
-    shelter = Column(Boolean, nullable=False, default=False)
-    clothes = Column(Boolean, nullable=False, default=False)
-    food = Column(Boolean, nullable=False, default=False)
-    other = Column(Boolean, nullable=False, default='')
-    role = Column(String(20), default='admin')
+    shelter = Column(Boolean, nullable=True, default=False)
+    clothes = Column(Boolean, nullable=True, default=False)
+    food = Column(Boolean, nullable=True, default=False)
+    other = Column(Boolean, nullable=True, default=False)
+    role = Column(Enum('admin', 'advocate', 'provider'), default='advocate')
 
     def __init__(self, email, password, phone_number, other, food, clothes, shelter, role):
         self.email = email.lower()
@@ -110,4 +110,4 @@ class Response(Model):
     created_at = Column(DateTime, default=datetime.utcnow)
     alert_id = Column(ForeignKey('alerts.id'))
     alert = relationship('Alert', backref='responses')
-    message = Column(Text(1000), nullable=False, default='')
+    message = Column(Text, nullable=True, default='')

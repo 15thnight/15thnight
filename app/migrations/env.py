@@ -66,8 +66,7 @@ def run_migrations_online():
     connection = engine.connect()
     context.configure(
                 connection=connection,
-                target_metadata=target_metadata,
-                version_table='glassplategame_version'
+                target_metadata=target_metadata
                 )
 
     try:

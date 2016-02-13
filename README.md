@@ -6,9 +6,9 @@
     $ git clone https://github.com/15thnight/15thnight
     $ cd 15thnight
     $ virtualenv venv
-    $ echo "\n\nexport PYTHONPATH=$(pwd)" >> venv/bin/activate
+    $ echo "export PYTHONPATH=$(pwd)" >> venv/bin/activate
     $ source venv/bin/activate
-    $ pip install -r requriements.txt
+    $ pip install -r requirements.txt
     $ alembic upgrade head
 
 # Custom config

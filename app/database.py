@@ -1,3 +1,5 @@
+"""Database management for 15th Night."""
+
 import os
 
 from sqlalchemy import create_engine
@@ -16,21 +18,21 @@ else:
 
 
 class BaseModel(object):
-    """Base class for all database models"""
+    """Base class for all database models."""
 
     @classmethod
     def get(self, id):
-        """Get a model by it's PK"""
+        """Get a model by it's PK."""
         return self.query.filter(self.id == id).first()
 
     def save(self, commit=True):
-        """Creates or updates a model in the database"""
+        """Create or updates a model in the database."""
         db_session.add(self)
         if commit:
             db_session.commit()
 
     def delete(self, commit=True):
-        """Removes a model from the database"""
+        """Remove a model from the database."""
         db_session.delete(self)
         if commit:
             db_session.commit()

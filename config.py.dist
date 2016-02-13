@@ -1,2 +1,0 @@
-# Database config
-DATABASE_URL = "sqlite:///test.db"

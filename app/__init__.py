@@ -86,8 +86,9 @@ def login():
     return render_template('login.html',form=form, error=error)
 
 
-@login_required
+
 @flaskapp.route('/dashboard', methods=['GET','POST'])
+@login_required
 def dashboard():
     #alerts = database.db_session.query(Alert).all()
     user = User.query.filter_by(id=current_user.id).first()
@@ -116,8 +117,8 @@ def dashboard():
     
     return render_template('dashboard.html',form=form, alerts=alerts)
 
-@login_required
 @flaskapp.route("/logout")
+@login_required
 def logout():
     session.clear()
     gc.collect()

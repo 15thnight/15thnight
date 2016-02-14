@@ -1,5 +1,6 @@
 """15th Night Flask App."""
 
+from email_client import send_email
 from flask import (
     Flask, render_template, redirect, url_for, request, session, flash
 )
@@ -10,7 +11,7 @@ from twilio_client import send_sms
 
 from app import database
 from app.database import db_session
-from app.forms import RegisterForm, LoginForm, AlertForm, ResponseForm
+from app.forms import RegisterForm, LoginForm, AlertForm, ResponseForm, ContactForm
 from app.models import User, Alert
 from app.email_client import send_email
 
@@ -137,8 +138,9 @@ def dashboard():
                 shelter=form.shelter.data,
                 food=form.food.data,
                 clothes=form.clothes.data,
-                # user.id
-                user_id=current_user.id
+                gender=form.gender.data,
+                age=form.age.data,
+                user=current_user
             )
             alert.save()
             users_to_notify = User.get_provider(alert.food, alert.clothes, alert.shelter, alert.other)
@@ -150,6 +152,7 @@ def dashboard():
                        str(alert.id) + " to respond."
                 send_sms(to_number=user.phone_number, body=body)
                 send_email(user.email, '15th Night Alert', body)
+            flash('Alert sent successfully', 'success')
         return render_template('dashboard/advocate.html', form=form)
     else:
         # Provider user, show alerts
@@ -175,6 +178,18 @@ def healthcheck():
 def about():
     """Simple about page route."""
     return render_template('about.html')
+
+@flaskapp.route('/contact', methods=['GET', 'POST'])
+def contact():
+
+    if request.method == 'POST': 
+        flash('you tried to make a post')
+        name = request.form['name']
+        email = request.form['email']
+        message = request.form['message']
+        
+        return redirect(url_for('login'))
+    return render_template('contact.html')
 
 
 @flaskapp.route('/respond_to/<int:alert_id>', methods=['GET','POST'])

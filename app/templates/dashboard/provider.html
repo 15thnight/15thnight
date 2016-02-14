@@ -38,7 +38,16 @@
                                 <td>{{ alert.gender }}</td>
                                 <td>{{ alert.age }}</td>
                                 <td>{{ alert.get_needs() }}</td>
-                                <td><a class="btn btn-success" href="/respond_to/{{ alert.id }}">Respond</a></td>
+                                <td>
+                                    {% if alert.get_user_response(current_user) %}
+                                        <div><b>Responded At:</b></div>
+                                        {% for response in alert.get_user_response(current_user) %}
+                                            <div>{{ response.created_at.strftime('%m/%d/%y %I:%M%p') }}</div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div><a class="btn btn-success" href="/respond_to/{{ alert.id }}">Respond</a></div>
+                                    {% endif %}
+                                </td>
                             </tr>
                         {% endfor %}
                         </body>

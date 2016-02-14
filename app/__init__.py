@@ -252,7 +252,7 @@ def response_submitted(alert_id):
             body=response_message,
         )
 
-        Response(user_id=current_user.id, alert_id=alert_id, message=submitted_message).save()
+        Response(user=current_user, alert=alert, message=submitted_message).save()
 
         flash('Your response has been sent to the advocate, thank you!', 'success')
         return redirect(url_for('dashboard'))

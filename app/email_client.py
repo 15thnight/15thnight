@@ -11,4 +11,7 @@ conn = boto.ses.connect_to_region(
 )
 
 def send_email(to=None, subject=None, body=None):
-    conn.send_email(EMAIL_SENDER, subject, body, to)
+    try:
+        conn.send_email(EMAIL_SENDER, subject, body, to)
+    except Exception as e:
+        print("Error sending email through aws ses {}".format(e))

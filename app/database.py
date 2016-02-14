@@ -19,6 +19,10 @@ class BaseModel(object):
     """Base class for all database models"""
 
     @classmethod
+    def all(cls):
+        return cls.query.all()
+
+    @classmethod
     def get(self, id):
         """Get a model by it's PK"""
         return self.query.filter(self.id == id).first()

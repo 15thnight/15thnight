@@ -1,5 +1,5 @@
 """Data Models."""
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import (
     Column, DateTime, Integer, String, Boolean, Text, ForeignKey, Enum
@@ -124,6 +124,29 @@ class Alert(Model):
         if self.other:
             needs += 'other, '
         return needs[:-2]
+
+    @classmethod
+    def get_active_alerts_for_provider(cls, user):
+        time_to_filter_from = datetime.now() - timedelta(days=2)
+        active_alerts = []
+        alerts_past_two_days = cls.query.filter(cls.created_at > time_to_filter_from).all()
+        responded_alerts = map(lambda respond: respond.alert_id, Response.query.filter(
+                Response.user_id == user.id,
+                Response.created_at > time_to_filter_from
+        ))
+
+        for alert in alerts_past_two_days:
+            if alert.id in responded_alerts:
+                alerts_past_two_days.remove(alert)
+
+        for alert in alerts_past_two_days:
+            if (alert.food and user.food == alert.food) or \
+                    (alert.shelter and user.shelter == alert.shelter) or \
+                    (alert.clothes and user.clothes == alert.clothes) or \
+                    (alert.other and user.other == alert.other):
+                active_alerts.append(alert)
+
+        return active_alerts
 
 
 class Response(Model):

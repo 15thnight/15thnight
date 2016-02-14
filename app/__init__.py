@@ -12,7 +12,7 @@ from twilio_client import send_sms
 from app import database
 from app.database import db_session
 from app.forms import RegisterForm, LoginForm, AlertForm, ResponseForm
-from app.models import User, Alert
+from app.models import User, Alert, Response
 from app.email_client import send_email
 
 try:
@@ -156,7 +156,11 @@ def dashboard():
         return render_template('dashboard/advocate.html', form=form)
     else:
         # Provider user, show alerts
-        return render_template('dashboard/provider.html', user=current_user)
+        return render_template(
+                'dashboard/provider.html',
+                user=current_user,
+                alerts=Alert.get_active_alerts_for_provider(current_user)
+        )
 
 
 @flaskapp.route("/logout")
@@ -190,6 +194,7 @@ def response_submitted(alert_id):
         - email, phone, and things able to help with of the responding user.
     """
     if request.method == 'POST':
+        submitted_message = request.form['message']
         responding_user = current_user
         try:
             alert = Alert.query.get(int(alert_id))
@@ -209,7 +214,7 @@ def response_submitted(alert_id):
             "other": responding_user.other,
         }
         response_message += "%s" % ", ".join(k for k, v in availble.items() if v)
-        response_message += " Message: " + request.form['message']
+        response_message += " Message: " + submitted_message
 
         if user_to_message.phone_number:
             send_sms(
@@ -223,7 +228,10 @@ def response_submitted(alert_id):
             body=response_message,
         )
 
-        return render_template('dashboard/provider.html', user=current_user, form=ResponseForm(), sent=True)
+        Response(user_id=current_user.id, alert_id=alert_id, message=submitted_message).save()
+
+        flash('Your response has been sent to the advocate, thank you!')
+        return redirect(url_for('dashboard'))
     else:
         try:
             alert = Alert.query.get(int(alert_id))

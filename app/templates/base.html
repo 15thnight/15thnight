@@ -6,6 +6,9 @@
   <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
   <script src="/static/js/jquery.min.js"></script>
   <script src="/static/js/bootstrap.min.js"></script>
+   <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link href="http://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
+  <link href="http://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
   <style>
   .content .btn {
     padding: 10px 20px;
@@ -109,7 +112,7 @@
       color: red;
     }
     body {
-      padding-top: 70px;
+      padding-top: 50px;
     }
     .control-label {
       padding-top: 7px;
@@ -120,8 +123,9 @@
     }
 </style>
   {% block head %}
-  
+
   {% endblock %}
+
 </head>
 <body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60">
 
@@ -158,7 +162,7 @@
 
 
 
-<div class="container-fluid">
+<div class="{% block body_class %}container-fluid{% endblock %}">
   <!-- messages -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->

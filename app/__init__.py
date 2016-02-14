@@ -5,6 +5,7 @@ from sqlalchemy import or_
 from app import database 
 from app.forms import RegisterForm, LoginForm, AlertForm
 from app.models import User, Alert
+from app.email_client import send_email
 from twilio_client import send_sms
 from functools import wraps
 import gc
@@ -125,15 +126,12 @@ def dashboard():
                 user_id= current_user.id #user id
             )
             alert.save()
-            users_to_notify = User.query.filter(or_(
-                    User.food == alert.food,
-                              User.shelter == alert.shelter,
-                               User.clothes == alert.clothes,
-                               User.other == alert.other
-            ))
+            users_to_notify = User.get_provider(alert.food, alert.clothes, alert.shelter, alert.other)
             for user in users_to_notify:
                 print("found user to notify {}".format(user))
-                send_sms(to_number=user.phone_number, body="There is a new 15th night alert. Go to <link> to check it out.")
+                body = "There is a new 15th night alert. Go to <link> to check it out."
+                send_sms(to_number=user.phone_number, body=body)
+                send_email(user.email, '15th Night Alert', body)  
         return render_template('dashboard/advocate.html', form=form)
     else:
         # Provider user, show alerts

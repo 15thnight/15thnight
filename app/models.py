@@ -72,6 +72,18 @@ class User(Model):
         """Return user based on email."""
         return cls.query.filter(cls.email == email).first()
 
+    @classmethod
+    def get_provider(cls, food, shelter, clothes, other):
+        users = cls.query.filter(cls.role == 'provider').all()
+        providers = []
+        for user in users:
+            if (food and user.food == food) or \
+               (shelter and user.shelter == shelter) or \
+               (clothes and user.clothes == clothes) or \
+               (other and user.other == other):
+                providers.append(user)
+        return providers
+
     def set_password(self, password):
         """Using pbkdf2:sha512, hash 'password'."""
         self.password = generate_password_hash(
@@ -81,8 +93,8 @@ class User(Model):
         )
 
     def __repr__(self):
-        """Return <User: %(id)."""
-        return '<User %r>' % (self.id)
+        """Return <User: %(email)."""
+        return '<User %s>' % (self.email)
 
 
 class Alert(Model):

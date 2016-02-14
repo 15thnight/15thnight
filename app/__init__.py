@@ -130,6 +130,8 @@ def dashboard():
     elif current_user.role == 'advocate':
         # Advocate user, show alert form
         form = AlertForm()
+        sent = False
+
         if request.method == 'POST' and form.validate_on_submit():
             alert = Alert(
                 description=form.description.data,
@@ -150,7 +152,9 @@ def dashboard():
                        str(alert.id) + " to respond."
                 send_sms(to_number=user.phone_number, body=body)
                 send_email(user.email, '15th Night Alert', body)
-        return render_template('dashboard/advocate.html', form=form)
+            sent = True
+
+        return render_template('dashboard/advocate.html', form=form, sent=sent)
     else:
         # Provider user, show alerts
         return render_template('dashboard/provider.html', user=current_user)

@@ -152,7 +152,10 @@ class Alert(Model):
     def get_active_alerts_for_provider(cls, user):
         time_to_filter_from = datetime.now() - timedelta(days=2)
         active_alerts = []
-        alerts_past_two_days = cls.query.filter(cls.created_at > time_to_filter_from).all()
+        alerts_past_two_days = cls.query\
+            .filter(cls.created_at > time_to_filter_from)\
+            .order_by(desc(cls.created_at)) \
+            .all()
         responded_alerts = map(lambda respond: respond.alert_id, Response.query.filter(
                 Response.user_id == user.id,
                 Response.created_at > time_to_filter_from

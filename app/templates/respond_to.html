@@ -5,7 +5,7 @@
     <div class="text-center row">
         <div class="col-sm-offset-3 col-sm-6">
             <h2>Alert</h2>
-            <h3>Date/Time: {{ alert.created_at }}</h3>
+            <h3>Date/Time: {{ alert.created_at.strftime('%m/%d/%y %I:%M%p') }}</h3>
             <h3>Age: {{ alert.age }}</h3>
             <h3>Sex: {{ alert.gender }}</h3>
             <h3>Message: {{ alert.description }}</h3>

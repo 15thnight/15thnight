@@ -126,6 +126,7 @@ def dashboard():
                 role=form.role.data
             )
             user.save()
+
         return render_template('dashboard/admin.html', form=form)
     elif current_user.role == 'advocate':
         # Advocate user, show alert form

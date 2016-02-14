@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, Required
 
 
 
-USER_ROLES = [('admin', 'ADMIN'), ('advocate', 'ADVOCATE'), ('provider', 'PROVIDER')]
+USER_ROLES = [('provider', 'PROVIDER'), ('admin', 'ADMIN'), ('advocate', 'ADVOCATE')]
 
 class RegisterForm(Form):
 	"""

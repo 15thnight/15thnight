@@ -147,6 +147,7 @@ class Alert(Model):
             needs += 'other, '
         return needs[:-2]
 
+
     @classmethod
     def get_active_alerts_for_provider(cls, user):
         time_to_filter_from = datetime.now() - timedelta(days=2)
@@ -172,6 +173,7 @@ class Alert(Model):
 
     def get_alerts(cls):
         return cls.query.order_by(desc(Alert.created_at)).all()
+
 
 class Response(Model):
     """Response model."""

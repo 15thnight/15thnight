@@ -174,7 +174,7 @@ def dashboard():
                 send_sms(to_number=user.phone_number, body=body)
                 send_email(user.email, '15th Night Alert', body)
             flash('Alert sent successfully', 'success')
-            form = AlertForm()
+
         return render_template('dashboard/advocate.html', form=form)
     else:
         # Provider user, show alerts
@@ -219,6 +219,18 @@ def healthcheck():
 def about():
     """Simple about page route."""
     return render_template('about.html')
+
+@flaskapp.route('/contact', methods=['GET', 'POST'])
+def contact():
+
+    if request.method == 'POST': 
+        flash('you tried to make a post')
+        name = request.form['name']
+        email = request.form['email']
+        message = request.form['message']
+        
+        return redirect(url_for('login'))
+    return render_template('contact.html')
 
 
 @flaskapp.route('/respond_to/<int:alert_id>', methods=['GET','POST'])

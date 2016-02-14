@@ -54,4 +54,3 @@ class AlertForm(Form):
 
 class ResponseForm(Form):
     message = TextAreaField('Message', validators=[DataRequired()])
-    

@@ -7,6 +7,25 @@
   <script src="/static/js/jquery.min.js"></script>
   <script src="/static/js/bootstrap.min.js"></script>
   <style>
+  .content .btn {
+    padding: 10px 20px;
+    background-color: #22313F;
+    color: #FFF;
+    border-radius: 0;
+    transition: .2s;
+    margin-top: 10px;
+    width: 250px;
+    letter-spacing: 3px;
+    border-style: thin;
+    
+}
+
+/* On hover, the color of .btn will transition to white with black text */
+.content .btn:hover, .btn:focus {
+    border: 1px solid #22313F;
+    background-color: #fff;
+    color: #000;
+}
     .jumbotron {
       background-color: #22313F;
       color: #ffffff;
@@ -15,6 +34,15 @@
     .bg-grey {
       background-color: #f6f6f6;
     }
+
+    .container-fluid {
+      padding: 40px 50px;
+    }
+    
+    .content .btn {
+      margin-top: 10px;
+    }
+
     .logo {
       font-size: 200px;
     }
@@ -65,6 +93,13 @@
         margin-bottom: 30px;
     }
 
+    h1 {
+      margin-top: 100px;
+    }
+    h1 .text-center {
+
+    }
+
     h4 {
         font-size: 19px;
         line-height: 1.375em;
@@ -102,7 +137,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span> 
       </button>
-      <a class="navbar-brand" href="#">15th Night</a>
+      <a class="navbar-brand" href="#"><b>15</b>th <b>Night</b></a>
     </div>
     <div class="collapse navbar-collapse" id="myNavbar">
       <ul class="nav navbar-nav navbar-right">

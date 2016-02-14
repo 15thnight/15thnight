@@ -171,6 +171,7 @@ class Alert(Model):
 
         return active_alerts
 
+    @classmethod
     def get_alerts(cls):
         return cls.query.order_by(desc(Alert.created_at)).all()
 

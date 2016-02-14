@@ -56,6 +56,7 @@ def error_page(error):
     if isinstance(error, HTTPException):
         code = error.code
 
+    print(error)
     return render_template("error.html", error_code=code), code
 
 

@@ -9,12 +9,14 @@
       <form class="form-signin" role="form" method="post">
         {{ form.csrf_token }}
         {{ render_form(form) }}
-        <br/>
-        <br/>
         <div class="text-center">
           <button class="btn btn-success" type="submit">Sign In</button>
+        </div>
+        <div align="middle">
+         <img src="/static/new_logo.jpeg" alt="15th NIGHT" style="width:65%">
         </div>
       </form>
     </div>
   </div>
+
 {% endblock %}

@@ -1,6 +1,6 @@
 """15th Night Flask App."""
 
-from email_client import send_email
+from email_client import send_email, verify_email
 from flask import (
     Flask, render_template, redirect, url_for, request, session, flash
 )
@@ -127,6 +127,7 @@ def dashboard():
                 role=form.role.data
             )
             user.save()
+            verify_email(user.email)
         return render_template('dashboard/admin.html', form=form)
     elif current_user.role == 'advocate':
         # Advocate user, show alert form

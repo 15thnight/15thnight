@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash, g
 from functools import wraps
 from flask.ext.login import login_user, logout_user, current_user, login_required, LoginManager
-
+from sqlalchemy import or_
 from app import database 
 from app.forms import RegisterForm, LoginForm, AlertForm
 from app.models import User, Alert
@@ -29,7 +29,7 @@ def load_user(id):
 
 @flaskapp.teardown_appcontext
 def shutdown_session(response):
-    database.session.remove()
+    database.db_session.remove()
 
 # login required decorator
 def login_required(f):
@@ -75,6 +75,8 @@ def register():
 # route for handling the login page logic
 @flaskapp.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
     error = None
     form = LoginForm(request.form) #creates instance of form
     if request.method == 'POST':
@@ -94,30 +96,48 @@ def login():
 @flaskapp.route('/dashboard', methods=['GET','POST'])
 @login_required
 def dashboard():
-    #alerts = database.db_session.query(Alert).all()
-    user = User.query.filter_by(id=current_user.id).first()
-    alerts = user.alerts
-    form = AlertForm()
-    if request.method == 'POST' and form.validate_on_submit():
-        alert = Alert(
-            description=form.description.data,
-            other=form.other.data,
-            shelter=form.shelter.data,
-            food=form.food.data,
-            clothes=form.clothes.data,
-            user_id= current_user.id #user id
+    if current_user.role == 'admin':
+        # Admin user, show register form
+        form = RegisterForm()
+        if request.method == 'POST' and form.validate_on_submit():
+            user = User(
+                email=form.email.data,
+                password=form.password.data,
+                phone_number=form.phone_number.data,
+                other=form.other.data,
+                shelter=form.shelter.data,
+                food=form.food.data,
+                clothes=form.clothes.data,
+                role=form.role.data
             )
-        alert.save()
-        users_to_notify = User.query.filter(or_(
-                User.food == alert.food,
-                          User.shelter == alert.shelter,
-                           User.clothes == alert.clothes
-        ))
-        for user in users_to_notify:
-            print("found user to notify {}".format(user))
-            send_sms(to_number=user.phone_number, body="There is a new 15th night alert. Go to <link> to check it out.")
-    
-    return render_template('dashboard.html',form=form, alerts=alerts)
+            user.save()
+        return render_template('dashboard/admin.html', form=form)
+    elif current_user.role == 'advocate':
+        # Advocate user, show alert form
+        form = AlertForm()
+        if request.method == 'POST' and form.validate_on_submit():
+            alert = Alert(
+                description=form.description.data,
+                other=form.other.data,
+                shelter=form.shelter.data,
+                food=form.food.data,
+                clothes=form.clothes.data,
+                user_id= current_user.id #user id
+            )
+            alert.save()
+            users_to_notify = User.query.filter(or_(
+                    User.food == alert.food,
+                              User.shelter == alert.shelter,
+                               User.clothes == alert.clothes,
+                               User.other == alert.other
+            ))
+            for user in users_to_notify:
+                print("found user to notify {}".format(user))
+                send_sms(to_number=user.phone_number, body="There is a new 15th night alert. Go to <link> to check it out.")
+        return render_template('dashboard/advocate.html', form=form)
+    else:
+        # Provider user, show alerts
+        return render_template('dashboard/provider.html', user=current_user)
 
 
 @flaskapp.route("/logout")

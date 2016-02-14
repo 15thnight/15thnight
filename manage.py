@@ -15,6 +15,11 @@ def create_user(email, password, role):
     user = User(email, password, '', False, False, False, False, role)
     user.save()
 
+@manager.command
+def seed_db():
+    User('advocate@test.com', '1234', '5415551234', None, None, None, None, 'advocate').save()
+    User('provider@test.com', '1234', '5415551234', True, True, True, True, 'provider').save()
+    User('admin@test.com', '1234', '5415551234', None, None, None, None, 'admin').save()
 
 if __name__ == '__main__':
     manager.run() 

@@ -14,6 +14,10 @@ from app.forms import RegisterForm, LoginForm, AlertForm, ResponseForm
 from app.models import User, Alert
 from app.email_client import send_email
 
+try:
+    from config import HOST_NAME
+except:
+    from configdist import HOST_NAME
 
 flaskapp = Flask(__name__)
 
@@ -140,7 +144,10 @@ def dashboard():
             users_to_notify = User.get_provider(alert.food, alert.clothes, alert.shelter, alert.other)
             for user in users_to_notify:
                 print("found user to notify {}".format(user))
-                body = "There is a new 15th night alert. Go to <link> to check it out."
+                body = "There is a new 15th night alert. Go to " + \
+                       HOST_NAME + \
+                       "/respond_to/" + \
+                       str(alert.id) + " to respond."
                 send_sms(to_number=user.phone_number, body=body)
                 send_email(user.email, '15th Night Alert', body)
         return render_template('dashboard/advocate.html', form=form)
@@ -215,7 +222,12 @@ def response_submitted(alert_id):
 
         return render_template('dashboard/provider.html', user=current_user, form=ResponseForm(), sent=True)
     else:
-        return render_template('respond_to.html', user=current_user, form=ResponseForm())
+        try:
+            alert = Alert.query.get(int(alert_id))
+        except Exception as e:
+            return 'Error {}'.format(e), 404
+
+        return render_template('respond_to.html', alert=alert, user=current_user, form=ResponseForm())
 
 if __name__ == '__main__':
     flaskapp.run(debug=True)

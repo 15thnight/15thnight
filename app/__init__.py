@@ -1,5 +1,6 @@
 """15th Night Flask App."""
 
+from email_client import send_email
 from flask import (
     Flask, render_template, redirect, url_for, request, session, flash
 )
@@ -9,6 +10,7 @@ from flask.ext.login import (
 from twilio_client import send_sms
 
 from app import database
+from app.database import db_session
 from app.forms import RegisterForm, LoginForm, AlertForm
 from app.models import User, Alert
 from app.email_client import send_email
@@ -132,6 +134,7 @@ def dashboard():
                 shelter=form.shelter.data,
                 food=form.food.data,
                 clothes=form.clothes.data,
+                # user.id
                 user_id=current_user.id
             )
             alert.save()
@@ -166,6 +169,50 @@ def healthcheck():
 def about():
     """Simple about page route."""
     return render_template('about.html')
+
+
+@flaskapp.route('/respond_to/<int:alert_id>', methods=['POST'])
+@login_required
+def response_submitted(alert_id):
+    """
+    Action performed when a response is provided.
+
+    Text the creator of the alert:
+        - email, phone, and things able to help with of the responding user.
+    """
+    responding_user = current_user
+    try:
+        alert = db_session.query(Alert).filter(id=alert_id)
+    except:
+        return 'error', 404
+
+    user_to_message = alert.user
+    response_message = "%s" % responding_user.email
+    if responding_user.phone_number:
+        response_message += ", %s" % responding_user.phone_number
+
+    response_message += " is availble for: "
+    availble = {
+        "shelter": responding_user.shelter,
+        "clothes": responding_user.clothes,
+        "food": responding_user.food,
+        "other": responding_user.other,
+    }
+    response_message += "%s" % ", ".join(k for k, v in availble.items() if v)
+
+    if user_to_message.phone_number:
+        send_sms(
+            user_to_message.phone_number,
+            response_message
+        )
+
+    send_email(
+        to=user_to_message.email,
+        subject="Alert Response",
+        body=response_message,
+    )
+
+    return "Your message has been sent.", 400
 
 if __name__ == '__main__':
     flaskapp.run(debug=True)

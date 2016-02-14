@@ -52,7 +52,6 @@ def shutdown_session(response):
 @flaskapp.errorhandler(Exception)
 def error_page(error):
     """Generic Error handling."""
-    print(dir(error))
     code = 500
     if isinstance(error, HTTPException):
         code = error.code

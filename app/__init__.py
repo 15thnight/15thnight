@@ -1,5 +1,6 @@
 """15th Night Flask App."""
 
+from email_client import send_email
 from flask import (
     Flask, render_template, redirect, url_for, request, session, flash
 )
@@ -126,13 +127,10 @@ def dashboard():
                 role=form.role.data
             )
             user.save()
-
         return render_template('dashboard/admin.html', form=form)
     elif current_user.role == 'advocate':
         # Advocate user, show alert form
         form = AlertForm()
-        sent = False
-
         if request.method == 'POST' and form.validate_on_submit():
             alert = Alert(
                 description=form.description.data,
@@ -140,8 +138,9 @@ def dashboard():
                 shelter=form.shelter.data,
                 food=form.food.data,
                 clothes=form.clothes.data,
-                # user.id
-                user_id=current_user.id
+                gender=form.gender.data,
+                age=form.age.data,
+                user=current_user
             )
             alert.save()
             users_to_notify = User.get_provider(alert.food, alert.clothes, alert.shelter, alert.other)
@@ -153,9 +152,8 @@ def dashboard():
                        str(alert.id) + " to respond."
                 send_sms(to_number=user.phone_number, body=body)
                 send_email(user.email, '15th Night Alert', body)
-            sent = True
-
-        return render_template('dashboard/advocate.html', form=form, sent=sent)
+            flash('Alert sent successfully', 'success')
+        return render_template('dashboard/advocate.html', form=form)
     else:
         # Provider user, show alerts
         return render_template('dashboard/provider.html', user=current_user)

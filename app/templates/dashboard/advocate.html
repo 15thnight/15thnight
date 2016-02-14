@@ -35,6 +35,7 @@
                                 <th>Gender</th>
                                 <th>Age</th>
                                 <th>Needs</th>
+                                <th>Responses</th>
                             </tr>
                         </head>
                         <body>
@@ -47,6 +48,7 @@
                                     <td>{{ alert.gender }}</td>
                                     <td>{{ alert.age }}</td>
                                     <td>{{ alert.get_needs() }}</td>
+                                    <td>{{ alert.responses|length }}</td>
                                 </tr>
                             {% endfor %}
                         </body>

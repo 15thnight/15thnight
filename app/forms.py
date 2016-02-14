@@ -44,3 +44,6 @@ class AlertForm(Form):
 	clothes = BooleanField('clothes')
 	shelter = BooleanField('shelter')
 	food = BooleanField('food')
+
+class ResponseForm(Form):
+	message = TextAreaField('Message', validators=[DataRequired()])

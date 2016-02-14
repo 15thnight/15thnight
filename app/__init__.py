@@ -1,6 +1,5 @@
 """15th Night Flask App."""
 
-from email_client import send_email
 from flask import (
     Flask, render_template, redirect, url_for, request, session, flash
 )
@@ -11,10 +10,14 @@ from twilio_client import send_sms
 
 from app import database
 from app.database import db_session
-from app.forms import RegisterForm, LoginForm, AlertForm
+from app.forms import RegisterForm, LoginForm, AlertForm, ResponseForm
 from app.models import User, Alert
 from app.email_client import send_email
 
+try:
+    from config import HOST_NAME
+except:
+    from configdist import HOST_NAME
 
 flaskapp = Flask(__name__)
 
@@ -141,7 +144,10 @@ def dashboard():
             users_to_notify = User.get_provider(alert.food, alert.clothes, alert.shelter, alert.other)
             for user in users_to_notify:
                 print("found user to notify {}".format(user))
-                body = "There is a new 15th night alert. Go to <link> to check it out."
+                body = "There is a new 15th night alert. Go to " + \
+                       HOST_NAME + \
+                       "/respond_to/" + \
+                       str(alert.id) + " to respond."
                 send_sms(to_number=user.phone_number, body=body)
                 send_email(user.email, '15th Night Alert', body)
         return render_template('dashboard/advocate.html', form=form)
@@ -171,7 +177,7 @@ def about():
     return render_template('about.html')
 
 
-@flaskapp.route('/respond_to/<int:alert_id>', methods=['POST'])
+@flaskapp.route('/respond_to/<int:alert_id>', methods=['GET','POST'])
 @login_required
 def response_submitted(alert_id):
     """
@@ -180,39 +186,48 @@ def response_submitted(alert_id):
     Text the creator of the alert:
         - email, phone, and things able to help with of the responding user.
     """
-    responding_user = current_user
-    try:
-        alert = db_session.query(Alert).filter(id=alert_id)
-    except:
-        return 'error', 404
+    if request.method == 'POST':
+        responding_user = current_user
+        try:
+            alert = Alert.query.get(int(alert_id))
+        except Exception as e:
+            return 'Error {}'.format(e), 404
 
-    user_to_message = alert.user
-    response_message = "%s" % responding_user.email
-    if responding_user.phone_number:
-        response_message += ", %s" % responding_user.phone_number
+        user_to_message = alert.user
+        response_message = "%s" % responding_user.email
+        if responding_user.phone_number:
+            response_message += ", %s" % responding_user.phone_number
 
-    response_message += " is availble for: "
-    availble = {
-        "shelter": responding_user.shelter,
-        "clothes": responding_user.clothes,
-        "food": responding_user.food,
-        "other": responding_user.other,
-    }
-    response_message += "%s" % ", ".join(k for k, v in availble.items() if v)
+        response_message += " is availble for: "
+        availble = {
+            "shelter": responding_user.shelter,
+            "clothes": responding_user.clothes,
+            "food": responding_user.food,
+            "other": responding_user.other,
+        }
+        response_message += "%s" % ", ".join(k for k, v in availble.items() if v)
+        response_message += " Message: " + request.form['message']
 
-    if user_to_message.phone_number:
-        send_sms(
-            user_to_message.phone_number,
-            response_message
+        if user_to_message.phone_number:
+            send_sms(
+                user_to_message.phone_number,
+                response_message
+            )
+
+        send_email(
+            to=user_to_message.email,
+            subject="Alert Response",
+            body=response_message,
         )
 
-    send_email(
-        to=user_to_message.email,
-        subject="Alert Response",
-        body=response_message,
-    )
+        return render_template('dashboard/provider.html', user=current_user, form=ResponseForm(), sent=True)
+    else:
+        try:
+            alert = Alert.query.get(int(alert_id))
+        except Exception as e:
+            return 'Error {}'.format(e), 404
 
-    return "Your message has been sent.", 400
+        return render_template('respond_to.html', alert=alert, user=current_user, form=ResponseForm())
 
 if __name__ == '__main__':
     flaskapp.run(debug=True)

@@ -178,6 +178,12 @@ class Alert(Model):
     def get_alerts(cls):
         return cls.query.order_by(desc(Alert.created_at)).all()
 
+    def get_user_response(self, user):
+        response = Response.get_by_user_and_alert(user, self)
+        if response:
+            return response
+        return False
+
 
 class Response(Model):
     """Response model."""
@@ -190,3 +196,7 @@ class Response(Model):
     alert_id = Column(ForeignKey('alerts.id'))
     alert = relationship('Alert', backref='responses')
     message = Column(Text, nullable=True, default='')
+
+    @classmethod
+    def get_by_user_and_alert(cls, user, alert):
+        return cls.query.filter(cls.user == user).filter(cls.alert == alert).all()

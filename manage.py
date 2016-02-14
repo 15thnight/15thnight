@@ -19,6 +19,10 @@ def create_user(email, password, role):
 def seed_db():
     User('advocate@test.com', '1234', '5415551234', None, None, None, None, 'advocate').save()
     User('provider@test.com', '1234', '5415551234', True, True, True, True, 'provider').save()
+    User('provider+other@test.com', '1234', '5415551234', True, None, None, None, 'provider').save()
+    User('provider+food@test.com', '1234', '5415551234', None, True, None, None, 'provider').save()
+    User('provider+clothes@test.com', '1234', '5415551234', None, None, True, None, 'provider').save()
+    User('provider+shelter@test.com', '1234', '5415551234', None, None, None, True, 'provider').save()
     User('admin@test.com', '1234', '5415551234', None, None, None, None, 'admin').save()
 
 if __name__ == '__main__':

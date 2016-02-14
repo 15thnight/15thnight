@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "render_form.html" import render_form %}
+
+{% block body %}
+    <div class="text-center row">
+        <div class="col-sm-offset-3 col-sm-6">
+            <h1>Send an Alert</h1>
+            <form class="form-signin" role="form" method="post" action="">
+                {{ form.csrf_token }}
+                {{ render_form(form) }}
+                <button class="btn btn-sm btn-success" type="submit">Send Alert</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

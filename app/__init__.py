@@ -11,7 +11,7 @@ from twilio_client import send_sms
 
 from app import database
 from app.database import db_session
-from app.forms import RegisterForm, LoginForm, AlertForm, ResponseForm
+from app.forms import RegisterForm, LoginForm, AlertForm, ResponseForm, DeleteUserForm
 from app.models import User, Alert, Response
 from app.email_client import send_email
 
@@ -76,7 +76,7 @@ def register():
 
         session['logged_in'] = True
         login_user(user)
-        flash("You have registered!")
+        flash("You have registered!", "success")
         return redirect(url_for('dashboard'))
 
     return render_template('register.html', form=form, data=data)
@@ -88,7 +88,6 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
 
-    error = None
     # creates instance of form
     form = LoginForm(request.form)
     if request.method == 'POST':
@@ -99,13 +98,12 @@ def login():
                 # session cookie in browser
                 session['logged_in'] = True
                 login_user(user)
-                flash('You were logged in.')
+                flash('Logged in successfully.', 'success')
                 return redirect(url_for('dashboard'))
-                error = 'Invalid Credentials. Please try again.'
             else:
-                error = 'Invalid Credentials. Please try again.'
+                flash('Invalid Credentials. Please try again.', 'danger')
 
-    return render_template('login.html', form=form, error=error)
+    return render_template('login.html', form=form)
 
 
 @flaskapp.route('/dashboard', methods=['GET', 'POST'])
@@ -115,6 +113,8 @@ def dashboard():
     if current_user.role == 'admin':
         # Admin user, show register form
         form = RegisterForm()
+        form_error = False
+        deleted_user = session.pop('deleted_user', False)
         if request.method == 'POST' and form.validate_on_submit():
             user = User(
                 email=form.email.data,
@@ -128,7 +128,15 @@ def dashboard():
             )
             user.save()
             verify_email(user.email)
-        return render_template('dashboard/admin.html', form=form)
+        elif request.method == 'POST' and not form.validate_on_submit():
+            form_error = True
+        return render_template('dashboard/admin.html', 
+            form=form, 
+            form_error=form_error,
+            users=User.get_users(),
+            alerts=Alert.get_alerts(),
+            delete_user_form=DeleteUserForm(),
+            deleted_user=deleted_user)
     elif current_user.role == 'advocate':
         # Advocate user, show alert form
         form = AlertForm()
@@ -154,6 +162,7 @@ def dashboard():
                 send_sms(to_number=user.phone_number, body=body)
                 send_email(user.email, '15th Night Alert', body)
             flash('Alert sent successfully', 'success')
+            form = AlertForm()
         return render_template('dashboard/advocate.html', form=form)
     else:
         # Provider user, show alerts
@@ -163,14 +172,29 @@ def dashboard():
                 alerts=Alert.get_active_alerts_for_provider(current_user)
         )
 
+@flaskapp.route('/delete_user', methods=['POST'])
+@login_required
+def delete_user():
+    if current_user.role != 'admin':
+        flash('Access denied', 'danger')
+        return redirect(url_for('dashboard'))
+    form = DeleteUserForm()
+    if form.validate_on_submit():
+        user = User.get(form.id.data)
+        user.delete()
+        flash('User Deleted Successfully', 'success')
+    else:
+        flash('Failed to delete user', 'danger')
+    session['deleted_user'] = True
+    return redirect(url_for('dashboard'))
 
 @flaskapp.route("/logout")
 @login_required
 def logout():
     """User logout."""
     session.clear()
-    flash('You have been logged out!')
-    return redirect(url_for('register'))
+    flash('You have been logged out!', 'success')
+    return redirect(url_for('index'))
 
 
 @flaskapp.route('/health')

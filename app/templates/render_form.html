@@ -20,6 +20,7 @@
 {% endmacro %}
 {% macro render_form(form) %}
   {% for field in form %}
+    {{ render_field(field) }}
     <div class="row">
       <div id="{{ field.id }}_error" class="error col-lg-offset-2 col-lg-10">
       {% if form.errors and field.id in form.errors %}
@@ -27,6 +28,5 @@
       {% endif %}
       </div>
     </div>
-    {{ render_field(field) }}
   {% endfor %}
 {% endmacro %}

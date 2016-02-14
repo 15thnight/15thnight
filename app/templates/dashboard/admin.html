@@ -1,39 +1,130 @@
 {% extends "base.html" %}
 {% from "render_form.html" import render_form %}
 
+{% block head %}
+    <style>
+        #clothes_row .col-lg-10 input,
+        #shelter_row .col-lg-10 input,
+        #food_row .col-lg-10 input,
+        #other_row .col-lg-10 input {
+            width: auto;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 <div>
     <!-- Nav tabs -->
     <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active hide"><a href="#welcome" aria-controls="welcome" role="tab" data-toggle="tab">Welcome</a></li>
+        <li role="presentation" class="active"><a href="#welcome" aria-controls="welcome" role="tab" data-toggle="tab">Welcome</a></li>
         <li role="presentation"><a href="#register" aria-controls="register" role="tab" data-toggle="tab">Register User</a></li>
-        <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab">See Alert History</a></li>
-        <li role="presentation"><a href="#manage-users" aria-controls="manage-users" role="tab" data-toggle="tab">Manager Users</a></li>
+        <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab">Alert History</a></li>
+        <li role="presentation"><a href="#manage-users" aria-controls="manage-users" role="tab" data-toggle="tab">Manage Users</a></li>
     </ul>
-
     <!-- Tab panes -->
-    <div role="tabpanel" class="tab-pane fade active in text-center" id="welcome">
-        <h2>Welcome back to the 15th night app.</h2>
-        <p>
-            Here you can manage users and see all the alert history along with the responses.
-        </p>
-    </div>
-    <div role="tabpanel" class="tab-pane fade" id="register">
-
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active text-center" id="welcome">
+            <h2>Welcome back to the 15th night app.</h2>
+            <p>
+                Here you can manage users and see all the alert history along with the responses.
+            </p>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="register">
             <div class="text-center row">
                 <div class="col-sm-offset-3 col-sm-6">
-                    <h1>Register a User ladhfkljasdhflkjas</h1>
+                    <h1>Register a User</h1>
                     <form class="form-signin" role="form" method="post" action="">
                         {{ form.csrf_token }}
                         {{ render_form(form) }}
-                        <button class="btn btn-sm btn-success" type="submit">Register User</button>
+                        <button class="btn btn-success" type="submit">Register User</button>
                     </form>
                 </div>
             </div>
+        </div>
 
+        <div role="tabpanel" class="tab-pane" id="history">
+            <h1>Alert History</h1>
+            <table class="table">
+                <head>
+                    <th>Reporter</th>
+                    <th>Sent At</th>
+                    <th>Description</th>
+                    <th>Gender</th>
+                    <th>Age</th>
+                    <th>Needs</th>
+                    <th>Responses</th>
+                </head>
+                <body>
+                    {% for alert in alerts %}
+                        <tr>
+                            <td>{{ alert.user.email }}</td>
+                            <td>{{ alert.created_at.strftime('%m/%d/%y %I:%M%p') }}</td>
+                            <td>{{ alert.description }}</td>
+                            <td>{{ alert.gender }}</td>
+                            <td>{{ alert.age }}</td>
+                            <td>{{ alert.get_needs() }}</td>
+                            <td></td>
+                        </tr>
+                    {% endfor %}
+                </body>
+            </table>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="manage-users">
+            <h1 class="text-center">Manage Users</h1>
+            <table id="users" class="table">
+                <head>
+                    <tr>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Created At</th>
+                        <th>Role</th>
+                        <th>Provider Capabilities</th>
+                        <th>Delete</th>
+                    </tr>
+                </head>
+                <body>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.phone_number }}</td>
+                            <td>{{ user.created_at.strftime('%m/%d/%y %I:%M%p') }}</td>
+                            <td>{{ user.role }}</td>
+                            <td>{{ user.provider_capabilities() }}</td>
+                            <td>{% if current_user.id != user.id %}<button class="btn btn-danger" data-id="{{ user.id }}">Delete</button>{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                </body>
+            </table>
+        </div>
     </div>
-
-    <div role="tabpanel" class="tab-pane fade" id="history">history</div>
-    <div role="tabpanel" class="tab-pane fade" id="manage-users">manage-users</div>
+    <form action="/delete_user" method="post" id="delete_form">
+        {{ delete_user_form.csrf_token }} 
+        <input type="hidden" name="id" id="delete_id" />
+    </form>
 </div>
+<script>
+    var check_role = function() {
+        if ($.inArray($('#role').val(), ['admin', 'advocate']) !== -1) {
+            input_rows.hide();
+        } else {
+            input_rows.show();
+        }
+    }
+    var input_rows = $('#clothes_row, #shelter_row, #food_row, #other_row');
+    $('#role').change(check_role);
+    check_role();
+    {% if form_error %}
+        $('a[href="#register"]').tab('show');
+    {% endif %}
+    {% if deleted_user %}
+        $('a[href="#manage-users"]').tab('show');
+    {% endif %}
+    $('#manage-users button').click(function () {
+        var id = $(this).data('id');
+        if (confirm('Are you sure you wish to delete this user?')) {
+            $('#delete_id').val(id);
+            $('#delete_form').submit();
+        }
+    })
+</script>
 {% endblock %}

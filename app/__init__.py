@@ -8,6 +8,7 @@ from flask.ext.login import (
     login_user, current_user, login_required, LoginManager
 )
 from twilio_client import send_sms
+from werkzeug.exceptions import HTTPException
 
 from app import database
 from app.database import db_session
@@ -45,6 +46,17 @@ def load_user(id):
 def shutdown_session(response):
     """Database management."""
     database.db_session.remove()
+
+
+@flaskapp.errorhandler(404)
+@flaskapp.errorhandler(Exception)
+def error_page(error):
+    """Generic Error handling."""
+    code = 500
+    if isinstance(error, HTTPException):
+        code = error.code
+
+    return render_template("error.html", error_code=code), code
 
 
 @flaskapp.route('/')

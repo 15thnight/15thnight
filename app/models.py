@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 
 from sqlalchemy import (
-    Column, DateTime, Integer, String, Boolean, Text, ForeignKey, Enum
+    Column, DateTime, Integer, String, Boolean, Text, ForeignKey, Enum, desc
 )
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -45,6 +45,21 @@ class User(Model):
         """Check a user's password (includes salt)."""
         return check_password_hash(self.password, password)
 
+    def provider_capabilities(self):
+        if self.role != 'provider':
+            return 'N/A'
+        capabilities = ''
+        if self.shelter:
+            capabilities += 'shelter, '
+        if self.clothes:
+            capabilities += 'clothes, '
+        if self.food:
+            capabilities += 'food, '
+        if self.other:
+            capabilities += 'other, '
+        return capabilities[:-2]
+
+
     @property
     def is_authenticated(self):
         """Authenticaition check."""
@@ -66,6 +81,13 @@ class User(Model):
             return unicode(self.id)
         except NameError:
             return str(self.id)
+
+    @classmethod
+    def get_users(cls):
+        return cls.query.order_by(desc(cls.created_at)).all()
+
+    def get_alerts(self):
+        return Alert.query.filter(Alert.user == self).order_by(desc(Alert.created_at)).all()
 
     @classmethod
     def get_by_email(cls, email):
@@ -148,6 +170,8 @@ class Alert(Model):
 
         return active_alerts
 
+    def get_alerts(cls):
+        return cls.query.order_by(desc(Alert.created_at)).all()
 
 class Response(Model):
     """Response model."""

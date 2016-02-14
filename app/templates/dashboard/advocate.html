@@ -7,6 +7,12 @@
         #sent_alerts {
             display: none;
         }
+        #clothes_row .col-lg-10 input,
+        #shelter_row .col-lg-10 input,
+        #food_row .col-lg-10 input,
+        #other_row .col-lg-10 input {
+            width: auto;
+        }
     </style>
 {% endblock %}
 
@@ -31,7 +37,7 @@
                             </tr>
                         </head>
                         <body>
-                            {% for alert in current_user.alerts %}
+                            {% for alert in current_user.get_alerts() %}
                                 <tr>
                                     <td>
                                         {{ alert.created_at.strftime('%m/%d/%y %I:%M%p') }}
@@ -55,6 +61,7 @@
             <form class="form-signin" role="form" method="post" action="">
                 {{ form.csrf_token }}
                 {{ render_form(form) }}
+                <br/><br/>
                 <button class="btn btn-success" type="submit">Send Alert</button>
             </form>
         </div>

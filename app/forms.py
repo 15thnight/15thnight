@@ -34,6 +34,9 @@ class RegisterForm(Form):
     food = BooleanField('Food')
     other = BooleanField('Other')
 
+class DeleteUserForm(Form):
+    id = IntegerField('id')
+
 class LoginForm(Form):
     email = TextField('Email', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])

@@ -13,9 +13,7 @@
             <h4>If you want to help, put a message and hit submit</h4>
             <form class="form-signin" role="form" method="post" action="">
                 {{ form.csrf_token }}
-                <div class="row">
-                    {{ render_form(form) }}
-                </div>
+                {{ render_form(form) }}
                 <br/>
                 <div class="row">
                     <button class="btn btn-lg btn-success" type="submit">Submit</button>

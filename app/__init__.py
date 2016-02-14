@@ -47,7 +47,6 @@ def shutdown_session(response):
     """Database management."""
     database.db_session.remove()
 
-
 @flaskapp.errorhandler(404)
 @flaskapp.errorhandler(Exception)
 def error_page(error):
@@ -66,34 +65,6 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
-
-
-@flaskapp.route('/register', methods=['GET', 'POST'])
-@login_required
-def register():
-    """Register a user."""
-    form = RegisterForm()
-    data = ['Shelter', 'Clothes', 'Food', 'Other']
-    if request.method == 'POST' and form.validate():
-        user = User(
-            email=form.email.data,
-            password=form.password.data,
-            phone_number=form.phone_number.data,
-            other=form.other.data,
-            shelter=form.shelter.data,
-            food=form.food.data,
-            clothes=form.clothes.data,
-            role=form.role.data
-        )
-        user.save()
-
-        session['logged_in'] = True
-        login_user(user)
-        flash("You have registered!", "success")
-        return redirect(url_for('dashboard'))
-
-    return render_template('register.html', form=form, data=data)
-
 
 @flaskapp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -141,6 +112,8 @@ def dashboard():
             )
             user.save()
             verify_email(user.email)
+            flash('User registered succesfully', 'success')
+            return redirect(url_for('dashboard'))
         elif request.method == 'POST' and not form.validate_on_submit():
             form_error = True
         return render_template('dashboard/admin.html', 
@@ -175,6 +148,7 @@ def dashboard():
                 send_sms(to_number=user.phone_number, body=body)
                 send_email(user.email, '15th Night Alert', body)
             flash('Alert sent successfully', 'success')
+            return redirect(url_for('dashboard'))
 
         return render_template('dashboard/advocate.html', form=form)
     else:
@@ -280,7 +254,7 @@ def response_submitted(alert_id):
 
         Response(user_id=current_user.id, alert_id=alert_id, message=submitted_message).save()
 
-        flash('Your response has been sent to the advocate, thank you!')
+        flash('Your response has been sent to the advocate, thank you!', 'success')
         return redirect(url_for('dashboard'))
     else:
         try:

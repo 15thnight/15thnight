@@ -64,7 +64,7 @@ def index():
     """Handle routing to the dashboard if logged in or the login page."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+    return render_template('home.html')
 
 @flaskapp.route('/login', methods=['GET', 'POST'])
 def login():

@@ -108,8 +108,22 @@ class Alert(Model):
     clothes = Column(Boolean, nullable=False, default=False)
     food = Column(Boolean, nullable=False, default=False)
     other = Column(Boolean, nullable=False, default='')
+    gender = Column(Enum('male', 'female', 'unspecified'), nullable=False, default='unspecified')
+    age = Column(Integer, nullable=False, default=0)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     user = relationship('User', backref='alerts')
+
+    def get_needs(self):
+        needs = ''
+        if self.shelter:
+            needs += 'shelter, '
+        if self.clothes:
+            needs += 'clothes, '
+        if self.food:
+            needs += 'food, '
+        if self.other:
+            needs += 'other, '
+        return needs[:-2]
 
 
 class Response(Model):

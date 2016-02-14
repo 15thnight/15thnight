@@ -228,7 +228,7 @@ def contact():
         name = request.form['name']
         email = request.form['email']
         message = request.form['message']
-        
+        send_email(to=email, subject="Contact Form", body=message)
         return redirect(url_for('login'))
     return render_template('contact.html')
 

@@ -1,21 +1,27 @@
-from flask import Flask, render_template, redirect, url_for, request, session, flash, g
-from functools import wraps
-from flask.ext.login import login_user, logout_user, current_user, login_required, LoginManager
-from sqlalchemy import or_
-from app import database 
+"""15th Night Flask App."""
+
+from email_client import send_email
+from flask import (
+    Flask, render_template, redirect, url_for, request, session, flash
+)
+from flask.ext.login import (
+    login_user, current_user, login_required, LoginManager
+)
+from twilio_client import send_sms
+
+from app import database
+from app.database import db_session
 from app.forms import RegisterForm, LoginForm, AlertForm
 from app.models import User, Alert
 from app.email_client import send_email
-from twilio_client import send_sms
-from functools import wraps
-import gc
-
 
 
 flaskapp = Flask(__name__)
+
+
 try:
     flaskapp.config.from_object('config')
-except: 
+except:
     flaskapp.config.from_object('configdist')
 
 flaskapp.secret_key = flaskapp.config['SECRET_KEY']
@@ -24,37 +30,34 @@ login_manager = LoginManager()
 login_manager.init_app(flaskapp)
 login_manager.login_view = 'login'
 
-@login_manager.user_loader #required for flask login
+
+@login_manager.user_loader
 def load_user(id):
+    """User loading needed by Flask-Login."""
     return User.query.get(int(id))
+
 
 @flaskapp.teardown_appcontext
 def shutdown_session(response):
+    """Database management."""
     database.db_session.remove()
 
-# login required decorator
-def login_required(f):
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        if current_user.is_authenticated:
-            return f(*args, **kwargs)
-        else:
-            flash('You need to login first.')
-            return redirect(url_for('login'))
-    return wrap
 
 @flaskapp.route('/')
 def index():
+    """Handle routing to the dashboard if logged in or the login page."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
 
-@flaskapp.route('/register', methods=['GET','POST'])
+
+@flaskapp.route('/register', methods=['GET', 'POST'])
+@login_required
 def register():
+    """Register a user."""
     form = RegisterForm()
-    data = ['Shelter','Clothes','Food','Other']
+    data = ['Shelter', 'Clothes', 'Food', 'Other']
     if request.method == 'POST' and form.validate():
-        selected_users = request.form.getlist("tags")
         user = User(
             email=form.email.data,
             password=form.password.data,
@@ -66,37 +69,45 @@ def register():
             role=form.role.data
         )
         user.save()
-        
+
         session['logged_in'] = True
         login_user(user)
         flash("You have registered!")
         return redirect(url_for('dashboard'))
+
     return render_template('register.html', form=form, data=data)
 
-# route for handling the login page logic
+
 @flaskapp.route('/login', methods=['GET', 'POST'])
 def login():
+    """Route for handling the login page logic."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
+
     error = None
-    form = LoginForm(request.form) #creates instance of form
+    # creates instance of form
+    form = LoginForm(request.form)
     if request.method == 'POST':
         if form.validate_on_submit():
             user = User.get_by_email(request.form['email'].lower())
-            if user is not None and user.check_password(request.form['password']):
-                session['logged_in'] = True #session cookie in browser
+            passwd = request.form.get("password")
+            if user is not None and user.check_password(passwd):
+                # session cookie in browser
+                session['logged_in'] = True
                 login_user(user)
                 flash('You were logged in.')
                 return redirect(url_for('dashboard'))
                 error = 'Invalid Credentials. Please try again.'
             else:
                 error = 'Invalid Credentials. Please try again.'
-    return render_template('login.html',form=form, error=error)
+
+    return render_template('login.html', form=form, error=error)
 
 
-@flaskapp.route('/dashboard', methods=['GET','POST'])
+@flaskapp.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
+    """Dashboard."""
     if current_user.role == 'admin':
         # Admin user, show register form
         form = RegisterForm()
@@ -123,7 +134,8 @@ def dashboard():
                 shelter=form.shelter.data,
                 food=form.food.data,
                 clothes=form.clothes.data,
-                user_id= current_user.id #user id
+                # user.id
+                user_id=current_user.id
             )
             alert.save()
             users_to_notify = User.get_provider(alert.food, alert.clothes, alert.shelter, alert.other)
@@ -131,7 +143,7 @@ def dashboard():
                 print("found user to notify {}".format(user))
                 body = "There is a new 15th night alert. Go to <link> to check it out."
                 send_sms(to_number=user.phone_number, body=body)
-                send_email(user.email, '15th Night Alert', body)  
+                send_email(user.email, '15th Night Alert', body)
         return render_template('dashboard/advocate.html', form=form)
     else:
         # Provider user, show alerts
@@ -141,18 +153,66 @@ def dashboard():
 @flaskapp.route("/logout")
 @login_required
 def logout():
+    """User logout."""
     session.clear()
-    gc.collect()
     flash('You have been logged out!')
     return redirect(url_for('register'))
 
+
 @flaskapp.route('/health')
 def healthcheck():
+    """Low overhead health check."""
     return 'ok', 200
+
 
 @flaskapp.route('/about')
 def about():
+    """Simple about page route."""
     return render_template('about.html')
+
+
+@flaskapp.route('/respond_to/<int:alert_id>', methods=['POST'])
+@login_required
+def response_submitted(alert_id):
+    """
+    Action performed when a response is provided.
+
+    Text the creator of the alert:
+        - email, phone, and things able to help with of the responding user.
+    """
+    responding_user = current_user
+    try:
+        alert = db_session.query(Alert).filter(id=alert_id)
+    except:
+        return 'error', 404
+
+    user_to_message = alert.user
+    response_message = "%s" % responding_user.email
+    if responding_user.phone_number:
+        response_message += ", %s" % responding_user.phone_number
+
+    response_message += " is availble for: "
+    availble = {
+        "shelter": responding_user.shelter,
+        "clothes": responding_user.clothes,
+        "food": responding_user.food,
+        "other": responding_user.other,
+    }
+    response_message += "%s" % ", ".join(k for k, v in availble.items() if v)
+
+    if user_to_message.phone_number:
+        send_sms(
+            user_to_message.phone_number,
+            response_message
+        )
+
+    send_email(
+        to=user_to_message.email,
+        subject="Alert Response",
+        body=response_message,
+    )
+
+    return "Your message has been sent.", 400
 
 if __name__ == '__main__':
     flaskapp.run(debug=True)

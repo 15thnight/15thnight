@@ -148,12 +148,6 @@ def logout():
     flash('You have been logged out!')
     return redirect(url_for('register'))
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-
-
 @flaskapp.route('/health')
 def healthcheck():
     return 'ok', 200

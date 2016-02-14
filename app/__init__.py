@@ -83,7 +83,7 @@ def login():
                 session['logged_in'] = True
                 login_user(user)
                 flash('Logged in successfully.', 'success')
-                return redirect(url_for('dashboard'))
+                return redirect(request.args.get('next') or url_for('dashboard'))
             else:
                 flash('Invalid Credentials. Please try again.', 'danger')
 

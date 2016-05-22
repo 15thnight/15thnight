@@ -10,29 +10,29 @@ from flask.ext.login import (
 from twilio_client import send_sms
 from werkzeug.exceptions import HTTPException
 
-from app import database
-from app.database import db_session
-from app.forms import RegisterForm, LoginForm, AlertForm, ResponseForm, DeleteUserForm
-from app.models import User, Alert, Response
-from app.email_client import send_email
+from _15thnight import database
+from _15thnight.database import db_session
+from _15thnight.forms import RegisterForm, LoginForm, AlertForm, ResponseForm, DeleteUserForm
+from _15thnight.models import User, Alert, Response
+from _15thnight.email_client import send_email
 
 try:
     from config import HOST_NAME
 except:
     from configdist import HOST_NAME
 
-flaskapp = Flask(__name__)
+app = Flask(__name__)
 
 
 try:
-    flaskapp.config.from_object('config')
+    app.config.from_object('config')
 except:
-    flaskapp.config.from_object('configdist')
+    app.config.from_object('configdist')
 
-flaskapp.secret_key = flaskapp.config['SECRET_KEY']
+app.secret_key = app.config['SECRET_KEY']
 
 login_manager = LoginManager()
-login_manager.init_app(flaskapp)
+login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 
@@ -42,13 +42,13 @@ def load_user(id):
     return User.query.get(int(id))
 
 
-@flaskapp.teardown_appcontext
+@app.teardown_appcontext
 def shutdown_session(response):
     """Database management."""
     database.db_session.remove()
 
-@flaskapp.errorhandler(404)
-@flaskapp.errorhandler(Exception)
+@app.errorhandler(404)
+@app.errorhandler(Exception)
 def error_page(error):
     """Generic Error handling."""
     code = 500
@@ -59,14 +59,14 @@ def error_page(error):
     return render_template("error.html", error_code=code), code
 
 
-@flaskapp.route('/')
+@app.route('/')
 def index():
     """Handle routing to the dashboard if logged in or the login page."""
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     return render_template('home.html')
 
-@flaskapp.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     """Route for handling the login page logic."""
     if current_user.is_authenticated:
@@ -90,7 +90,7 @@ def login():
     return render_template('login.html', form=form)
 
 
-@flaskapp.route('/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
     """Dashboard."""
@@ -159,7 +159,7 @@ def dashboard():
                 alerts=Alert.get_active_alerts_for_provider(current_user)
         )
 
-@flaskapp.route('/delete_user', methods=['POST'])
+@app.route('/delete_user', methods=['POST'])
 @login_required
 def delete_user():
     if current_user.role != 'admin':
@@ -175,7 +175,7 @@ def delete_user():
     session['deleted_user'] = True
     return redirect(url_for('dashboard'))
 
-@flaskapp.route("/logout")
+@app.route("/logout")
 @login_required
 def logout():
     """User logout."""
@@ -184,18 +184,18 @@ def logout():
     return redirect(url_for('index'))
 
 
-@flaskapp.route('/health')
+@app.route('/health')
 def healthcheck():
     """Low overhead health check."""
     return 'ok', 200
 
 
-@flaskapp.route('/about')
+@app.route('/about')
 def about():
     """Simple about page route."""
     return render_template('about.html')
 
-@flaskapp.route('/contact', methods=['GET', 'POST'])
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
 
     if request.method == 'POST': 
@@ -208,7 +208,7 @@ def contact():
     return render_template('contact.html')
 
 
-@flaskapp.route('/respond_to/<int:alert_id>', methods=['GET','POST'])
+@app.route('/respond_to/<int:alert_id>', methods=['GET','POST'])
 @login_required
 def response_submitted(alert_id):
     """
@@ -265,4 +265,4 @@ def response_submitted(alert_id):
         return render_template('respond_to.html', alert=alert, user=current_user, form=ResponseForm())
 
 if __name__ == '__main__':
-    flaskapp.run(debug=True)
+    app.run(debug=True)

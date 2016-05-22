@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 from flask.ext.script import Manager
 
-from app import flaskapp
-from app.models import User
+from _15thnight import app
+from _15thnight.models import User
 
 
-manager = Manager(flaskapp)
+manager = Manager(app)
 
 @manager.command
 @manager.option('-e', '--email', help='Email')

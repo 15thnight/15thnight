@@ -1,4 +1,4 @@
-from app import flaskapp as application
+from _15thnight import app as application
 
 
 if __name__ == '__main__':

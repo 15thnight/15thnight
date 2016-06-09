@@ -1,6 +1,5 @@
 """15th Night Flask App."""
 
-from celery import Celery
 from flask import (
     Flask, render_template, redirect, url_for, request, session, flash
 )
@@ -9,18 +8,18 @@ from flask.ext.login import (
 )
 from werkzeug.exceptions import HTTPException
 
-from _15thnight.email_client import send_email, verify_email
 from _15thnight import database
+from _15thnight.api import account_api, alert_api, response_api, user_api
+from _15thnight.core import send_out_alert, respond_to_alert
+from _15thnight.database import db_session
+from _15thnight.email_client import send_email, verify_email
 from _15thnight.forms import (
     RegisterForm, LoginForm, AlertForm, ResponseForm, DeleteUserForm
 )
 from _15thnight.models import User, Alert, Response
+from _15thnight import queue
 from _15thnight.twilio_client import send_sms
 
-try:
-    from config import HOST_NAME
-except:
-    from configdist import HOST_NAME
 
 app = Flask(__name__)
 
@@ -29,36 +28,18 @@ try:
 except:
     app.config.from_object('configdist')
 
-
-def make_celery(flask_app):
-    celery = Celery("15thnight", broker=app.config["BROKER"])
-    TaskBase = celery.Task
-
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with flask_app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
-
-celery = make_celery(app)
-
 app.secret_key = app.config['SECRET_KEY']
+
+app.register_blueprint(alert_api, url_prefix='/api/v1')
+app.register_blueprint(account_api, url_prefix='/api/v1')
+app.register_blueprint(response_api, url_prefix='/api/v1')
+app.register_blueprint(user_api, url_prefix='/api/v1')
+
+queue.init_app(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-
-
-@celery.task
-def send_alert(email, number, body):
-    """Celery task to send messages out in all forms."""
-    send_sms(to_number=number, body=body)
-    send_email(email, '15th Night Alert', body)
-
 
 @login_manager.user_loader
 def load_user(id):
@@ -157,32 +138,7 @@ def dashboard():
         # Advocate user, show alert form
         form = AlertForm()
         if request.method == 'POST' and form.validate_on_submit():
-            alert = Alert(
-                description=form.description.data,
-                other=form.other.data,
-                shelter=form.shelter.data,
-                food=form.food.data,
-                clothes=form.clothes.data,
-                gender=form.gender.data,
-                age=form.age.data,
-                user=current_user
-            )
-            alert.save()
-            users_to_notify = User.get_provider(
-                alert.food, alert.clothes, alert.shelter, alert.other
-            )
-            for user in users_to_notify:
-                print("found user to notify {}".format(user))
-                body = "There is a new 15th night alert. Go to " + \
-                       HOST_NAME + \
-                       "/respond_to/" + \
-                       str(alert.id) + " to respond."
-                alert_args = dict({
-                    "email": user.email,
-                    "number": user.phone_number,
-                    "body": body
-                })
-                send_alert.apply_async(kwargs=alert_args, countdown=0)
+            send_out_alert(form)
             flash('Alert sent successfully', 'success')
             return redirect(url_for('dashboard'))
 
@@ -263,38 +219,7 @@ def response_submitted(alert_id):
         except Exception as e:
             return 'Error {}'.format(e), 404
 
-        user_to_message = alert.user
-        response_message = "%s" % responding_user.email
-        if responding_user.phone_number:
-            response_message += ", %s" % responding_user.phone_number
-
-        response_message += " is availble for: "
-        availble = {
-            "shelter": responding_user.shelter,
-            "clothes": responding_user.clothes,
-            "food": responding_user.food,
-            "other": responding_user.other,
-        }
-        response_message += "%s" % ", ".join(
-            k for k, v in availble.items() if v
-        )
-        response_message += " Message: " + submitted_message
-
-        if user_to_message.phone_number:
-            send_sms(
-                user_to_message.phone_number,
-                response_message
-            )
-
-        send_email(
-            to=user_to_message.email,
-            subject="Alert Response",
-            body=response_message,
-        )
-
-        Response(
-            user=current_user, alert=alert, message=submitted_message
-        ).save()
+        respond_to_alert(current_user, request.form['message'], alert)
 
         flash(
             'Your response has been sent to the advocate, thank you!',

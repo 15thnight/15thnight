@@ -112,7 +112,7 @@ Seed the database with the test users (refer to the source code for the user det
 
 Begin by running celery:
 
-    $ celery -A _15thnight.celery worker
+    $ celery -A _15thnight.queue worker
 
 Then start up the development web server with live reloading of python code changes (`r` flag) and debug output (`d` flag):
 

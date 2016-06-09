@@ -19,7 +19,7 @@ CELERYD_NODES="worker1"
 
 # App instance to use
 # comment out this line if you don't use an app
-CELERY_APP="_15thnight.celery"
+CELERY_APP="_15thnight.queue"
 # or fully qualified:
 #CELERY_APP="proj.tasks:app"
 

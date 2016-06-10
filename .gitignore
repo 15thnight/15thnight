@@ -121,3 +121,4 @@ venv/
 env/
 test.db
 config.py
+*.wsgi

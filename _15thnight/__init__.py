@@ -1,6 +1,6 @@
 """15th Night Flask App."""
 
-from email_client import send_email, verify_email
+from celery import Celery
 from flask import (
     Flask, render_template, redirect, url_for, request, session, flash
 )
@@ -10,11 +10,12 @@ from flask.ext.login import (
 from twilio_client import send_sms
 from werkzeug.exceptions import HTTPException
 
+from _15thnight.email_client import send_email, verify_email
 from _15thnight import database
-from _15thnight.database import db_session
-from _15thnight.forms import RegisterForm, LoginForm, AlertForm, ResponseForm, DeleteUserForm
+from _15thnight.forms import (
+    RegisterForm, LoginForm, AlertForm, ResponseForm, DeleteUserForm
+)
 from _15thnight.models import User, Alert, Response
-from _15thnight.email_client import send_email
 
 try:
     from config import HOST_NAME
@@ -23,17 +24,25 @@ except:
 
 app = Flask(__name__)
 
-
 try:
     app.config.from_object('config')
 except:
     app.config.from_object('configdist')
+
+celery = Celery("15thnight", broker=app.config["BROKER"])
 
 app.secret_key = app.config['SECRET_KEY']
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+
+@celery.task
+def send_alert(email, number, body):
+    """Celery task to send messages out in all forms."""
+    send_sms(to_number=number, body=body)
+    send_email(email, '15th Night Alert', body)
 
 
 @login_manager.user_loader
@@ -46,6 +55,7 @@ def load_user(id):
 def shutdown_session(response):
     """Database management."""
     database.db_session.remove()
+
 
 @app.errorhandler(404)
 @app.errorhandler(Exception)
@@ -66,6 +76,7 @@ def index():
         return redirect(url_for('dashboard'))
     return render_template('home.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Route for handling the login page logic."""
@@ -83,7 +94,9 @@ def login():
                 session['logged_in'] = True
                 login_user(user)
                 flash('Logged in successfully.', 'success')
-                return redirect(request.args.get('next') or url_for('dashboard'))
+                return redirect(
+                    request.args.get('next') or url_for('dashboard')
+                )
             else:
                 flash('Invalid Credentials. Please try again.', 'danger')
 
@@ -116,13 +129,15 @@ def dashboard():
             return redirect(url_for('dashboard'))
         elif request.method == 'POST' and not form.validate_on_submit():
             form_error = True
-        return render_template('dashboard/admin.html', 
-            form=form, 
+        return render_template(
+            'dashboard/admin.html',
+            form=form,
             form_error=form_error,
             users=User.get_users(),
             alerts=Alert.get_alerts(),
             delete_user_form=DeleteUserForm(),
-            deleted_user=deleted_user)
+            deleted_user=deleted_user
+        )
     elif current_user.role == 'advocate':
         # Advocate user, show alert form
         form = AlertForm()
@@ -138,15 +153,18 @@ def dashboard():
                 user=current_user
             )
             alert.save()
-            users_to_notify = User.get_provider(alert.food, alert.clothes, alert.shelter, alert.other)
+            users_to_notify = User.get_provider(
+                alert.food, alert.clothes, alert.shelter, alert.other
+            )
             for user in users_to_notify:
                 print("found user to notify {}".format(user))
                 body = "There is a new 15th night alert. Go to " + \
                        HOST_NAME + \
                        "/respond_to/" + \
                        str(alert.id) + " to respond."
-                send_sms(to_number=user.phone_number, body=body)
-                send_email(user.email, '15th Night Alert', body)
+                send_alert(
+                    email=user.email, number=user.phone_number, body=body
+                )
             flash('Alert sent successfully', 'success')
             return redirect(url_for('dashboard'))
 
@@ -154,10 +172,11 @@ def dashboard():
     else:
         # Provider user, show alerts
         return render_template(
-                'dashboard/provider.html',
-                user=current_user,
-                alerts=Alert.get_active_alerts_for_provider(current_user)
+            'dashboard/provider.html',
+            user=current_user,
+            alerts=Alert.get_active_alerts_for_provider(current_user)
         )
+
 
 @app.route('/delete_user', methods=['POST'])
 @login_required
@@ -174,6 +193,7 @@ def delete_user():
         flash('Failed to delete user', 'danger')
     session['deleted_user'] = True
     return redirect(url_for('dashboard'))
+
 
 @app.route("/logout")
 @login_required
@@ -195,10 +215,10 @@ def about():
     """Simple about page route."""
     return render_template('about.html')
 
+
 @app.route('/contact', methods=['GET', 'POST'])
 def contact():
-
-    if request.method == 'POST': 
+    if request.method == 'POST':
         flash('you tried to make a post')
         name = request.form['name']
         email = request.form['email']
@@ -208,7 +228,7 @@ def contact():
     return render_template('contact.html')
 
 
-@app.route('/respond_to/<int:alert_id>', methods=['GET','POST'])
+@app.route('/respond_to/<int:alert_id>', methods=['GET', 'POST'])
 @login_required
 def response_submitted(alert_id):
     """
@@ -237,7 +257,9 @@ def response_submitted(alert_id):
             "food": responding_user.food,
             "other": responding_user.other,
         }
-        response_message += "%s" % ", ".join(k for k, v in availble.items() if v)
+        response_message += "%s" % ", ".join(
+            k for k, v in availble.items() if v
+        )
         response_message += " Message: " + submitted_message
 
         if user_to_message.phone_number:
@@ -252,9 +274,14 @@ def response_submitted(alert_id):
             body=response_message,
         )
 
-        Response(user=current_user, alert=alert, message=submitted_message).save()
+        Response(
+            user=current_user, alert=alert, message=submitted_message
+        ).save()
 
-        flash('Your response has been sent to the advocate, thank you!', 'success')
+        flash(
+            'Your response has been sent to the advocate, thank you!',
+            'success'
+        )
         return redirect(url_for('dashboard'))
     else:
         try:
@@ -262,7 +289,10 @@ def response_submitted(alert_id):
         except Exception as e:
             return 'Error {}'.format(e), 404
 
-        return render_template('respond_to.html', alert=alert, user=current_user, form=ResponseForm())
+        return render_template(
+            'respond_to.html',
+            alert=alert, user=current_user, form=ResponseForm()
+        )
 
 if __name__ == '__main__':
     app.run(debug=True)

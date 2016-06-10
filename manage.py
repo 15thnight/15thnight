@@ -2,6 +2,7 @@
 from flask.ext.script import Manager
 
 from _15thnight import app
+from _15thnight.database import Model, engine
 from _15thnight.models import User
 
 
@@ -14,6 +15,10 @@ manager = Manager(app)
 def create_user(email, password, role):
     user = User(email, password, '', False, False, False, False, role)
     user.save()
+
+@manager.command
+def create_db():
+    Model.metadata.create_all(bind=engine)
 
 @manager.command
 def seed_db():

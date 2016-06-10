@@ -1,0 +1,9 @@
+import sys
+import logging
+logging.basicConfig(stream=sys.stderr)
+logging.basicConfig(stream=sys.stdout)
+sys.path.insert(0, 'PROJECT_PATH')
+sys.path.insert(0, 'PROJECT_PATH/node_modules')
+activate_this = 'PROJECT_PATH/venv/bin/activate_this.py'
+execfile(activate_this, dict(__file__=activate_this))
+from _15thnight import app as application

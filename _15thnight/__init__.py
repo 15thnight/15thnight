@@ -162,9 +162,12 @@ def dashboard():
                        HOST_NAME + \
                        "/respond_to/" + \
                        str(alert.id) + " to respond."
-                send_alert(
-                    email=user.email, number=user.phone_number, body=body
-                )
+                alert_args = dict({
+                    "email": user.email,
+                    "number": user.phone_number,
+                    "body": body
+                })
+                send_alert.apply_async(kwargs=alert_args, countdown=0)
             flash('Alert sent successfully', 'success')
             return redirect(url_for('dashboard'))
 

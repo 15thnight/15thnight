@@ -8,7 +8,6 @@ celery==3.1.23
 cffi==1.5.2
 Flask==0.10.1
 Flask-Bcrypt==0.7.1
-Flask-Celery==2.4.3
 Flask-Login==0.3.2
 Flask-Script==2.0.5
 Flask-SQLAlchemy==2.1

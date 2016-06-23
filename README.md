@@ -37,23 +37,55 @@ Another option is to import all the default settings and only overwrite certain 
 
     DATABASE_URL = 'mysql://db_user:db_pass@db_host/db_name'
 
-## Setup Database
+# Database
 
-### SQLite (no migrations)
+The `DATABASE_URL` string in the config file determines the engine and settings for the database connection. The default is a SQLite connection string that creates a `test.db` file. **NOTE:** migrations are not possible with SQLite
 
-For simple development, use sqlite and create the database with the following command:
+## Database Type
 
-    $ ./manage.py create_db
+Postgres, MySQL and SQLite databases are supported.
 
-### PostgreSQL/MySQL (migrations)
+### Postgres
 
-To create the database via migrations, MySQL or PostgreSQL must be used as the database (see the custom config example). This command will create the database and run all migrations (**NOTE** this is also the same command used to keep the database up to date with any future migrations):
+Example postgres connection string:
+
+    postgres://db_user:db_pass@db_host/db_name
+
+### MySQL
+
+In order to use MySQL, MySQL-python must be installed:
+
+    pip install MySQL-python
+
+Example MySQL connection string:
+
+    mysql://db_user:db_pass@db_host/db_name
+
+## Create the Database Tables
+
+The database tables can either be created with migrations (recommended) or without. 
+
+For MySQL and Postgres databases, the database must be created first before creating the tables:
+
+    CREATE DATABASE db_name
+
+### Migrations (Postgres/MySQL)
+
+To create the database tables via migrations, MySQL or PostgreSQL must be used as the database. This command will create the database tables and is also used to migrate the tables if there are any new migrations:
 
     $ alembic upgrade head
 
 For more information on how the project migrations work, refer to the [alembic documentation](http://alembic.readthedocs.io/en/latest/).
 
-## Twilio
+### No Migrations (SQLite/Postgres/MySQL)
+
+For simple development, such as with sqlite, create the database tables with the following command:
+
+    $ ./manage.py create_db
+
+Note that migrating the database tables to future versions is not possible when they are created with this command.
+
+# Twilio
 
 To use SMS features, a [Twilio](https://twilio.com) account is required. Follow these steps to set up twilio:
 
@@ -64,7 +96,7 @@ To use SMS features, a [Twilio](https://twilio.com) account is required. Follow 
 
 Twilio allows use of the twilio number and SMS capabilities for a little while as a trial account without paying.
 
-## Creating a User
+# Creating a User
 
     $ ./manage.py create_user <email> <password> <role>
 

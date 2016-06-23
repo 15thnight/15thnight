@@ -19,7 +19,7 @@ Jinja2==2.8
 kombu==3.0.35
 Mako==1.0.3
 MarkupSafe==0.23
-MySQL-python==1.2.5
+psycopg2==2.6.1
 pycparser==2.14
 python-editor==0.5
 pytz==2016.4

@@ -4,7 +4,7 @@
     ErrorLog "PROJECT_PATH/logs/error_log"
 
     WSGIDaemonProcess _15thnight user=_15thnight group=_15thnight threads=5
-    WSGIScriptAlias / PROJECT_PATH/wsgi.py
+    WSGIScriptAlias / PROJECT_PATH/15thnight.wsgi
     <Directory PROJECT_PATH>
         WSGIProcessGroup _15thnight
         WSGIApplicationGroup %{GLOBAL}

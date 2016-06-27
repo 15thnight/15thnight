@@ -131,6 +131,20 @@ To host the project from a production environment, first follow the instructions
 - MySQL or PostgreSQL (recommended)
 - Redis or RabbitMQ (recommended)
 
+## Setup Celery
+
+### Automatically (as root or with sudo)
+
+    ./setup_celery.sh
+
+### Manually
+
+    # Change the 3 to the concurrency level desired
+    sed \{"s?PROJECT_PATH?$(pwd)?g; s?THREAD_COUNT?3?g;"\} celeryd.template > celeryd.conf
+    mv celeryd.conf /etc/default/celeryd
+    cp celeryd.init /etc/init.d/celeryd
+    useradd -M -r -s /bin/false celery
+
 ## Create the WSGI File
 
 Create a WSGI file for Apache/nginx:

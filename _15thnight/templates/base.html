@@ -6,126 +6,12 @@
   <link rel="stylesheet" href="/static/css/bootstrap.min.css">
   <link href="//fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
   <link href="//fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
-  <style>
-  .content .btn {
-    padding: 10px 20px;
-    background-color: #22313F;
-    color: #FFF;
-    border-radius: 0;
-    transition: .2s;
-    margin-top: 10px;
-    width: 250px;
-    letter-spacing: 3px;
-    border-style: thin;
-    
-}
-
-/* On hover, the color of .btn will transition to white with black text */
-.content .btn:hover, .btn:focus {
-    border: 1px solid #22313F;
-    background-color: #fff;
-    color: #000;
-}
-    .jumbotron {
-      background-color: #22313F;
-      color: #ffffff;
-      padding: 100px 25px;
-    }
-    .bg-grey {
-      background-color: #f6f6f6;
-    }
-
-    .container-fluid {
-      padding: 40px 50px;
-    }
-    
-    .content .btn {
-      margin-top: 10px;
-    }
-
-    .logo {
-      font-size: 200px;
-    }
-    @media screen and (max-width: 760px) {
-      .col-sm-4 {
-        text-align: center;
-        margin: 25px 0;
-      }
-    }
-    .logo-small {
-      color: #f4511e;
-      font-size: 50px;
-    }
-    .logo {
-      color: #f4511e;
-      font-size: 200px;
-    }
-
-    .navbar {
-        margin-bottom: 0;
-        background-color: #22313F;
-        z-index: 9999;
-        border: 0;
-        font-size: 12px !important;
-        line-height: 1.42857143 !important;
-        letter-spacing: 4px;
-        border-radius: 0;
-    }
-
-    .navbar li a, .navbar .navbar-brand {
-        color: #fff !important;
-    }
-
-    .navbar-nav li a:hover, .navbar-nav li.active a {
-        color: #22313F !important;
-        background-color: #fff !important;
-    }
-
-    .navbar-default .navbar-toggle {
-        border-color: transparent;
-        color: #fff !important;
-    }
-    h2 {
-        font-size: 24px;
-        text-transform: uppercase;
-        color: #303030;
-        font-weight: 600;
-        margin-bottom: 30px;
-    }
-
-    h1 .text-center {
-
-    }
-
-    h4 {
-        font-size: 19px;
-        line-height: 1.375em;
-        color: #303030;
-        font-weight: 400;
-        margin-bottom: 30px;
-    }
-    .error {
-      padding: 5px 0 15px;
-      color: red;
-    }
-    body {
-      padding-top: 50px;
-    }
-    .control-label {
-      padding-top: 7px;
-      text-align: right;
-    }
-    input[type="checkbox"], input[type="radio"] {
-      margin: 0;
-    }
-</style>
+  <link href="{{ url_for('static', filename='css/base.css') }}", rel="stylesheet", type="text/css">
   {% block head %}
 
   {% endblock %}
-
 </head>
 <body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60">
-
 
 <nav class="navbar navbar-default navbar-fixed-top">
   <div class="container">
@@ -133,7 +19,7 @@
       <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
-        <span class="icon-bar"></span> 
+        <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="/"><b>15</b>th <b>Night</b></a>
     </div>
@@ -157,8 +43,6 @@
 </nav>
 
 
-
-
 <div class="{% block body_class %}container-fluid{% endblock %}">
   <!-- messages -->
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -173,13 +57,13 @@
     {% endif %}
   {% endwith %}
 
+  <script src="/static/js/jquery.min.js"></script>
+  <script src="/static/js/bootstrap.min.js"></script>
   {% block body %}
 
 
   {% endblock %}
 
 </div>
-  <script src="/static/js/jquery.min.js"></script>
-  <script src="/static/js/bootstrap.min.js"></script>
 </body>
 </html>

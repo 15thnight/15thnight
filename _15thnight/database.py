@@ -32,6 +32,7 @@ class BaseModel(object):
         db_session.add(self)
         if commit:
             db_session.commit()
+        return self
 
     def delete(self, commit=True):
         """Removes a model from the database"""

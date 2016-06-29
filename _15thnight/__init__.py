@@ -12,9 +12,10 @@ from werkzeug.exceptions import HTTPException
 from _15thnight.email_client import send_email, verify_email
 from _15thnight import database
 from _15thnight.forms import (
-    RegisterForm, LoginForm, AlertForm, ResponseForm, DeleteUserForm
+    AddCategoryForm, AlertForm, DeleteUserForm, LoginForm, RegisterForm,
+    ResponseForm
 )
-from _15thnight.models import User, Alert, Response
+from _15thnight.models import Alert, Category, Response, User
 from _15thnight.twilio_client import send_sms
 
 try:
@@ -127,16 +128,13 @@ def dashboard():
         form = RegisterForm()
         form_error = False
         deleted_user = session.pop('deleted_user', False)
+        deleted_category = session.pop('deleted_category', False)
         if request.method == 'POST' and form.validate_on_submit():
             user = User(
                 email=form.email.data,
                 password=form.password.data,
                 phone_number=form.phone_number.data,
-                other=form.other.data,
-                shelter=form.shelter.data,
-                food=form.food.data,
-                clothes=form.clothes.data,
-                role=form.role.data
+                categories=form.categories.data
             )
             user.save()
             verify_email(user.email)
@@ -147,11 +145,14 @@ def dashboard():
         return render_template(
             'dashboard/admin.html',
             form=form,
+            cat_form=AddCategoryForm(),
             form_error=form_error,
             users=User.get_users(),
             alerts=Alert.get_alerts(),
+            categories=Category.all(),
             delete_user_form=DeleteUserForm(),
-            deleted_user=deleted_user
+            deleted_user=deleted_user,
+            deleted_category=deleted_category
         )
     elif current_user.role == 'advocate':
         # Advocate user, show alert form
@@ -159,20 +160,18 @@ def dashboard():
         if request.method == 'POST' and form.validate_on_submit():
             alert = Alert(
                 description=form.description.data,
-                other=form.other.data,
-                shelter=form.shelter.data,
-                food=form.food.data,
-                clothes=form.clothes.data,
                 gender=form.gender.data,
                 age=form.age.data,
-                user=current_user
+                user=current_user,
+                categories=Category.get_by_ids(form.categories.data).all(),
             )
             alert.save()
-            users_to_notify = User.get_provider(
-                alert.food, alert.clothes, alert.shelter, alert.other
-            )
+
+            users_to_notify = User.query.join(User.categories) \
+                .filter(Category.id.in_(form.categories.data)) \
+                .distinct()
+
             for user in users_to_notify:
-                print("found user to notify {}".format(user))
                 body = "There is a new 15th night alert. Go to " + \
                        HOST_NAME + \
                        "/respond_to/" + \
@@ -183,6 +182,7 @@ def dashboard():
                     "body": body
                 })
                 send_alert.apply_async(kwargs=alert_args, countdown=0)
+
             flash('Alert sent successfully', 'success')
             return redirect(url_for('dashboard'))
 
@@ -194,6 +194,24 @@ def dashboard():
             user=current_user,
             alerts=Alert.get_active_alerts_for_provider(current_user)
         )
+
+
+@app.route('/add_category', methods=['POST'])
+@login_required
+def add_category():
+    """Simply add a new category."""
+    form = AddCategoryForm()
+    if current_user.role == 'admin' and form.validate_on_submit():
+        Category(
+            name=form.name.data,
+            description=form.description.data,
+        ).save()
+    elif current_user.role != 'admin':
+        form.error = True
+    elif not form.validate_on_submit():
+        form.error = True
+
+    return redirect(url_for('dashboard'))
 
 
 @app.route('/delete_user', methods=['POST'])
@@ -210,6 +228,23 @@ def delete_user():
     else:
         flash('Failed to delete user', 'danger')
     session['deleted_user'] = True
+    return redirect(url_for('dashboard'))
+
+
+@app.route('/delete_category', methods=['POST'])
+@login_required
+def delete_category():
+    if current_user.role != 'admin':
+        flash('Access denied', 'danger')
+        return redirect(url_for('dashboard'))
+    form = DeleteUserForm()
+    if form.validate_on_submit():
+        category = Category.get(form.id.data)
+        category.delete()
+        flash('Category Deleted Successfully', 'success')
+    else:
+        flash('Failed to delete category', 'danger')
+    session['deleted_category'] = True
     return redirect(url_for('dashboard'))
 
 

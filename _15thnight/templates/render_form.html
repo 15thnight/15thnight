@@ -2,7 +2,7 @@
   {% if field.widget.__class__.__name__ == 'HiddenInput' %}
     {{ field(class_="form-control", placeholder=field.label.text)|safe }}
   {% else %}
-  
+
   <div id="{{ field.id }}_row" class="form-group">
     {% set label_class='col-lg-2 col-md-2 col-sm-2 control-label' %}
     {% set field_class='col-lg-10 col-md-10 col-sm-10' %}
@@ -10,7 +10,7 @@
       {% set label_class='col-lg-12 text-center' %}
       {% set field_class='col-lg-12' %}
     {% endif %}
-  
+
     {{ field.label(class=label_class) }}
     <div class="{{ field_class }}">
        {{ field(class_="form-control", placeholder=field.label.text)|safe|replace('*','') }}

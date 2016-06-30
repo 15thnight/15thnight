@@ -7,7 +7,6 @@ from flask import (
 from flask.ext.login import (
     login_user, current_user, login_required, LoginManager
 )
-from twilio_client import send_sms
 from werkzeug.exceptions import HTTPException
 
 from _15thnight.email_client import send_email, verify_email
@@ -16,6 +15,7 @@ from _15thnight.forms import (
     RegisterForm, LoginForm, AlertForm, ResponseForm, DeleteUserForm
 )
 from _15thnight.models import User, Alert, Response
+from _15thnight.twilio_client import send_sms
 
 try:
     from config import HOST_NAME
@@ -29,7 +29,22 @@ try:
 except:
     app.config.from_object('configdist')
 
-celery = Celery("15thnight", broker=app.config["BROKER"])
+
+def make_celery(flask_app):
+    celery = Celery("15thnight", broker=app.config["BROKER"])
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with flask_app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
+
+celery = make_celery(app)
 
 app.secret_key = app.config['SECRET_KEY']
 
@@ -162,9 +177,12 @@ def dashboard():
                        HOST_NAME + \
                        "/respond_to/" + \
                        str(alert.id) + " to respond."
-                send_alert(
-                    email=user.email, number=user.phone_number, body=body
-                )
+                alert_args = dict({
+                    "email": user.email,
+                    "number": user.phone_number,
+                    "body": body
+                })
+                send_alert.apply_async(kwargs=alert_args, countdown=0)
             flash('Alert sent successfully', 'success')
             return redirect(url_for('dashboard'))
 

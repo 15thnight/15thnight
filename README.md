@@ -1,6 +1,6 @@
 # 15th Night App
 
-# Development 
+# Development
 
 ## Requirements
 
@@ -63,7 +63,7 @@ Example MySQL connection string:
 
 ## Create the Database Tables
 
-The database tables can either be created with migrations (recommended) or without. 
+The database tables can either be created with migrations (recommended) or without.
 
 For MySQL and Postgres databases, the database must be created first before creating the tables:
 
@@ -90,7 +90,7 @@ Note that migrating the database tables to future versions is not possible when 
 To use SMS features, a [Twilio](https://twilio.com) account is required. Follow these steps to set up twilio:
 
 1. Sign up for an account at [twilio.com](https://twilio.com).
-1. At the dashboard page, locate the `Account SID` and `Auth Token` values and set them in `config.py`. They correlate to the `TWILIO_ACCOUNT_SID` and `TWILIO_ACCONT_AUTH_TOKEN` settings, respectfully. 
+1. At the dashboard page, locate the `Account SID` and `Auth Token` values and set them in `config.py`. They correlate to the `TWILIO_ACCOUNT_SID` and `TWILIO_ACCONT_AUTH_TOKEN` settings, respectfully.
 1. Click on the # button in the upper left to be taken to the phone numbers page.
 1. Buy a phone number that has SMS capabilities and set the `TWILIO_FROM_NUMBER` in the config to that number. Make sure the number is in the format `+1XXXXXXXXXX`.
 
@@ -110,7 +110,11 @@ Seed the database with the test users (refer to the source code for the user det
 
 ## Running the Development Server
 
-To start up the development server with live reloading of python code changes (`r` flag) and debug output (`d` flag):
+Begin by running celery:
+
+    $ celery -A _15thnight.celery worker
+
+Then start up the development web server with live reloading of python code changes (`r` flag) and debug output (`d` flag):
 
     $ ./manage.py runserver -dr
 
@@ -126,6 +130,20 @@ To host the project from a production environment, first follow the instructions
 - WSGI
 - MySQL or PostgreSQL (recommended)
 - Redis or RabbitMQ (recommended)
+
+## Setup Celery
+
+### Automatically (as root or with sudo)
+
+    ./setup_celery.sh
+
+### Manually
+
+    # Change the 3 to the concurrency level desired
+    sed \{"s?PROJECT_PATH?$(pwd)?g; s?THREAD_COUNT?3?g;"\} celeryd.template > celeryd.conf
+    mv celeryd.conf /etc/default/celeryd
+    cp celeryd.init /etc/init.d/celeryd
+    useradd -M -r -s /bin/false celery
 
 ## Create the WSGI File
 

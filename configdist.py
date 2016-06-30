@@ -13,4 +13,4 @@ EMAIL_SENDER=''
 SECRET_KEY = 'This is not secret you must change it'
 HOST_NAME='http://localhost:5000'
 
-BROKER = "sqlite://:memery:"
+BROKER = "sqla+%s" % DATABASE_URL

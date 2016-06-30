@@ -6,10 +6,10 @@ then
     exit 1
 fi
 
-echo "Seting up Celery"
+echo "Setting up Celery"
 CPU_COUNT=$(cat /proc/cpuinfo|grep precessor|wc -l)
 let "THREAD_COUNT = $CPU_COUNT + 1"
-sed \{"s?PROJECT_PATH?$(pwd)?g; s?THREAD_COUNT?3?g;"\} celeryd.template > celeryd.conf
+sed \{"s?PROJECT_PATH?$(pwd)?g; s?THREAD_COUNT?$THREAD_COUNT?g;"\} celeryd.template > celeryd.conf
 
 echo "Creating /etc/default/celeryd"
 mkdir -p /etc/default/

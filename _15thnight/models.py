@@ -59,6 +59,17 @@ class User(Model):
             capabilities += 'other, '
         return capabilities[:-2]
 
+    @property
+    def is_admin(self):
+        return self.role == 'admin'
+
+    @property
+    def is_advocate(self):
+        return self.role == 'advocate'
+
+    @property
+    def is_provider(self):
+        return self.role == 'provider'
 
     @property
     def is_authenticated(self):
@@ -95,7 +106,7 @@ class User(Model):
         return cls.query.filter(cls.email == email).first()
 
     @classmethod
-    def get_provider(cls, food, shelter, clothes, other):
+    def get_providers(cls, food, shelter, clothes, other):
         users = cls.query.filter(cls.role == 'provider').all()
         providers = []
         for user in users:
@@ -173,6 +184,14 @@ class Alert(Model):
                 active_alerts.append(alert)
 
         return active_alerts
+
+    @classmethod
+    def get_user_alerts(cls, user):
+        return cls.query.filter(cls.user == user).all()
+
+    @classmethod
+    def get_user_alert(cls, user, id):
+        return cls.query.filter(cls.user == user & cls.id == id).first()
 
     @classmethod
     def get_alerts(cls):

@@ -1,1 +1,1 @@
-from _15thnight import celery
+from _15thnight.queue import celery

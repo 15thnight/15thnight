@@ -122,3 +122,6 @@ env/
 test.db
 config.py
 *.wsgi
+
+client/node_modules
+_15thnight/static/bundle.js

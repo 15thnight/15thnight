@@ -72,6 +72,11 @@ def index():
         return redirect(url_for('dashboard'))
     return render_template('home.html')
 
+@app.route('/2')
+def index2():
+    """Temporary new index for react page"""
+    return render_template('index.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

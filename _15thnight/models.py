@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 
 from sqlalchemy import (
-    Column, DateTime, Integer, String, Boolean, Text, ForeignKey, Enum, desc
+    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc
 )
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -25,39 +25,27 @@ class User(Model):
     email = Column(String(255), nullable=False, unique=True)
     password = Column(Text, nullable=False)
     phone_number = Column(String(20), nullable=False)
-    shelter = Column(Boolean, nullable=True, default=False)
-    clothes = Column(Boolean, nullable=True, default=False)
-    food = Column(Boolean, nullable=True, default=False)
-    other = Column(Boolean, nullable=True, default=False)
     role = Column(Enum('admin', 'advocate', 'provider'), default='advocate')
+    categories = relationship(
+        "Category", secondary="user_categories", backref="users")
 
-    def __init__(self, email, password, phone_number, other, food, clothes, shelter, role):
+    def __init__(self, email, password, phone_number, categories, role):
         self.email = email.lower()
         self.set_password(password)
         self.phone_number = phone_number
-        self.other = other
-        self.shelter = shelter
-        self.clothes = clothes
-        self.food = food
         self.role = role
+        self.categories = categories
 
     def check_password(self, password):
         """Check a user's password (includes salt)."""
         return check_password_hash(self.password, password)
 
     def provider_capabilities(self):
-        if self.role != 'provider':
-            return 'N/A'
-        capabilities = ''
-        if self.shelter:
-            capabilities += 'shelter, '
-        if self.clothes:
-            capabilities += 'clothes, '
-        if self.food:
-            capabilities += 'food, '
-        if self.other:
-            capabilities += 'other, '
-        return capabilities[:-2]
+        categories = []
+        for category in self.categories:
+            categories.append(category.name)
+
+        return ", ".join(categories)
 
     @property
     def is_admin(self):
@@ -97,25 +85,23 @@ class User(Model):
     def get_users(cls):
         return cls.query.order_by(desc(cls.created_at)).all()
 
+    @classmethod
+    def users_in_categories(cls, categories):
+        """Return a list of users in the passed in categories."""
+        users = cls.query.join(cls.categories) \
+            .filter(Category.id.in_(categories)) \
+            .distinct()
+
+        return users
+
     def get_alerts(self):
-        return Alert.query.filter(Alert.user == self).order_by(desc(Alert.created_at)).all()
+        return Alert.query.filter(
+            Alert.user == self).order_by(desc(Alert.created_at)).all()
 
     @classmethod
     def get_by_email(cls, email):
         """Return user based on email."""
         return cls.query.filter(cls.email == email).first()
-
-    @classmethod
-    def get_providers(cls, food, shelter, clothes, other):
-        users = cls.query.filter(cls.role == 'provider').all()
-        providers = []
-        for user in users:
-            if (food and user.food == food) or \
-               (shelter and user.shelter == shelter) or \
-               (clothes and user.clothes == clothes) or \
-               (other and user.other == other):
-                providers.append(user)
-        return providers
 
     def set_password(self, password):
         """Using pbkdf2:sha512, hash 'password'."""
@@ -137,53 +123,42 @@ class Alert(Model):
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     description = Column(String(200), nullable=False)
-    shelter = Column(Boolean, nullable=False, default=False)
-    clothes = Column(Boolean, nullable=False, default=False)
-    food = Column(Boolean, nullable=False, default=False)
-    other = Column(Boolean, nullable=False, default='')
-    gender = Column(Enum('male', 'female', 'unspecified'), nullable=False, default='unspecified')
+    gender = Column(Enum(
+        'male', 'female', 'unspecified'), nullable=False, default='unspecified'
+    )
     age = Column(Integer, nullable=False, default=0)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     user = relationship('User', backref='alerts')
+    categories = relationship(
+        "Category", secondary="alert_categories", backref="alerts")
 
     def get_needs(self):
-        needs = ''
-        if self.shelter:
-            needs += 'shelter, '
-        if self.clothes:
-            needs += 'clothes, '
-        if self.food:
-            needs += 'food, '
-        if self.other:
-            needs += 'other, '
-        return needs[:-2]
+        categories = []
+        for category in self.categories:
+            categories.append(category.name)
 
+        return ", ".join(categories)
 
     @classmethod
     def get_active_alerts_for_provider(cls, user):
         time_to_filter_from = datetime.now() - timedelta(days=2)
-        active_alerts = []
         alerts_past_two_days = cls.query\
             .filter(cls.created_at > time_to_filter_from)\
             .order_by(desc(cls.created_at)) \
             .all()
-        responded_alerts = map(lambda respond: respond.alert_id, Response.query.filter(
+        responded_alerts = map(
+            lambda respond: respond.alert_id,
+            Response.query.filter(
                 Response.user_id == user.id,
                 Response.created_at > time_to_filter_from
-        ))
+            )
+        )
 
         for alert in alerts_past_two_days:
             if alert.id in responded_alerts:
                 alerts_past_two_days.remove(alert)
 
-        for alert in alerts_past_two_days:
-            if (alert.food and user.food == alert.food) or \
-                    (alert.shelter and user.shelter == alert.shelter) or \
-                    (alert.clothes and user.clothes == alert.clothes) or \
-                    (alert.other and user.other == alert.other):
-                active_alerts.append(alert)
-
-        return active_alerts
+        return alerts_past_two_days
 
     @classmethod
     def get_user_alerts(cls, user):
@@ -204,6 +179,28 @@ class Alert(Model):
         return False
 
 
+class Category(Model):
+    """Category/type of provided help representation."""
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, nullable=False, unique=True)
+    description = Column(Text)
+
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
+    @classmethod
+    def get_by_ids(cls, id_list):
+        return cls.query.filter(cls.id.in_(id_list)).all()
+
+    @classmethod
+    def get_by_name(cls, name):
+        named = cls.query.filter(cls.name == name).first()
+        return named
+
+
 class Response(Model):
     """Response model."""
 
@@ -218,4 +215,18 @@ class Response(Model):
 
     @classmethod
     def get_by_user_and_alert(cls, user, alert):
-        return cls.query.filter(cls.user == user).filter(cls.alert == alert).all()
+        return cls.query.filter(
+            cls.user == user).filter(cls.alert == alert).all()
+
+
+user_categories = Table(
+    "user_categories", Model.metadata,
+    Column("user_id", Integer, ForeignKey("users.id")),
+    Column("category_id", Integer, ForeignKey("categories.id"))
+)
+
+alert_categories = Table(
+    "alert_categories", Model.metadata,
+    Column("alert_id", Integer, ForeignKey("alerts.id")),
+    Column("category_id", Integer, ForeignKey("categories.id"))
+)

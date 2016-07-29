@@ -11,14 +11,13 @@ from werkzeug.exceptions import HTTPException
 from _15thnight import database
 from _15thnight.api import account_api, alert_api, response_api, user_api
 from _15thnight.core import send_out_alert, respond_to_alert
-from _15thnight.database import db_session
 from _15thnight.email_client import send_email, verify_email
 from _15thnight.forms import (
-    RegisterForm, LoginForm, AlertForm, ResponseForm, DeleteUserForm
+    AddCategoryForm, AlertForm, DeleteUserForm, LoginForm, RegisterForm,
+    ResponseForm
 )
-from _15thnight.models import User, Alert, Response
+from _15thnight.models import Alert, Category, User
 from _15thnight import queue
-from _15thnight.twilio_client import send_sms
 
 
 app = Flask(__name__)
@@ -40,6 +39,7 @@ queue.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
 
 @login_manager.user_loader
 def load_user(id):
@@ -71,6 +71,7 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     return render_template('home.html')
+
 
 @app.route('/2')
 def index2():
@@ -113,15 +114,13 @@ def dashboard():
         form = RegisterForm()
         form_error = False
         deleted_user = session.pop('deleted_user', False)
+        deleted_category = session.pop('deleted_category', False)
         if request.method == 'POST' and form.validate_on_submit():
             user = User(
                 email=form.email.data,
                 password=form.password.data,
                 phone_number=form.phone_number.data,
-                other=form.other.data,
-                shelter=form.shelter.data,
-                food=form.food.data,
-                clothes=form.clothes.data,
+                categories=form.categories.data,
                 role=form.role.data
             )
             user.save()
@@ -133,11 +132,13 @@ def dashboard():
         return render_template(
             'dashboard/admin.html',
             form=form,
+            category_form=AddCategoryForm(),
             form_error=form_error,
             users=User.get_users(),
             alerts=Alert.get_alerts(),
             delete_user_form=DeleteUserForm(),
-            deleted_user=deleted_user
+            deleted_user=deleted_user,
+            deleted_category=deleted_category
         )
     elif current_user.role == 'advocate':
         # Advocate user, show alert form
@@ -199,7 +200,6 @@ def about():
 def contact():
     if request.method == 'POST':
         flash('you tried to make a post')
-        name = request.form['name']
         email = request.form['email']
         message = request.form['message']
         send_email(to=email, subject="Contact Form", body=message)
@@ -224,7 +224,7 @@ def response_submitted(alert_id):
         except Exception as e:
             return 'Error {}'.format(e), 404
 
-        respond_to_alert(current_user, request.form['message'], alert)
+        respond_to_alert(responding_user, submitted_message, alert)
 
         flash(
             'Your response has been sent to the advocate, thank you!',

@@ -1,4 +1,4 @@
-from flask import current_app
+from flask import current_app, request
 from flask.json import dumps, JSONEncoder
 from flask.ext.login import current_user
 from functools import wraps
@@ -10,6 +10,7 @@ class ExtensibleJSONEncoder(JSONEncoder):
         if hasattr(obj, 'to_json'):
             return obj.to_json()
         return super(ExtensibleJSONEncoder, self).default(obj)
+
 
 def jsonify(*args, **kwargs):
     """Returns a json response"""
@@ -25,12 +26,14 @@ def jsonify(*args, **kwargs):
             data.append(dict(**kwargs))
         else:
             data = dict(**kwargs)
-    return current_app.response_class(dumps(data, indent=indent), 
-        status=status,
-        mimetype='application/json')
+    return current_app.response_class(
+        dumps(data, indent=indent), status=status, mimetype='application/json'
+    )
+
 
 def api_error(message='Bad Request', code=400):
     return jsonify(error=message, _status_code=code)
+
 
 def required_access(*roles):
     def templated(f):

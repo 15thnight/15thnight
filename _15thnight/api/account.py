@@ -1,10 +1,12 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, session
 from flask.ext.login import login_user
 
 from _15thnight.forms import LoginForm
+from _15thnight.models import User
 from _15thnight.util import jsonify
 
 account_api = Blueprint('account_api', __name__)
+
 
 @account_api.route('/login', methods=['POST'])
 def login():
@@ -22,6 +24,7 @@ def login():
             return '', 200
         return jsonify(error='Invalid username/password.', _status_code=401)
     return jsonify(error='Invalid form data', _status_code=400)
+
 
 @account_api.route('/logout', methods=['POST'])
 def logout():

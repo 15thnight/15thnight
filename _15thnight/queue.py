@@ -26,9 +26,10 @@ def init_app(app):
 
 
 @celery.task
-def queue_send_alert(email, number, body):
+def queue_send_message(email, number, subject, body):
     """
-    Celery task to send messages out in all forms.
+    Celery task to send messages out in sms and email.
     """
-    send_sms(to_number=number, body=body)
-    send_email(email, '15th Night Alert', body)
+    if number:
+        send_sms(to_number=number, body=body)
+    send_email(email, subject, body)

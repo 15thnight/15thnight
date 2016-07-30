@@ -27,15 +27,15 @@ def create_response():
         - alert_id: alert identifier
         - message: response message
     """
-    if 'alert_id' not in request.form or 'message' not in request.form:
+    if 'alert_id' not in request.json or 'message' not in request.json:
         return api_error('Invalid form')
 
-    alert = Alert.get(int(request.form['alert_id']))
+    alert = Alert.get(int(request.json['alert_id']))
 
     if not alert:
         return api_error('Alert not found.', 404)
 
-    respond_to_alert(current_user, request.form['message'], alert)
+    respond_to_alert(current_user, request.json['message'], alert)
 
     return '', 201
 

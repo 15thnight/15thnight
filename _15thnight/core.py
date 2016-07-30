@@ -1,6 +1,6 @@
 from flask.ext.login import current_user
 
-from _15thnight.queue import queue_send_alert
+from _15thnight.queue import queue_send_message
 from _15thnight.email_client import send_email
 from _15thnight.models import Alert, Category, Response, User
 from _15thnight.twilio_client import send_sms
@@ -20,16 +20,21 @@ def send_out_alert(alert_form):
         gender=alert_form.gender.data,
         age=alert_form.age.data,
         user=current_user,
-        categories=Category.get_by_ids(alert_form.categories.data).all()
+        categories=Category.get_by_ids(alert_form.needs.data)
     )
     alert.save()
-    providers = User.users_in_categories(alert_form.categories.data)
+    providers = User.users_in_categories(alert_form.needs.data)
     for user in providers:
         body = ('%s, there is a new 15th night alert.\n'
                 'Go to %s/respond_to/%s to respond.') % (
                     user.email, HOST_NAME, str(alert.id))
-        queue_send_alert(
-            email=user.email, number=user.phone_number, body=body
+        queue_send_message.apply_async(
+            kwargs=dict(
+                email=user.email,
+                number=user.phone_number,
+                subject='15th Night Alert',
+                body=body
+            )
         )
 
 
@@ -39,31 +44,24 @@ def respond_to_alert(provider, message, alert):
     """
     advocate = alert.user
 
-    response_message = "%s" % provider.email
+    body = provider.email
     if provider.phone_number:
-        response_message += ", %s" % provider.phone_number
+        body += ", %s" % provider.phone_number
 
-    response_message += " is availble for: "
-    available = dict(
-        shelter=provider.shelter,
-        clothes=provider.clothes,
-        food=provider.food,
-        other=provider.other
-    )
+    needs = [ cat.id for cat in alert.categories ]
+    abilities = [
+        cat.name for cat in provider.categories if cat.id in needs ]
 
-    response_message += "%s" % ", ".join(k for k, v in available.items() if v)
-    response_message += " Message: " + response_message
+    body += (" is availble for: %s\nMessage: %s") % (
+        ", ".join(abilities), message)
 
-    if advocate.phone_number:
-        send_sms(
-            alert.user,
-            response_message
+    queue_send_message.apply_async(
+        kwargs=dict(
+            email=provider.email,
+            number=provider.phone_number,
+            subject='15th Night Alert Response',
+            body=body
         )
-
-    send_email(
-        to=advocate.email,
-        subject='Alert Response',
-        body=response_message
     )
 
     response = Response(user=provider, alert=alert, message=message)

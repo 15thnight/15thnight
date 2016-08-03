@@ -4,8 +4,8 @@ from _15thnight.forms import RegisterForm
 from _15thnight.models import User
 from _15thnight.util import required_access, jsonify, api_error
 
-
 user_api = Blueprint('user_api', __name__)
+
 
 @user_api.route('/user', methods=['GET'])
 @required_access('admin')
@@ -14,6 +14,7 @@ def get_users():
     Get a list of all user accounts.
     """
     return jsonify(User.all())
+
 
 @user_api.route('/user', methods=['POST'])
 @required_access('admin')
@@ -37,6 +38,7 @@ def create_user():
     user.save()
     return jsonify(user)
 
+
 @user_api.route('/user/<int:id>', methods=['PUT'])
 @required_access('admin')
 def update_user(id):
@@ -59,6 +61,7 @@ def update_user(id):
     user.role = form.role.data
     user.save()
     return jsonify(user)
+
 
 @user_api.route('/user/<int:id>', methods=['DELETE'])
 @required_access('admin')

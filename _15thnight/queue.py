@@ -6,10 +6,11 @@ from _15thnight.email_client import send_email
 try:
     from config import CELERY_BROKER
 except:
-    from configdist import CELERY_BROKER 
-    
+    from configdist import CELERY_BROKER
+
 
 celery = Celery('15thnight', broker=CELERY_BROKER)
+
 
 def init_app(app):
     TaskBase = celery.Task

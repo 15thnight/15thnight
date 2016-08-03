@@ -21,6 +21,7 @@
         <li role="presentation"><a href="#register" aria-controls="register" role="tab" data-toggle="tab">Register User</a></li>
         <li role="presentation"><a href="#history" aria-controls="history" role="tab" data-toggle="tab">Alert History</a></li>
         <li role="presentation"><a href="#manage-users" aria-controls="manage-users" role="tab" data-toggle="tab">Manage Users</a></li>
+        <li role="presentation"><a href="#manage-categories" aria-controls="manage-categories" role="tab" data-toggle="tab">Manage Categories</a></li>
     </ul>
     <!-- Tab panes -->
     <div class="tab-content">
@@ -97,10 +98,41 @@
                 </body>
             </table>
         </div>
+        <div role="tabpanel" class="tab-pane" id="manage-categories">
+            <h1 class="text-center">Add Category</h1>
+            <form class="form text-center" method="post" action="{{ url_for('add_category') }}">
+                <legend>&nbsp;</legend>
+                {{ form.csrf_token }}
+                {{ render_form(cat_form) }}
+                <button class="btn btn-success" type="submit">Add</button>
+            </form>
+            <div class="row">&nbsp;</div>
+            <h1 class="text-center">Manage Categories</h1>
+            <table id="categories" class="table">
+                <thead><tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Delete</th>
+                </tr></thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>{{ category.name }}</td>
+                        <td>{{ category.description }}</td>
+                        <td><button class="btn btn-danger" data-id="{{ category.id }}">Delete</button></td>
+                    </tr>
+                    {% endfor %}
+                </body>
+            </table>
+        </div>
     </div>
     <form action="/delete_user" method="post" id="delete_form">
-        {{ delete_user_form.csrf_token }} 
+        {{ delete_user_form.csrf_token }}
         <input type="hidden" name="id" id="delete_id" />
+    </form>
+    <form action="/delete_category" method="post" id="delete_cat_form">
+        {{ delete_user_form.csrf_token }}
+        <input type="hidden" name="id" id="delete_cat_id" />
     </form>
 </div>
 <script>
@@ -126,6 +158,13 @@
             $('#delete_id').val(id);
             $('#delete_form').submit();
         }
-    })
+    });
+    $('#manage-categories .btn-danger').click(function() {
+        var id = $(this).data('id');
+        if (confirm('Are you sure you wish to delete this category?')) {
+            $('#delete_cat_id').val(id);
+            $('#delete_cat_form').submit();
+        }
+    });
 </script>
 {% endblock %}

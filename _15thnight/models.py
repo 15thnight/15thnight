@@ -184,7 +184,7 @@ class Category(Model):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True)
-    name = Column(Text, nullable=False, unique=True)
+    name = Column(String(255), nullable=False, unique=True)
     description = Column(Text)
 
     def __init__(self, name, description):

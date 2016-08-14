@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 
 import {
-    LOGIN_USER, LOGOUT_USER,
+    LOGIN_USER, LOGOUT_USER, UPDATE_USER,
     GET_USERS, GET_USER, GET_USER_ERROR,
     SUBMIT_FORM_SUCCESS, SUBMIT_FORM_ERROR, CLEAR_FORM_STATUS,
     GET_ALERTS, GET_ALERT, GET_ALERT_ERROR,
@@ -12,6 +12,7 @@ import {
 function current_user(state = INITIAL_STATE.current_user, action) {
     switch (action.type) {
         case LOGIN_USER:
+        case UPDATE_USER:
             return action.current_user
         case LOGOUT_USER:
             return null;

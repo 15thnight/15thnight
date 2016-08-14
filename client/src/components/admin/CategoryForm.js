@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import InputField from 'form/InputField';
+import { InputField } from 'form';
 import {
     createCategory, editCategory, getCategory, deleteCategory,
     clearFormStatus

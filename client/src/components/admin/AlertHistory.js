@@ -2,11 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { getAlerts } from 'actions';
-import AlertTable from 'table/AlertTable'
+import { AlertTable } from 'table'
 
 class AlertHistory extends React.Component {
 
-componentWillMount() {
+    componentWillMount() {
         this.props.getAlerts();
     }
 

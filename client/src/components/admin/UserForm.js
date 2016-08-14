@@ -3,10 +3,13 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import CategoryField from 'form/CategoryField';
-import InputField from 'form/InputField';
-import StaticField from 'form/StaticField';
-import FormGroup from 'form/FormGroup';
+import {
+    CategoryField,
+    InputField,
+    StaticField,
+    FormGroup
+} from 'form';
+
 import {
     createUser, editUser, getUser, deleteUser,
     clearFormStatus
@@ -52,7 +55,7 @@ class UserForm extends React.Component {
                 email: user.email,
                 phone_number: user.phone_number,
                 role: user.role,
-                categories: user.capabilities.map(capability =>{ return capability.id}),
+                categories: user.capabilities.map(capability => capability.id),
                 editingPassword: false,
                 editingUser: user
             });
@@ -78,15 +81,20 @@ class UserForm extends React.Component {
     handleFormSubmit(e) {
         e.preventDefault();
         this.setState({ error: {} });
-        let data = {
-            email: this.state.email,
-            phone_number: this.state.phone_number,
-            role: this.state.role,
-            categories: this.state.categories
+        let submitPassword = !this.props.id || this.state.editingPassword;
+        let { email, phone_number, role, categories, password, confirm } = this.state;
+        let data = { email, phone_number, role, categories }
+        if (submitPassword && password !== confirm) {
+            let error = 'Passwords do not match.';
+            return this.setState({
+                error: {
+                    password: [error],
+                    confirm: [error]
+                }
+            });
         }
-        if (!this.props.id || this.state.editingPassword) {
-            data.password = this.state.password;
-            data.confirm = this.state.confirm;
+        if (submitPassword) {
+            data.password = password;
         }
         this.props.id ? this.props.editUser(this.props.id, data) : this.props.createUser(data);
     }
@@ -107,7 +115,7 @@ class UserForm extends React.Component {
                           {this.state.editingUser.email}
                         </StaticField>
                         <StaticField label="Phone Number">
-                          this.state.editingUser.phone_number}
+                          {this.state.editingUser.phone_number}
                         </StaticField>
                         <StaticField label="Role">
                           {this.state.editingUser.role}
@@ -214,7 +222,8 @@ function mapStateToProps(state) {
     return {
         submitFormError: state.submitFormError,
         submitFormSuccess: state.submitFormSuccess,
-        current_user: state.current_user
+        current_user: state.current_user,
+        user: state.user
     }
 }
 

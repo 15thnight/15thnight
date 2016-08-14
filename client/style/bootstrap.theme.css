@@ -1,3 +1,7 @@
+html, body {
+  height: 100%;
+}
+
 .checkbox input[type=checkbox],
 .checkbox-inline input[type=checkbox],
 .radio input[type=radio],
@@ -64,12 +68,20 @@
   border: 0;
   font-size: 12px !important;
   line-height: 1.42857143 !important;
-  letter-spacing: 4px;
+  letter-spacing: 0.5px;
   border-radius: 0;
 }
 
 .navbar li a, .navbar .navbar-brand {
   color: #fff !important;
+}
+
+.dropdown-menu li a {
+  color: #000 !important;
+}
+.dropdown.open > a {
+  background: #fff!important;
+  color: #000!important;
 }
 
 .navbar-nav li a:hover, .navbar-nav li.active a {

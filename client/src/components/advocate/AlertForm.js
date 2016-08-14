@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import CategoryField from 'form/CategoryField';
-import InputField from 'form/InputField';
+import { CategoryField, InputField } from 'form';
+
 import {
     sendAlert, clearFormStatus
 } from 'actions';

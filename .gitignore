@@ -124,4 +124,4 @@ config.py
 *.wsgi
 
 client/node_modules
-_15thnight/static/bundle.js
+_15thnight/static/

@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta id="csrf" name="csrf" content="{{ csrf_token() }}">
     <title>15th Night</title>
 </head>
 <body>
     <div id="entry"></div>
+    <script>var INITIAL_STATE = {{ state|safe }};</script>
     <script src="/static/bundle.js"></script>
 </body>
 </html>

@@ -14,3 +14,4 @@ SECRET_KEY = 'This is not secret you must change it'
 HOST_NAME='http://localhost:5000'
 
 CELERY_BROKER = "sqla+%s" % DATABASE_URL
+DEBUG = True

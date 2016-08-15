@@ -6,6 +6,8 @@
 
 - python2.7
 - pip
+- node
+- npm
 - virtualenv
 - git
 
@@ -17,6 +19,9 @@
     $ echo "export PYTHONPATH=$(pwd)" >> venv/bin/activate
     $ source venv/bin/activate
     $ pip install -r requirements.txt
+    $ cd client
+    $ npm install
+    $ ./node_modules/.bin/webpack && cd ..
 
 At this point, you will have the project downloaded along with the python packages.
 

@@ -26,6 +26,7 @@ class User(Model):
     password = Column(Text, nullable=False)
     phone_number = Column(String(20), nullable=False)
     role = Column(Enum('admin', 'advocate', 'provider'), default='advocate')
+    # Categories only apply to providers
     categories = relationship(
         "Category", secondary="user_categories", backref="users")
 
@@ -111,6 +112,16 @@ class User(Model):
             salt_length=128
         )
 
+    def to_json(self):
+        return dict(
+            id=self.id,
+            email=self.email,
+            role=self.role,
+            phone_number=self.phone_number,
+            created_at=self.created_at,
+            capabilities=[dict(name=c.name, id=c.id) for c in self.categories]
+        )
+
     def __repr__(self):
         """Return <User: %(email)."""
         return '<User %s>' % (self.email)
@@ -162,7 +173,8 @@ class Alert(Model):
 
     @classmethod
     def get_user_alerts(cls, user):
-        return cls.query.filter(cls.user == user).all()
+        return cls.query.filter(cls.user == user) \
+            .order_by(desc(Alert.created_at)).all()
 
     @classmethod
     def get_user_alert(cls, user, id):
@@ -178,6 +190,16 @@ class Alert(Model):
             return response
         return False
 
+    def to_json(self):
+        return dict(
+            id=self.id,
+            user=self.user,
+            created_at=self.created_at.strftime('%m/%d/%y %I:%M%p'),
+            description=self.description,
+            gender=self.gender,
+            age=self.age,
+            needs=self.categories
+        )
 
 class Category(Model):
     """Category/type of provided help representation."""
@@ -193,12 +215,21 @@ class Category(Model):
 
     @classmethod
     def get_by_ids(cls, id_list):
+        if len(id_list) == 0:
+            return []
         return cls.query.filter(cls.id.in_(id_list)).all()
 
     @classmethod
     def get_by_name(cls, name):
         named = cls.query.filter(cls.name == name).first()
         return named
+
+    def to_json(self):
+        return dict(
+            id=self.id,
+            name=self.name,
+            description=self.description
+        )
 
 
 class Response(Model):
@@ -217,6 +248,14 @@ class Response(Model):
     def get_by_user_and_alert(cls, user, alert):
         return cls.query.filter(
             cls.user == user).filter(cls.alert == alert).all()
+
+    def to_json(self):
+        return dict(
+            user=self.user,
+            created_at=self.created_at.strftime('%m/%d/%y %I:%M%p'),
+            alert=self.alert,
+            message=self.message
+        )
 
 
 user_categories = Table(

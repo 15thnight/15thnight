@@ -18,6 +18,15 @@ def get_categories():
     return jsonify(Category.all())
 
 
+@category_api.route('/category/<int:category_id>', methods=['GET'])
+@required_access('admin')
+def get_category(category_id):
+    """
+    Gets a category.
+    """
+    return jsonify(Category.get(category_id))
+
+
 @category_api.route('/category', methods=['POST'])
 @required_access('admin')
 def create_category():
@@ -26,7 +35,7 @@ def create_category():
     """
     form = AddCategoryForm()
     if not form.validate_on_submit():
-        return api_error('Invalid form.')
+        return api_error(form.errors)
 
     name = form.name.data
     description = form.description.data
@@ -46,7 +55,18 @@ def update_category(category_id):
     """
     Update an category.
     """
-    return 'Not Implemented', 501
+    form = AddCategoryForm()
+    if not form.validate_on_submit():
+        return api_error(form.errors)
+    category = Category.get(category_id)
+    if not category:
+        return api_error('Category not found', 404)
+
+    category.name = form.name.data
+    category.description = form.description.data
+
+    category.save()
+    return '', 200
 
 
 @category_api.route('/category/<int:category_id>', methods=['DELETE'])
@@ -55,9 +75,8 @@ def delete_category(category_id):
     """
     Delete an category.
     """
-    try:
-        category = Category.get(category_id)
-        category.delete()
-        return '', 200
-    except Exception, e:
-        api_error("Unable to delete category. %s" % e)
+    category = Category.get(category_id)
+    if not category:
+        return api_error('Category not found', 404)
+    category.delete()
+    return '', 200

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { loginUser } from 'actions';
-import InputField from 'form/InputField';
+import { InputField } from 'form';
 
 class LoginPage extends React.Component {
 

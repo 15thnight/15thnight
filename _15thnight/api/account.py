@@ -1,10 +1,14 @@
 from flask import Blueprint, request, session
-from flask.ext.login import login_user, logout_user, login_required
+from flask.ext.login import (
+    login_user, logout_user, login_required, current_user
+)
 from werkzeug.datastructures import MultiDict
 
-from _15thnight.forms import LoginForm, csrf_protect
-from _15thnight.models import User
-from _15thnight.util import jsonify
+from _15thnight.forms import (
+    LoginForm, ChangePasswordForm, UpdateProfileForm, csrf_protect
+)
+from _15thnight.models import Category, User
+from _15thnight.util import jsonify, api_error
 
 account_api = Blueprint('account_api', __name__)
 
@@ -37,10 +41,37 @@ def logout():
     return jsonify(csrf_token=csrf_protect._get_csrf_token())
 
 
-@account_api.route('/reset_password', methods=['POST'])
+@account_api.route('/reset-password', methods=['POST'])
 def reset_password():
     """
     Send a password reset email.
     """
     # TODO
     return 'Not Implemented', 501
+
+
+@account_api.route('/change-password', methods=['POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm(request.json_multidict)
+    if not form.validate_on_submit():
+        return api_error(form.errors)
+    if not current_user.check_password(form.current.data):
+        return api_error(dict(form=['Current password is incorrect.']))
+    current_user.set_password(form.new_password.data)
+    current_user.save()
+    return '', 200
+
+
+@account_api.route('/update-profile', methods=['POST'])
+@login_required
+def update_profile():
+    form = UpdateProfileForm(request.json_multidict)
+    if not form.validate_on_submit():
+        return api_error(form.errors)
+    current_user.email = form.email.data
+    current_user.phone_number = form.phone_number.data
+    if current_user.is_provider:
+        current_user.categories = Category.get_by_ids(form.categories.data)
+    current_user.save()
+    return jsonify(current_user)

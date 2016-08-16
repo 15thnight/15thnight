@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import InputField from 'form/InputField';
+import { InputField } from 'form';
 import {
     getAlert, sendResponse, clearFormStatus
 } from 'actions';

@@ -1,5 +1,6 @@
 export const LOGIN_USER = 'login_user';
 export const LOGOUT_USER = 'logout_user';
+export const UPDATE_USER = 'update_user';
 
 export const SUBMIT_FORM_SUCCESS = 'submit_form_sucess';
 export const SUBMIT_FORM_ERROR = 'submit_form_error';

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import {
-    LOGIN_USER, LOGOUT_USER,
+    LOGIN_USER, LOGOUT_USER, UPDATE_USER,
     GET_USERS, GET_USER, GET_USER_ERROR,
     SUBMIT_FORM_SUCCESS, SUBMIT_FORM_ERROR, CLEAR_FORM_STATUS,
     GET_ALERTS, GET_ALERT, GET_ALERT_ERROR,
@@ -395,6 +395,63 @@ export function sendResponse(data) {
         )
     }
 }
+
+export function changePassword(data) {
+    let promise = request.post('/api/v1/change-password', data);
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: SUBMIT_FORM_SUCCESS,
+                    message: 'Successfully changed password.'
+                });
+            },
+            err => {
+                if (err.response.data && err.response.data.error) {
+                    return dispatch({
+                        type: SUBMIT_FORM_ERROR,
+                        error: err.response.data.error
+                    });
+                }
+                dispatch({
+                    type: APP_ERROR,
+                    message: 'An unknown error occured while changing password.'
+                })
+            }
+        )
+    }
+}
+
+export function updateProfile(data) {
+    let promise = request.post('/api/v1/update-profile', data);
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: SUBMIT_FORM_SUCCESS,
+                    message: 'Successfully updated profile.'
+                });
+                dispatch({
+                    type: UPDATE_USER,
+                    current_user: res.data
+                })
+            },
+            err => {
+                if (err.response.data && err.response.data.error) {
+                    return dispatch({
+                        type: SUBMIT_FORM_ERROR,
+                        error: err.response.data.error
+                    });
+                }
+                dispatch({
+                    type: APP_ERROR,
+                    message: 'An unknown error occured while updating profile.'
+                })
+            }
+        )
+    }
+}
+
 
 export function clearFlash(id) {
     return {

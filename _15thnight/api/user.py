@@ -68,7 +68,6 @@ def update_user(user_id):
         user.set_password(form.password.data)
     user.phone_number = form.phone_number.data
     user.role = form.role.data
-    # TODO: update capabilities if provider
     user.save()
     return jsonify(user)
 

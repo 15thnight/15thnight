@@ -11,6 +11,8 @@ import LogoutPage from 'pages/LogoutPage';
 import AboutPage from 'pages/AboutPage';
 import RespondToPage from 'pages/RespondToPage';
 import DashboardPage from 'pages/DashboardPage';
+import ChangePasswordPage from 'pages/ChangePasswordPage';
+import EditProfilePage from 'pages/EditProfilePage';
 import configureStore from 'store/Store';
 
 import 'style/bootstrap.theme'
@@ -32,6 +34,8 @@ render(
                 // User Routes
                 <Route path="/login" component={LoginPage} />
                 <Route path="/logout" component={LogoutPage} />
+                <Route path="/edit-profile" component={EditProfilePage} />
+                <Route path="/change-password" component={ChangePasswordPage} />
             </Route>
         </Router>
     </Provider>

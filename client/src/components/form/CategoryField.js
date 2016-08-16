@@ -24,9 +24,7 @@ class CategoryField extends React.Component {
         if (categories.indexOf(id) < 0) {
             categories.push(id)
         } else {
-            categories = categories.filter(category => {
-                return category !== id;
-            });
+            categories = categories.filter(category => category !== id);
         }
         this.setState({
             categories: categories.slice(0)

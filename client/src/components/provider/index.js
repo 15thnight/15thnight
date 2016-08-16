@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { getAlerts } from 'actions';
-import AlertTable from 'table/AlertTable';
+import { AlertTable } from 'table';
 
 class ProviderDashboard extends React.Component {
 

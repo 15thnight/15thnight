@@ -1,10 +1,10 @@
 from flask_wtf import Form
 from flask_wtf.csrf import CsrfProtect
 from wtforms import (
-    BooleanField, IntegerField, PasswordField, SelectField,
+    IntegerField, PasswordField, SelectField,
     SelectMultipleField, TextAreaField, TextField
 )
-from wtforms.validators import DataRequired, Length, Email, EqualTo, Required
+from wtforms.validators import DataRequired, Email, Length
 
 from _15thnight.models import Category
 
@@ -80,6 +80,12 @@ class AlertForm(Form):
     gender = SelectField('Gender', choices=GENDERS)
     age = IntegerField('Age')
     needs = category_field
+
+    def __init__(self, *args, **kwargs):
+        super(AlertForm, self).__init__(*args, **kwargs)
+        self.needs.choices = [
+            (category.id, category.name) for category in Category.all()
+        ]
 
 
 class ResponseForm(Form):

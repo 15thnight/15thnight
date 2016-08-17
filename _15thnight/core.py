@@ -1,9 +1,7 @@
 from flask.ext.login import current_user
 
 from _15thnight.queue import queue_send_message
-from _15thnight.email_client import send_email
 from _15thnight.models import Alert, Category, Response, User
-from _15thnight.twilio_client import send_sms
 
 try:
     from config import HOST_NAME
@@ -48,9 +46,10 @@ def respond_to_alert(provider, message, alert):
     if provider.phone_number:
         body += ", %s" % provider.phone_number
 
-    needs = [ cat.id for cat in alert.categories ]
+    needs = [cat.id for cat in alert.categories]
     abilities = [
-        cat.name for cat in provider.categories if cat.id in needs ]
+        cat.name for cat in provider.categories if cat.id in needs
+    ]
 
     body += (" is availble for: %s\nMessage: %s") % (
         ", ".join(abilities), message)

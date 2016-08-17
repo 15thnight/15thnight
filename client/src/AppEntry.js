@@ -13,6 +13,8 @@ import RespondToPage from 'pages/RespondToPage';
 import DashboardPage from 'pages/DashboardPage';
 import ChangePasswordPage from 'pages/ChangePasswordPage';
 import EditProfilePage from 'pages/EditProfilePage';
+import ForgotPasswordPage from 'pages/ForgotPasswordPage';
+import ResetPasswordPage from 'pages/ResetPasswordPage';
 import configureStore from 'store/Store';
 
 import 'style/bootstrap.theme'
@@ -36,6 +38,8 @@ render(
                 <Route path="/logout" component={LogoutPage} />
                 <Route path="/edit-profile" component={EditProfilePage} />
                 <Route path="/change-password" component={ChangePasswordPage} />
+                <Route path="/forgot-password" component={ForgotPasswordPage} />
+                <Route path="/reset-password/:email/:token" component={ResetPasswordPage} />
             </Route>
         </Router>
     </Provider>

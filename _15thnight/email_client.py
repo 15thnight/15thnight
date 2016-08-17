@@ -1,3 +1,5 @@
+# DEPRECATED
+# May be refactored later to support AWS instead of standard SMTP
 import boto.ses
 try:
     from config import (

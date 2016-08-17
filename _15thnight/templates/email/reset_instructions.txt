@@ -1,0 +1,5 @@
+Click the link below to reset your password:
+
+{{ link }}
+
+If you didn't request a password reset, please disregard this email.

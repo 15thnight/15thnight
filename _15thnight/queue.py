@@ -1,7 +1,9 @@
 from celery import Celery
+
+from _15thnight.email import mailer
+from _15thnight.email_client import send_email
 from _15thnight.twilio_client import send_sms
 
-from _15thnight.email_client import send_email
 
 try:
     from config import CELERY_BROKER
@@ -33,3 +35,8 @@ def queue_send_message(email, number, subject, body):
     if number:
         send_sms(to_number=number, body=body)
     send_email(email, subject, body)
+
+@celery.task
+def queue_send_email(message):
+    print message
+    mailer.send(message)

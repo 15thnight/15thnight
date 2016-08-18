@@ -3,13 +3,10 @@ import uuid
 from datetime import datetime, timedelta
 
 from sqlalchemy import (
-    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc,
-    Boolean
+    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc
 )
 from sqlalchemy.orm import relationship
-from werkzeug.security import (
-    check_password_hash, generate_password_hash, safe_str_cmp
-)
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from _15thnight.database import Model
 
@@ -210,6 +207,7 @@ class Alert(Model):
             age=self.age,
             needs=self.categories
         )
+
 
 class Category(Model):
     """Category/type of provided help representation."""

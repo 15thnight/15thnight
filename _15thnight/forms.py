@@ -23,7 +23,7 @@ GENDERS = [
 
 user_email_feild = TextField(
     'Email Address',
-    validators=[DataRequired(), Email(message=None), Length(min=6, max=40)]
+    validators=[DataRequired(), Email(message=None), Length(min=6, max=255)]
 )
 
 user_phone_number_field = TextField(

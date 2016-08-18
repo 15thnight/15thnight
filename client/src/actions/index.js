@@ -452,6 +452,61 @@ export function updateProfile(data) {
     }
 }
 
+export function forgotPassword(data) {
+    let promise = request.post('/api/v1/forgot-password', data);
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: SUBMIT_FORM_SUCCESS,
+                    message: 'If an email was found at that address, a password reset email has been sent.'
+                });
+            },
+            err => {
+                if (err.response.data && err.response.data.error) {
+                    return dispatch({
+                        type: SUBMIT_FORM_ERROR,
+                        error: err.response.data.error
+                    });
+                }
+                dispatch({
+                    type: APP_ERROR,
+                    message: 'An unknown error occured while sending password reset email.'
+                })
+            }
+        )
+    }
+}
+
+export function resetPassword(data) {
+    let promise = request.post('/api/v1/reset-password', data);
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: SUBMIT_FORM_SUCCESS,
+                    message: 'Password reset successfully.'
+                });
+                dispatch({
+                    type: UPDATE_USER,
+                    current_user: res.data
+                });
+            },
+            err => {
+                if (err.response.data && err.response.data.error) {
+                    return dispatch({
+                        type: SUBMIT_FORM_ERROR,
+                        error: err.response.data.error
+                    });
+                }
+                dispatch({
+                    type: APP_ERROR,
+                    message: 'An unknown error occured while resetting password.'
+                })
+            }
+        )
+    }
+}
 
 export function clearFlash(id) {
     return {

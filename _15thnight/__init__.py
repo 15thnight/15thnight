@@ -14,12 +14,9 @@ from _15thnight import database, queue
 from _15thnight.api import (
     account_api, alert_api, category_api, response_api, user_api
 )
-from _15thnight.core import send_out_alert, respond_to_alert
-from _15thnight.email_client import send_email, verify_email
-from _15thnight.models import Alert, Category, User
+from _15thnight.email import mailer
 from _15thnight.forms import csrf_protect
-from _15thnight.models import User, Alert, Response
-from _15thnight.twilio_client import send_sms
+from _15thnight.models import User
 from _15thnight.util import ExtensibleJSONEncoder
 
 
@@ -47,11 +44,13 @@ login_manager.login_view = 'login'
 
 csrf_protect.init_app(app)
 
+mailer.init_app(app)
+
 
 @login_manager.user_loader
 def load_user(id):
     """User loading needed by Flask-Login."""
-    return User.query.get(int(id))
+    return User.get(int(id))
 
 
 @app.teardown_appcontext
@@ -60,20 +59,11 @@ def shutdown_session(response):
     database.db_session.remove()
 
 
-if not app.config.get('DEBUG'):
-    @app.errorhandler(404)
-    @app.errorhandler(Exception)
-    def error_page(error):
-        """Generic Error handling."""
-        code = 500
-        if isinstance(error, HTTPException):
-            code = error.code
-        return render_template("error.html", error_code=code), code
-
 @app.before_request
 def before_request():
     json_multidict = MultiDict(request.json) if request.json else None
     setattr(request, 'json_multidict', json_multidict)
+
 
 @app.route('/')
 @app.route('/<path:path>')
@@ -84,10 +74,12 @@ def index(path=None):
     ))
     return render_template('index.html', state=state)
 
+
 @app.route('/logout')
 def logout():
     logout_user()
     return redirect('/')
+
 
 @app.route('/health')
 def healthcheck():

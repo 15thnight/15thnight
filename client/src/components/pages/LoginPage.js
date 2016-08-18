@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { Link, withRouter } from 'react-router';
 
 import { loginUser } from 'actions';
 import { InputField } from 'form';
@@ -49,8 +49,8 @@ class LoginPage extends React.Component {
 
     render() {
         return (
-            <div className="col-md-6 col-md-offset-3">
-                <h1 className="text-center">Please Sign In</h1>
+            <div className="col-md-6 col-md-offset-3 text-center">
+                <h1>Please Sign In</h1>
                 <br/>
                 <form className="form-horizontal" onSubmit={this.handleSubmit.bind(this)}>
                     <InputField
@@ -63,7 +63,10 @@ class LoginPage extends React.Component {
                       label="Password"
                       value={this.state.password}
                       name="password"
-                      onChange={this.handleInputChange.bind(this)} />
+                      onChange={this.handleInputChange.bind(this)}>
+                        <Link to="/forgot-password">Forgot your password?</Link>
+                    </InputField>
+                    <br/>
                     <div className="text-center">
                         <button className="btn btn-success" type="submit">Sign In</button>
                     </div>

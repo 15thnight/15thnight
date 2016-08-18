@@ -1,11 +1,15 @@
 """Data Models."""
+import uuid
 from datetime import datetime, timedelta
 
 from sqlalchemy import (
-    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc
+    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc,
+    Boolean
 )
 from sqlalchemy.orm import relationship
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import (
+    check_password_hash, generate_password_hash, safe_str_cmp
+)
 
 from _15thnight.database import Model
 
@@ -29,6 +33,8 @@ class User(Model):
     # Categories only apply to providers
     categories = relationship(
         "Category", secondary="user_categories", backref="users")
+    reset_token = Column(String(255))
+    reset_created_at = Column(DateTime)
 
     def __init__(self, email, password, phone_number, categories, role):
         self.email = email.lower()
@@ -40,6 +46,10 @@ class User(Model):
     def check_password(self, password):
         """Check a user's password (includes salt)."""
         return check_password_hash(self.password, password)
+
+    def generate_reset_token(self):
+        self.reset_token = str(uuid.uuid4())
+        self.reset_created_at = datetime.utcnow()
 
     def provider_capabilities(self):
         categories = []

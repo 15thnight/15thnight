@@ -1,0 +1,1 @@
+Your 15th Night password was reset from {{ ip }} at {{ time }}.

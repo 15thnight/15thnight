@@ -86,6 +86,16 @@ class ResponseForm(Form):
     message = TextAreaField('Message', validators=[DataRequired()])
 
 
+class ForgotPasswordForm(Form):
+    email = user_email_feild
+
+
+class ResetPasswordForm(Form):
+    email = TextField('Email', validators=[DataRequired()])
+    token = TextField("Token", validators=[DataRequired()])
+    password = user_password_field
+
+
 class ChangePasswordForm(Form):
     current = user_password_field
     new_password = user_password_field

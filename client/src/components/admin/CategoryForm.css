@@ -1,0 +1,8 @@
+:local(.sortColumn) {
+    width: 77px;
+    text-align: center;
+}
+
+:local(.nameColumn) {
+    padding-top: 14px !important;
+}

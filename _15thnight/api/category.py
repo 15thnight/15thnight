@@ -1,8 +1,8 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask.ext.login import login_required
 
-from _15thnight.forms import AddCategoryForm
-from _15thnight.models import Category
+from _15thnight.forms import CategoryForm
+from _15thnight.models import Category, Service
 from _15thnight.util import required_access, jsonify, api_error
 
 category_api = Blueprint('category_api', __name__)
@@ -33,7 +33,7 @@ def create_category():
     """
     Create a category. Must be an admin.
     """
-    form = AddCategoryForm()
+    form = CategoryForm()
     if not form.validate_on_submit():
         return api_error(form.errors)
 
@@ -55,7 +55,7 @@ def update_category(category_id):
     """
     Update an category.
     """
-    form = AddCategoryForm()
+    form = CategoryForm()
     if not form.validate_on_submit():
         return api_error(form.errors)
     category = Category.get(category_id)
@@ -65,8 +65,30 @@ def update_category(category_id):
     category.name = form.name.data
     category.description = form.description.data
 
+    if 'services' in request.json:
+        services = request.json['services']
+        for data in services:
+            service = Service.get(data['id'])
+            service.sort_order = data['sort_order']
+            service.save()
+
     category.save()
     return '', 200
+
+@category_api.route('/category/sort_order', methods=['PUT'])
+@required_access('admin')
+def set_category_sort():
+    """
+    Sets the order of the categories.
+    """
+    if 'categories' not in request.json:
+        return api_error('Invalid form.')
+    categories = request.json['categories']
+    for data in categories:
+        category = Category.get(data['id'])
+        category.sort_order = data['sort_order']
+        category.save()
+    return jsonify(Category.all())
 
 
 @category_api.route('/category/<int:category_id>', methods=['DELETE'])

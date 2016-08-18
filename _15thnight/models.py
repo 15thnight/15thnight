@@ -27,18 +27,18 @@ class User(Model):
     password = Column(Text, nullable=False)
     phone_number = Column(String(20), nullable=False)
     role = Column(Enum('admin', 'advocate', 'provider'), default='advocate')
-    # Categories only apply to providers
-    categories = relationship(
-        "Category", secondary="user_categories", backref="users")
+    # Services only apply to providers
+    services = relationship(
+        "Service", secondary="user_services", backref="providers")
     reset_token = Column(String(255))
     reset_created_at = Column(DateTime)
 
-    def __init__(self, email, password, phone_number, categories, role):
+    def __init__(self, email, password, phone_number, services, role):
         self.email = email.lower()
         self.set_password(password)
         self.phone_number = phone_number
         self.role = role
-        self.categories = categories
+        self.services = services
 
     def check_password(self, password):
         """Check a user's password (includes salt)."""
@@ -48,12 +48,24 @@ class User(Model):
         self.reset_token = str(uuid.uuid4())
         self.reset_created_at = datetime.utcnow()
 
-    def provider_capabilities(self):
-        categories = []
-        for category in self.categories:
-            categories.append(category.name)
+    def get_alerts(self):
+        return Alert.query.filter(Alert.user == self) \
+            .order_by(desc(Alert.created_at)).all()
 
-        return ", ".join(categories)
+    def get_id(self):
+        """Get the User id in unicode or ascii."""
+        try:
+            return unicode(self.id)
+        except NameError:
+            return str(self.id)
+
+    def set_password(self, password):
+        """Using pbkdf2:sha512, hash 'password'."""
+        self.password = generate_password_hash(
+            password=password,
+            method='pbkdf2:sha512',
+            salt_length=128
+        )
 
     @property
     def is_admin(self):
@@ -82,42 +94,24 @@ class User(Model):
         """Anonimity check."""
         return False
 
-    def get_id(self):
-        """Get the User id in unicode or ascii."""
-        try:
-            return unicode(self.id)
-        except NameError:
-            return str(self.id)
-
     @classmethod
     def get_users(cls):
         return cls.query.order_by(desc(cls.created_at)).all()
 
     @classmethod
-    def users_in_categories(cls, categories):
-        """Return a list of users in the passed in categories."""
-        users = cls.query.join(cls.categories) \
-            .filter(Category.id.in_(categories)) \
-            .distinct()
-
-        return users
-
-    def get_alerts(self):
-        return Alert.query.filter(
-            Alert.user == self).order_by(desc(Alert.created_at)).all()
+    def providers_with_services(cls, services):
+        """Return a list of users in the passed in services."""
+        return cls.query \
+            .join(cls.services) \
+            .filter(Service.id.in_(services)) \
+            .filter(cls.role == 'provider') \
+            .distinct() \
+            .all()
 
     @classmethod
     def get_by_email(cls, email):
         """Return user based on email."""
         return cls.query.filter(cls.email == email).first()
-
-    def set_password(self, password):
-        """Using pbkdf2:sha512, hash 'password'."""
-        self.password = generate_password_hash(
-            password=password,
-            method='pbkdf2:sha512',
-            salt_length=128
-        )
 
     def to_json(self):
         return dict(
@@ -126,7 +120,7 @@ class User(Model):
             role=self.role,
             phone_number=self.phone_number,
             created_at=self.created_at,
-            capabilities=[dict(name=c.name, id=c.id) for c in self.categories]
+            services=[dict(name=s.name, id=s.id) for s in self.services]
         )
 
     def __repr__(self):
@@ -147,15 +141,8 @@ class Alert(Model):
     age = Column(Integer, nullable=False, default=0)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     user = relationship('User', backref='alerts')
-    categories = relationship(
-        "Category", secondary="alert_categories", backref="alerts")
-
-    def get_needs(self):
-        categories = []
-        for category in self.categories:
-            categories.append(category.name)
-
-        return ", ".join(categories)
+    needs = relationship(
+        "Service", secondary="alert_services", backref="alerts")
 
     @classmethod
     def get_active_alerts_for_provider(cls, user):
@@ -191,6 +178,13 @@ class Alert(Model):
     def get_alerts(cls):
         return cls.query.order_by(desc(Alert.created_at)).all()
 
+    def get_needs(self):
+        needs = []
+        for category in self.needs:
+            needs.append(category.name)
+
+        return ", ".join(needs)
+
     def get_user_response(self, user):
         response = Response.get_by_user_and_alert(user, self)
         if response:
@@ -205,7 +199,7 @@ class Alert(Model):
             description=self.description,
             gender=self.gender,
             age=self.age,
-            needs=self.categories
+            needs=self.needs
         )
 
 
@@ -216,27 +210,54 @@ class Category(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, unique=True)
     description = Column(Text)
-
-    def __init__(self, name, description):
-        self.name = name
-        self.description = description
+    sort_order = Column(Integer, nullable=False, default=0)
 
     @classmethod
-    def get_by_ids(cls, id_list):
-        if len(id_list) == 0:
-            return []
-        return cls.query.filter(cls.id.in_(id_list)).all()
+    def all(cls):
+        return cls.query.order_by(cls.sort_order).all()
 
     @classmethod
     def get_by_name(cls, name):
-        named = cls.query.filter(cls.name == name).first()
-        return named
+        return cls.query.filter(cls.name == name).first()
 
     def to_json(self):
         return dict(
             id=self.id,
             name=self.name,
-            description=self.description
+            description=self.description,
+            services=Service.get_by_category(self.id),
+            sort_order=self.sort_order
+        )
+
+
+class Service(Model):
+    """Service of provider."""
+    __tablename__ = 'service'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False, unique=True)
+    description = Column(Text)
+    category_id = Column(ForeignKey('categories.id'), nullable=False)
+    category = relationship('Category', backref='services')
+    sort_order = Column(Integer, nullable=False, default=0)
+
+    @classmethod
+    def get_by_category(cls, category_id):
+        return cls.query.filter(cls.category_id == category_id) \
+            .order_by(cls.sort_order) \
+            .all()
+
+    def to_json(self):
+        return dict(
+            id=self.id,
+            name=self.name,
+            description=self.description,
+            category=dict(
+                id=self.category.id,
+                name=self.category.name,
+                description=self.category.description
+            ),
+            sort_order=self.sort_order
         )
 
 
@@ -267,13 +288,13 @@ class Response(Model):
 
 
 user_categories = Table(
-    "user_categories", Model.metadata,
-    Column("user_id", Integer, ForeignKey("users.id")),
-    Column("category_id", Integer, ForeignKey("categories.id"))
+    'user_services', Model.metadata,
+    Column('user_id', Integer, ForeignKey('users.id')),
+    Column('service_id', Integer, ForeignKey('service.id'))
 )
 
-alert_categories = Table(
-    "alert_categories", Model.metadata,
-    Column("alert_id", Integer, ForeignKey("alerts.id")),
-    Column("category_id", Integer, ForeignKey("categories.id"))
+alert_services = Table(
+    'alert_services', Model.metadata,
+    Column('alert_id', Integer, ForeignKey('alerts.id')),
+    Column('service_id', Integer, ForeignKey('service.id'))
 )

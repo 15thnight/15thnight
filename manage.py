@@ -67,5 +67,23 @@ def seed_db():
     User('admin@test.com', '1234', '5415551234', [], 'admin').save()
 
 
+@manager.command
+@manager.option(
+    '-n', '--number', help='Twillio Test Phone Number (e.g. 2125553456)')
+def twillio_test(number=None):
+    """Quick sms test to make sure twillio is functioning as expected."""
+    from _15thnight.twilio_client import send_sms
+
+    with app.app_context():
+        # This default test number will force twillio to fail, but still be
+        # a valid api call
+        if not number:
+            phone_number = app.config.get("TWILIO_TEST_NUMBER", "2125553456")
+        else:
+            phone_number = number
+
+        send_sms(phone_number, "Are we operational?")
+
+
 if __name__ == '__main__':
     manager.run()

@@ -1,7 +1,5 @@
 from flask import Blueprint
-from flask.ext.login import (
-    current_user, login_required, LoginManager
-)
+from flask.ext.login import current_user, login_required
 
 from _15thnight.core import send_out_alert
 from _15thnight.forms import AlertForm

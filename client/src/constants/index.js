@@ -18,10 +18,10 @@ export const GET_CATEGORY = 'get_category';
 export const GET_CATEGORY_ERROR = 'get_category_error';
 export const GET_CATEGORIES = 'get_categories';
 export const GETTING_CATEGORIES = 'getting_categories';
-export const SUBMIT_CATEGORY_SUCCESS = 'submit_category_success';
-export const SUBMIT_CATEGORY_SUCCESS_ACK = 'submit_category_success_ack';
-export const SUBMIT_CATEGORY_ERROR = 'submit_category_error';
-export const DELETE_CATEGORY_SUCCESS = 'delete_category';
+
+export const GET_SERVICE = 'get_service';
+export const GET_SERVICE_ERROR = 'get_service_error';
+export const GET_SERVICES = 'get_services';
 
 export const SUBMIT_USER_SUCCESS = 'create_user_success';
 export const SUBMIT_USER_SUCCESS_ACK = 'create_user_success_ack';

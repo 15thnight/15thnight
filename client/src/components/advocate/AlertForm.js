@@ -77,13 +77,6 @@ class AlertForm extends React.Component {
                     </div> }
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
                     <InputField
-                      type="textarea"
-                      label="Description"
-                      name="description"
-                      value={this.state.description}
-                      errors={this.state.error.description}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <InputField
                       label="Age"
                       name="age"
                       value={this.state.age}
@@ -101,6 +94,13 @@ class AlertForm extends React.Component {
                       label="Needs:"
                       value={this.state.categories}
                       onCategoryChange={this.handleCategoryChange.bind(this)} />
+                    <InputField
+                      type="textarea"
+                      label="Description"
+                      name="description"
+                      value={this.state.description}
+                      errors={this.state.error.description}
+                      onChange={this.handleInputChange.bind(this)} />
                     <button className="btn btn-success" type="submit">
                         Send Alert
                     </button>

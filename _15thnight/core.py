@@ -1,7 +1,7 @@
 from flask.ext.login import current_user
 
 from _15thnight.queue import queue_send_message
-from _15thnight.models import Alert, Category, Response, User
+from _15thnight.models import Alert, Service, Response, User
 
 try:
     from config import HOST_NAME
@@ -18,10 +18,10 @@ def send_out_alert(alert_form):
         gender=alert_form.gender.data,
         age=alert_form.age.data,
         user=current_user,
-        categories=Category.get_by_ids(alert_form.needs.data)
+        needs=Service.get_by_ids(alert_form.needs.data)
     )
     alert.save()
-    providers = User.users_in_categories(alert_form.needs.data)
+    providers = User.providers_with_services(alert_form.needs.data)
     for user in providers:
         body = ('%s, there is a new 15th night alert.\n'
                 'Go to %s/respond_to/%s to respond.') % (
@@ -46,13 +46,13 @@ def respond_to_alert(provider, message, alert):
     if provider.phone_number:
         body += ", %s" % provider.phone_number
 
-    needs = [cat.id for cat in alert.categories]
-    abilities = [
-        cat.name for cat in provider.categories if cat.id in needs
+    needs = [service.id for service in alert.needs]
+    services = [
+        service.name for service in provider.services if service.id in needs
     ]
 
     body += (" is availble for: %s\nMessage: %s") % (
-        ", ".join(abilities), message)
+        ", ".join(services), message)
 
     queue_send_message.apply_async(
         kwargs=dict(

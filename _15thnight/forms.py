@@ -6,7 +6,7 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Email, Length
 
-from _15thnight.models import Category
+from _15thnight.models import Category, Service
 
 
 csrf_protect = CsrfProtect()
@@ -36,8 +36,8 @@ user_password_field = PasswordField(
     validators=[DataRequired(), Length(min=2, max=25)]
 )
 
-category_field = SelectMultipleField(
-    "Categories",
+service_field = SelectMultipleField(
+    "Services",
     choices=[],
     coerce=int,
 )
@@ -52,12 +52,12 @@ class BaseUserForm(Form):
     email = user_email_feild
     phone_number = user_phone_number_field
     role = SelectField('User Role', choices=USER_ROLES)
-    categories = category_field
+    services = service_field
 
     def __init__(self, *args, **kwargs):
         super(BaseUserForm, self).__init__(*args, **kwargs)
-        self.categories.choices = [
-            (category.id, category.name) for category in Category.all()
+        self.services.choices = [
+            (service.id, service.name) for service in Service.all()
         ]
 
 
@@ -65,9 +65,21 @@ class FullUserForm(BaseUserForm):
     password = user_password_field
 
 
-class AddCategoryForm(Form):
+class CategoryForm(Form):
     name = TextField("Name", validators=[DataRequired()])
     description = TextAreaField("Description")
+
+
+class ServiceForm(Form):
+    name = TextField("Name", validators=[DataRequired()])
+    description = TextAreaField("Description")
+    category = SelectField('Category', coerce=int)
+
+    def __init__(self, *args, **kwargs):
+        super(ServiceForm, self).__init__(*args, **kwargs)
+        self.category.choices = [
+            (category.id, category.name) for category in Category.all()
+        ]
 
 
 class LoginForm(Form):
@@ -79,12 +91,12 @@ class AlertForm(Form):
     description = TextAreaField('Description', validators=[DataRequired()])
     gender = SelectField('Gender', choices=GENDERS)
     age = IntegerField('Age')
-    needs = category_field
+    needs = service_field
 
     def __init__(self, *args, **kwargs):
         super(AlertForm, self).__init__(*args, **kwargs)
         self.needs.choices = [
-            (category.id, category.name) for category in Category.all()
+            (service.id, service.name) for service in Service.all()
         ]
 
 
@@ -110,10 +122,10 @@ class ChangePasswordForm(Form):
 class UpdateProfileForm(Form):
     email = user_email_feild
     phone_number = user_phone_number_field
-    categories = category_field
+    services = service_field
 
     def __init__(self, *args, **kwargs):
         super(UpdateProfileForm, self).__init__(*args, **kwargs)
         self.categories.choices = [
-            (category.id, category.name) for category in Category.all()
+            (service.id, service.name) for service in Service.all()
         ]

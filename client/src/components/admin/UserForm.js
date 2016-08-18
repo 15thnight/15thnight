@@ -25,7 +25,7 @@ class UserForm extends React.Component {
             confirm: '',
             phone_number: '',
             role: 'advocate',
-            categories: [],
+            services: [],
             editingPassword: false,
             editingUser: {},
             error: {}
@@ -55,7 +55,7 @@ class UserForm extends React.Component {
                 email: user.email,
                 phone_number: user.phone_number,
                 role: user.role,
-                categories: user.capabilities.map(capability => capability.id),
+                services: user.services.map(service => service.id),
                 editingPassword: false,
                 editingUser: user
             });
@@ -70,8 +70,8 @@ class UserForm extends React.Component {
         this.props.deleteUser(this.props.id);
     }
 
-    handleCategoryChange(categories) {
-        this.setState({ categories });
+    handleCategoryChange(services) {
+        this.setState({ services });
     }
 
     handleInputChange(name, value) {
@@ -82,8 +82,8 @@ class UserForm extends React.Component {
         e.preventDefault();
         this.setState({ error: {} });
         let submitPassword = !this.props.id || this.state.editingPassword;
-        let { email, phone_number, role, categories, password, confirm } = this.state;
-        let data = { email, phone_number, role, categories }
+        let { email, phone_number, role, services, password, confirm } = this.state;
+        let data = { email, phone_number, role, services }
         if (submitPassword && password !== confirm) {
             let error = 'Passwords do not match.';
             return this.setState({
@@ -206,7 +206,7 @@ class UserForm extends React.Component {
                     <div style={capabilityStyle}>
                         <CategoryField
                           label="Provider Capabilities:"
-                          value={this.state.categories}
+                          value={this.state.services}
                           onCategoryChange={this.handleCategoryChange.bind(this)} />
                     </div>
                     <button className="btn btn-success" type="submit">

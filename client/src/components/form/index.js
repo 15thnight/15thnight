@@ -1,4 +1,4 @@
-import CategoryField from './CategoryField';
+import CategoryField from './CategoryField.js';
 import FormGroup from './FormGroup';
 import FormErrors from './FormErrors';
 import InputField from './InputField';

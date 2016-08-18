@@ -5,6 +5,8 @@ import { getCategories } from 'actions';
 
 import FormGroup from './FormGroup';
 
+import classes from './CategoryField.css';
+
 class CategoryField extends React.Component {
 
     constructor(props) {
@@ -37,24 +39,33 @@ class CategoryField extends React.Component {
             return (<FormGroup>Loading Categories...</FormGroup>);
         }
         let { label, value } = this.props;
-        let field = (
-            this.props.categories.map(category => {
-                return (
-                    <div key={category.id} className="checkbox">
-                        <label>
-                            <input
-                              type="checkbox"
-                              value={category.id}
-                              checked={value.indexOf(category.id) >= 0}
-                              onChange={this.handleCheckboxChange.bind(this)}/>
-                            {category.name}
-                        </label>
-                    </div>
-                );
-            })
-        )
         return (
-            <FormGroup label={label}>{field}</FormGroup>
+            <FormGroup label={label}>
+                {this.props.categories.map(category => {
+                    if (category.services.length === 0) {
+                        return null;
+                    }
+                    return (
+                        <div key={category.id} className={classes.categoryField}>
+                            <h4 className={classes.categoryHeader}>{category.name}</h4>
+                            {category.services.map(service => {
+                                return (
+                                    <div key={service.id} className={"checkbox " + classes.categoryCheckbox}>
+                                        <label>
+                                            <input
+                                              type="checkbox"
+                                              value={service.id}
+                                              checked={value.indexOf(service.id) >= 0}
+                                              onChange={this.handleCheckboxChange.bind(this)}/>
+                                            {service.name}
+                                        </label>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    );
+                })}
+            </FormGroup>
         );
     }
 }

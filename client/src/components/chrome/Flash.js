@@ -14,8 +14,8 @@ class Flash extends React.Component {
             <div>
                 {this.props.flash.map(flash => {
                     return (
-                        <div key={flash.id} className={"alert alert-dismissible alert-" + flash.type}>
-                            <button onClick={() => this.handleHideFlash(flash.id) }className="close">&times;</button>
+                        <div onClick={() => this.handleHideFlash(flash.id)} key={flash.id} className={"alert alert-dismissible alert-" + flash.type}>
+                            <button className="close">&times;</button>
                             <span>{ flash.message }</span>
                         </div>
                     );

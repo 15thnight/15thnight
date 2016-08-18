@@ -4,10 +4,12 @@ import { Link, withRouter } from 'react-router';
 
 import AdminWelcome from './AdminWelcome';
 import CategoryForm from './CategoryForm';
+import ServiceForm from './ServiceForm';
 import UserForm from './UserForm';
 import AlertHistory from './AlertHistory';
 import ManageUsers from './ManageUsers';
 import ManageCategories from './ManageCategories';
+import ManageServices from './ManageServices';
 
 class AdminDashboard extends React.Component {
 
@@ -19,7 +21,10 @@ class AdminDashboard extends React.Component {
                      'edit-user',
                      'manage-categories',
                      'edit-category',
-                     'add-category'].indexOf(page) < 0){
+                     'add-category',
+                     'manage-services',
+                     'edit-service',
+                     'add-service'].indexOf(page) < 0) {
             page = undefined;
         }
         return (
@@ -37,6 +42,9 @@ class AdminDashboard extends React.Component {
                     <li className={ page === 'manage-categories' && 'active'}>
                         <Link to="/dashboard/manage-categories">Manage Categories</Link>
                     </li>
+                    <li className={ page === 'manage-services' && 'active'}>
+                        <Link to="/dashboard/manage-services">Manage Services</Link>
+                    </li>
                 </ul>
                 {(() => {
                     switch(page) {
@@ -47,6 +55,9 @@ class AdminDashboard extends React.Component {
                         case 'manage-categories':  return (<ManageCategories/>);
                         case 'edit-category': return (<CategoryForm id={id} />);
                         case 'add-category': return (<CategoryForm />);
+                        case 'manage-services':  return (<ManageServices/>);
+                        case 'edit-service': return (<ServiceForm id={id} />);
+                        case 'add-service': return (<ServiceForm />);
                         default:              return (<AdminWelcome />);
                     }
                 })()}

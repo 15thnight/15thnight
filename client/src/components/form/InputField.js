@@ -58,8 +58,8 @@ class InputField extends React.Component {
         return (
             <FormGroup htmlFor={name} label={label}>
                 {input}
-                {this.props.children}
                 <FormErrors errors={errors} />
+                {this.props.children}
             </FormGroup>
         )
     }

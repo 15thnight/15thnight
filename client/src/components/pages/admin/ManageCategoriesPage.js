@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 
 import { getCategories, setCategorySort } from 'actions';
 
-import styles from './ManageCategories.css';
+import styles from './ManageCategoriesPage.css';
 
 
 class ManageCategories extends React.Component {
@@ -57,7 +57,7 @@ class ManageCategories extends React.Component {
             <div className="tab-pane" id="manage-users">
                 <h1 className="text-center">Manage Categories</h1>
                 <div className="text-right">
-                    <Link to="/dashboard/add-category" className="btn btn-success">Add Category</Link>
+                    <Link to="/add-category" className="btn btn-success">Add Category</Link>
                 </div>
                 <table className="table">
                     <thead>
@@ -90,7 +90,7 @@ class ManageCategories extends React.Component {
                                     </td>
                                     <td>{category.name}</td>
                                     <td>{category.description}</td>
-                                    <td><Link to={"/dashboard/edit-category/" + category.id} className="btn btn-primary">Edit</Link></td>
+                                    <td><Link to={"/edit-category/" + category.id} className="btn btn-primary">Edit</Link></td>
                                 </tr>
                             )
                         }) }

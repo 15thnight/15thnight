@@ -1,10 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { AlertTable } from 'table';
 import { getAlerts } from 'actions';
-import { AlertTable } from 'table'
 
-class AlertHistory extends React.Component {
+class AdvocateAlertHistoryPage extends React.Component {
 
     componentWillMount() {
         this.props.getAlerts();
@@ -13,11 +13,12 @@ class AlertHistory extends React.Component {
     render() {
         let { alerts } = this.props;
         return (
-            <AlertTable
-                alerts={alerts}
-                role='admin'
-                title='Alert History' />
-        )
+            <AlertTable 
+              alerts={alerts}
+              role='advocate'
+              title='Previously Sent Alerts'
+              description={''} />
+        );
     }
 }
 
@@ -27,6 +28,6 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps, {
+export default connect(mapStateToProps,{
     getAlerts
-})(AlertHistory);
+})(AdvocateAlertHistoryPage);

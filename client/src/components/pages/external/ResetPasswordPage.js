@@ -19,7 +19,7 @@ class ResetPasswordPage extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.submitFormSuccess) {
-            this.props.router.push('/dashboard');
+            this.props.router.push('/');
             return this.props.clearFormStatus();
         }
         if (nextProps.submitFormError) {

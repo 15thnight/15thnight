@@ -10,7 +10,7 @@ from _15thnight.forms import (
     LoginForm, ChangePasswordForm, UpdateProfileForm, ResetPasswordForm,
     ForgotPasswordForm, csrf_protect
 )
-from _15thnight.models import Category, User
+from _15thnight.models import Service, User
 from _15thnight.queue import queue_send_email
 from _15thnight.util import jsonify, api_error
 
@@ -25,6 +25,14 @@ account_api = Blueprint('account_api', __name__)
 reset_token_life = timedelta(hours=RESET_TOKEN_LIFE)
 
 
+@account_api.route('/current_user', methods=['GET'])
+def get_current_user():
+    user = None
+    if current_user.is_authenticated:
+        user = current_user
+    return jsonify(current_user=user)
+
+
 @account_api.route('/login', methods=['POST'])
 def login():
     """
@@ -32,14 +40,14 @@ def login():
     """
     # TODO: issue API key here instead of cookie
     form = LoginForm(request.json_multidict)
-    if form.validate_on_submit():
-        user = User.get_by_email(form.email.data.lower())
-        password = form.password.data
-        if user is not None and user.check_password(password):
-            login_user(user)
-            return jsonify(user)
-        return jsonify(error='Invalid username/password.', _status_code=401)
-    return jsonify(error='Invalid form data', _status_code=400)
+    if not form.validate_on_submit():
+        return api_error(form.errors)
+    user = User.get_by_email(form.email.data.lower())
+    password = form.password.data
+    if user is not None and user.check_password(password):
+        login_user(user)
+        return jsonify(user)
+    return api_error(dict(form=['Invalid username/password.']))
 
 
 @account_api.route('/logout', methods=['POST'])
@@ -144,6 +152,6 @@ def update_profile():
     current_user.email = form.email.data
     current_user.phone_number = form.phone_number.data
     if current_user.is_provider:
-        current_user.categories = Category.get_by_ids(form.categories.data)
+        current_user.services = Service.get_by_ids(form.services.data)
     current_user.save()
     return jsonify(current_user)

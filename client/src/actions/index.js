@@ -25,6 +25,27 @@ function dispatchAppError(message) {
     }
 }
 
+
+export function getCurrentUser(data) {
+    let promise = request.get('/api/v1/current_user?'+ new Date().getTime());
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: LOGIN_USER,
+                    current_user: res.data.current_user
+                });
+            },
+            err => {
+                dispatch({
+                    type: APP_ERROR,
+                    message: 'An unknown error occured while logging in.'
+                });
+            });
+    }
+}
+
+
 export function loginUser(data) {
     let promise = request.post('/api/v1/login', data);
     return dispatch => {
@@ -36,7 +57,13 @@ export function loginUser(data) {
                 });
             },
             err => {
-
+                if (err.response.data && err.response.data.error) {
+                    return dispatch({
+                        type: SUBMIT_FORM_ERROR,
+                        error: err.response.data.error
+                    });
+                }
+                dispatch(dispatchAppError('An unknown error occured while logging in.'));
             });
     }
 }

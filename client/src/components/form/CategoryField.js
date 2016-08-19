@@ -2,10 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { getCategories } from 'actions';
-
 import FormGroup from './FormGroup';
+import styles from './CategoryField.css';
 
-import classes from './CategoryField.css';
 
 class CategoryField extends React.Component {
 
@@ -46,11 +45,11 @@ class CategoryField extends React.Component {
                         return null;
                     }
                     return (
-                        <div key={category.id} className={classes.categoryField}>
-                            <h4 className={classes.categoryHeader}>{category.name}</h4>
+                        <div key={category.id} className={styles.categoryField}>
+                            <h4 className={styles.categoryHeader}>{category.name}</h4>
                             {category.services.map(service => {
                                 return (
-                                    <div key={service.id} className={"checkbox " + classes.categoryCheckbox}>
+                                    <div key={service.id} className={"checkbox " + styles.categoryCheckbox}>
                                         <label>
                                             <input
                                               type="checkbox"

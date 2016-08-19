@@ -9,7 +9,7 @@ import {
     clearFormStatus
 } from 'actions';
 
-import styles from './CategoryForm.css';
+import styles from './CategoryFormPage.css';
 
 class CategoryForm extends React.Component {
 
@@ -26,38 +26,31 @@ class CategoryForm extends React.Component {
     }
 
     componentWillMount() {
-        if (this.props.id) {
-            this.props.getCategory(this.props.id);
+        if (this.props.params.id) {
+            this.props.getCategory(this.props.params.id);
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.submitFormSuccess) {
-            this.props.router.push('/dashboard/manage-categories');
+            this.props.router.push('/manage-categories');
             return this.props.clearFormStatus();
         }
         if (nextProps.submitFormError) {
             this.setState({ error: nextProps.submitFormError });
             return this.props.clearFormStatus();
         }
-        if (this.props.id !== nextProps.id) {
-            return this.setState(this.defaultState);
-        }
-        if (this.props.id && nextProps.category[this.props.id]) {
-            let category = nextProps.category[this.props.id];
-            let { services } = category;
+        if (this.props.params.id && nextProps.category[this.props.params.id]) {
+            let category = nextProps.category[this.props.params.id];
+            let { name, description, services } = category;
             services.map((service, key) => service.internalSort = key);
-            this.setState({
-                name: category.name,
-                description: category.description,
-                services: category.services
-            });
+            this.setState({ name, description, services });
         }
     }
 
     handleDeleteClick() {
         if (confirm('Are you sure you wish to delete this category?')) {
-            this.props.deleteCategory(this.props.id);
+            this.props.deleteCategory(this.props.params.id);
         }
     }
 
@@ -68,17 +61,15 @@ class CategoryForm extends React.Component {
     handleFormSubmit(e) {
         e.preventDefault();
         this.setState({ error: {} });
-        let data = {
-            name: this.state.name,
-            description: this.state.description,
-            services: this.state.services.map(service => {
-                return {
-                    id: service.id,
-                    sort_order: service.internalSort
-                }
-            })
-        }
-        this.props.id ? this.props.editCategory(this.props.id, data) : this.props.createCategory(data);
+        let { name, description, services } = this.state;
+        services = services.map(service => {
+            return {
+                id: service.id,
+                sort_order: service.internalSort
+            }
+        })
+        let data = { name, description, services }
+        this.props.params.id ? this.props.editCategory(this.props.params.id, data) : this.props.createCategory(data);
     }
 
     handleSort(sorted_service, direction) {
@@ -133,9 +124,9 @@ class CategoryForm extends React.Component {
         let { services } = this.state;
         return (
             <div className="text-center row col-sm-offset-3 col-sm-6">
-                <h1>{ this.props.id ? "Edit" : "Create"} Category</h1>
+                <h1>{ this.props.params.id ? "Edit" : "Create"} Category</h1>
                 {
-                    this.props.id &&
+                    this.props.params.id &&
                     <p className="text-right">
                         <span className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Category</span>
                     </p>
@@ -159,7 +150,7 @@ class CategoryForm extends React.Component {
                         this.renderServices()
                     }
                     <button className="btn btn-success" type="submit">
-                        { this.props.id ? "Submit" : "Create" } Category
+                        { this.props.params.id ? "Submit" : "Create" } Category
                     </button>
                 </form>
             </div>

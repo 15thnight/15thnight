@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router';
 
 import { loginUser } from 'actions';
-import { InputField } from 'form';
+import { InputField, FormErrors } from 'form';
 
 class LoginPage extends React.Component {
 
@@ -12,25 +12,14 @@ class LoginPage extends React.Component {
         super(props);
         this.state = {
             email: '',
-            password: ''
-        }
-    }
-
-    checkForUserAndRedirect(props) {
-        if (props.current_user) {
-            this.props.router.push('/');
+            password: '',
+            error: {}
         }
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.current_user) {
-            this.props.router.push('/')
-        }
-    }
-
-    componentWillMount() {
-        if (this.props.current_user) {
-            this.props.router.push('/');
+        if (nextProps.submitFormError) {
+            this.setState({ error: nextProps.submitFormError })
         }
     }
 
@@ -40,11 +29,9 @@ class LoginPage extends React.Component {
 
     handleSubmit(e) {
         e.preventDefault();
-        let data = {
-            email: this.state.email,
-            password: this.state.password
-        }
-        this.props.loginUser(data);
+        this.setState({ error: {} });
+        let { email, password } = this.state;
+        this.props.loginUser({ email, password });
     }
 
     render() {
@@ -52,17 +39,20 @@ class LoginPage extends React.Component {
             <div className="col-md-6 col-md-offset-3 text-center">
                 <h1>Please Sign In</h1>
                 <br/>
+                <FormErrors errors={this.state.error.form} />
                 <form className="form-horizontal" onSubmit={this.handleSubmit.bind(this)}>
                     <InputField
                       label="Email"
                       value={this.state.email}
                       name="email"
+                      errors={this.state.error.email}
                       onChange={this.handleInputChange.bind(this)} />
                     <InputField
                       type="password"
                       label="Password"
                       value={this.state.password}
                       name="password"
+                      errors={this.state.error.password}
                       onChange={this.handleInputChange.bind(this)}>
                         <Link to="/forgot-password">Forgot your password?</Link>
                     </InputField>
@@ -81,7 +71,8 @@ class LoginPage extends React.Component {
 
 function mapStateToProps(state, ownProps) {
     return {
-        current_user: state.current_user
+        current_user: state.current_user,
+        submitFormError: state.submitFormError
     }
 }
 

@@ -16,7 +16,7 @@ class ManageUsers extends React.Component {
             <div className="tab-pane" id="manage-users">
                 <h1 className="text-center">Manage Users</h1>
                 <div className="text-right">
-                    <Link to="/dashboard/register-user" className="btn btn-success">Register User</Link>
+                    <Link to="/add-user" className="btn btn-success">Register User</Link>
                 </div>
                 <table className="table">
                     <thead>
@@ -44,7 +44,7 @@ class ManageUsers extends React.Component {
                                     <td>{ user.created_at }</td>
                                     <td>{ user.role }</td>
                                     <td>{ services }</td>
-                                    <td><Link to={"/dashboard/edit-user/" + user.id} className="btn btn-primary">Edit</Link></td>
+                                    <td><Link to={"/edit-user/" + user.id} className="btn btn-primary">Edit</Link></td>
                                 </tr>
                             )
                         }) }

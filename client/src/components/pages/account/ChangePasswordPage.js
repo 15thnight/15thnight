@@ -42,11 +42,11 @@ class ChangePassowrdPage extends React.Component {
         this.setState({ errors: {} });
         let { current, new_password, confirm } = this.state;
         if (new_password !== confirm) {
-            let error = "Passwords do not match.";
+            let error = ['Passwords do not match.'];
             return this.setState({
                 error: {
-                    new_password: [error],
-                    confirm: [error]
+                    new_password: error,
+                    confirm: error
                 }
             });
         }

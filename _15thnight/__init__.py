@@ -60,6 +60,16 @@ def before_request():
     setattr(request, 'json_multidict', json_multidict)
 
 
+@app.after_request
+def after_request(response):
+    response.headers['Cache-Control'] = (
+        'no-store, no-cache, must-revalidate, '
+        'post-check=0, pre-check=0, max-age=0'
+    )
+    response.headers['Expires'] = '-1'
+    return response
+
+
 @app.route('/')
 @app.route('/<path:path>')
 def index(path=None):

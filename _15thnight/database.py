@@ -34,10 +34,16 @@ class BaseModel(object):
         return cls.query.filter(cls.id.in_(id_list)).all()
 
     def save(self, commit=True):
-        """Creates or updates a model in the database"""
+        """
+        Creates or updates a model in the database.
+
+        Return self so the object may continue to be
+        used immidiately after saving.
+        """
         db_session.add(self)
         if commit:
             db_session.commit()
+        return self
 
     def delete(self, commit=True):
         """Removes a model from the database"""

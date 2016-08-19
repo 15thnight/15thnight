@@ -1,3 +1,5 @@
+import re
+
 from flask.ext.login import current_user
 
 from _15thnight.queue import queue_send_message
@@ -40,8 +42,6 @@ def respond_to_alert(provider, message, alert):
     """
     Send a response from a provider to an advocate.
     """
-    advocate = alert.user
-
     body = provider.email
     if provider.phone_number:
         body += ", %s" % provider.phone_number
@@ -63,6 +63,51 @@ def respond_to_alert(provider, message, alert):
         )
     )
 
-    response = Response(user=provider, alert=alert, message=message)
-    response.save()
-    return response
+    try:
+        response = Response(user=provider, alert=alert, message=message)
+        response.save()
+        return response
+    except:
+        return None
+
+
+def validate_text_response(msg):
+    """
+    Parse incoming response text and generate reply.
+
+    Example acceptable responses look like:
+        - yes 53
+        - y 53
+        - 18 yes
+        - 18 y
+
+    Numbers are alert IDs sent in the initial text
+    """
+    # One or more numeric matches
+    alert = "(\d+)"
+    # match y or yes
+    yes = "(?:y|yes)"
+    # alert_id - yes
+    ay = "%s\s+%s" % (alert, yes)
+    # yes - alert_id
+    ya = "%s\s+%s" % (yes, alert)
+
+    # Search for both formats in text
+    ay_acceptable = re.search("%s(.*)" % ay, msg)
+    ya_acceptable = re.search("%s(.*)" % ya, msg)
+
+    acceptable = ay_acceptable if ay_acceptable else ya_acceptable
+
+    # Prep data to return with
+    parsed_response = dict({
+        "alert_id": None,
+        "message": "",
+    })
+
+    # Grab the proper regex capture group based on text format
+    if acceptable:
+        parsed_response["alert_id"] = acceptable.groups()[0]
+        parsed_response["message"] = acceptable.groups()[1]
+
+    # Return the parsed message or a dict with None type values
+    return parsed_response

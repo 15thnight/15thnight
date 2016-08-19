@@ -3,12 +3,198 @@ import uuid
 from datetime import datetime, timedelta
 
 from sqlalchemy import (
-    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc
+    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text,
+    UniqueConstraint, desc
 )
 from sqlalchemy.orm import backref, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from _15thnight.database import Model
+
+
+class Alert(Model):
+    """Alert Model for alertering users."""
+
+    __tablename__ = 'alerts'
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    description = Column(String(200), nullable=False)
+    gender = Column(Enum(
+        'male', 'female', 'unspecified'), nullable=False, default='unspecified'
+    )
+    age = Column(Integer, nullable=False, default=0)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user = relationship('User', backref='alerts')
+    needs = relationship(
+        "Service", secondary="alert_services", backref="alerts")
+
+    @classmethod
+    def get_active_alerts_for_provider(cls, user):
+        time_to_filter_from = datetime.now() - timedelta(days=2)
+        alerts_past_two_days = cls.query\
+            .filter(cls.created_at > time_to_filter_from)\
+            .order_by(desc(cls.created_at)) \
+            .all()
+        responded_alerts = map(
+            lambda respond: respond.alert_id,
+            Response.query.filter(
+                Response.user_id == user.id,
+                Response.created_at > time_to_filter_from
+            )
+        )
+
+        for alert in alerts_past_two_days:
+            if alert.id in responded_alerts:
+                alerts_past_two_days.remove(alert)
+
+        return alerts_past_two_days
+
+    @classmethod
+    def get_user_alerts(cls, user):
+        return cls.query.filter(cls.user == user) \
+            .order_by(desc(Alert.created_at)).all()
+
+    @classmethod
+    def get_user_alert(cls, user, id):
+        return cls.query.filter(cls.user == user & cls.id == id).first()
+
+    @classmethod
+    def get_alerts(cls):
+        return cls.query.order_by(desc(Alert.created_at)).all()
+
+    def get_needs(self):
+        needs = []
+        for category in self.needs:
+            needs.append(category.name)
+
+        return ", ".join(needs)
+
+    def get_user_response(self, user):
+        response = Response.get_by_user_and_alert(user, self)
+        if response:
+            return response
+        return False
+
+    def to_json(self):
+        # datetime.isoformat does not append +0000 when using UTC, javascript
+        # needs it, or the date is parsed as if it were in the local timezone
+        ldt = self.created_at.isoformat()
+        localeDateTime = ldt if ldt[-6] == "+" else "%s+0000" % ldt
+
+        return dict(
+            id=self.id,
+            user=self.user,
+            created_at=localeDateTime,
+            description=self.description,
+            gender=self.gender,
+            age=self.age,
+            needs=self.needs
+        )
+
+
+class Category(Model):
+    """Category/type of provided help representation."""
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False, unique=True)
+    description = Column(Text)
+    sort_order = Column(Integer, nullable=False, default=0)
+
+    def __init__(self, name, description, sort_order=0):
+        self.name = name
+        self.description = description
+        self.sort_order = sort_order
+
+    @classmethod
+    def all(cls):
+        return cls.query.order_by(cls.sort_order).all()
+
+    @classmethod
+    def get_by_name(cls, name):
+        return cls.query.filter(cls.name == name).first()
+
+    def to_json(self):
+        return dict(
+            id=self.id,
+            name=self.name,
+            description=self.description,
+            services=Service.get_by_category(self.id),
+            sort_order=self.sort_order
+        )
+
+
+class Response(Model):
+    """Response model."""
+
+    __tablename__ = 'responses'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(ForeignKey('users.id'), nullable=False)
+    user = relationship('User', backref='responses')
+    created_at = Column(DateTime, default=datetime.utcnow)
+    alert_id = Column(ForeignKey('alerts.id'), nullable=False)
+    alert = relationship('Alert', backref='responses')
+    message = Column(Text, nullable=True, default='')
+
+    __table_args__ = (
+        UniqueConstraint('alert_id', 'user_id', name='_provider_response_uc'),
+    )
+
+    @classmethod
+    def get_by_user_and_alert(cls, user, alert):
+        return cls.query.filter(
+            cls.user == user).filter(cls.alert == alert).all()
+
+    def to_json(self):
+        return dict(
+            user=self.user,
+            created_at=self.created_at.strftime('%m/%d/%y %I:%M%p'),
+            alert=self.alert,
+            message=self.message
+        )
+
+
+class Service(Model):
+    """Service of provider."""
+    __tablename__ = 'service'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False, unique=True)
+    description = Column(Text)
+    category_id = Column(ForeignKey('categories.id'), nullable=False)
+    category = relationship(
+        'Category', backref=backref('services', cascade="all, delete-orphan"))
+    sort_order = Column(Integer, nullable=False, default=0)
+
+    def __init__(self, name, description, category, sort_order=0):
+        self.name = name
+        self.description = description
+        self.category = category
+        self.sort_order = sort_order
+
+    @classmethod
+    def get_by_category(cls, category_id):
+        return cls.query.filter(cls.category_id == category_id) \
+            .order_by(cls.sort_order) \
+            .all()
+
+    @classmethod
+    def get_by_name(cls, name):
+        return cls.query.filter(cls.name == name).first()
+
+    def to_json(self):
+        return dict(
+            id=self.id,
+            name=self.name,
+            description=self.description,
+            category=dict(
+                id=self.category.id,
+                name=self.category.name,
+                description=self.category.description
+            ),
+            sort_order=self.sort_order
+        )
 
 
 class User(Model):
@@ -130,193 +316,23 @@ class User(Model):
             services=[dict(name=s.name, id=s.id) for s in self.services]
         )
 
+    @classmethod
+    def get_by_number(cls, number):
+        return cls.query.filter(cls.phone_number == number).first()
+
     def __repr__(self):
         """Return <User: %(email)."""
         return '<User %s>' % (self.email)
 
 
-class Alert(Model):
-    """Alert Model for alertering users."""
-
-    __tablename__ = 'alerts'
-    id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    description = Column(String(200), nullable=False)
-    gender = Column(Enum(
-        'male', 'female', 'unspecified'), nullable=False, default='unspecified'
-    )
-    age = Column(Integer, nullable=False, default=0)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    user = relationship('User', backref='alerts')
-    needs = relationship(
-        "Service", secondary="alert_services", backref="alerts")
-
-    @classmethod
-    def get_active_alerts_for_provider(cls, user):
-        time_to_filter_from = datetime.now() - timedelta(days=2)
-        alerts_past_two_days = cls.query\
-            .filter(cls.created_at > time_to_filter_from)\
-            .order_by(desc(cls.created_at)) \
-            .all()
-        responded_alerts = map(
-            lambda respond: respond.alert_id,
-            Response.query.filter(
-                Response.user_id == user.id,
-                Response.created_at > time_to_filter_from
-            )
-        )
-
-        for alert in alerts_past_two_days:
-            if alert.id in responded_alerts:
-                alerts_past_two_days.remove(alert)
-
-        return alerts_past_two_days
-
-    @classmethod
-    def get_user_alerts(cls, user):
-        return cls.query.filter(cls.user == user) \
-            .order_by(desc(Alert.created_at)).all()
-
-    @classmethod
-    def get_user_alert(cls, user, id):
-        return cls.query.filter(cls.user == user & cls.id == id).first()
-
-    @classmethod
-    def get_alerts(cls):
-        return cls.query.order_by(desc(Alert.created_at)).all()
-
-    def get_needs(self):
-        needs = []
-        for category in self.needs:
-            needs.append(category.name)
-
-        return ", ".join(needs)
-
-    def get_user_response(self, user):
-        response = Response.get_by_user_and_alert(user, self)
-        if response:
-            return response
-        return False
-
-    def to_json(self):
-        # datetime.isoformat does not append +0000 when using UTC, javascript
-        # needs it, or the date is parsed as if it were in the local timezone
-        ldt = self.created_at.isoformat()
-        localeDateTime = ldt if ldt[-6] == "+" else "%s+0000" % ldt
-
-        return dict(
-            id=self.id,
-            user=self.user,
-            created_at=localeDateTime,
-            description=self.description,
-            gender=self.gender,
-            age=self.age,
-            needs=self.needs
-        )
-
-
-class Category(Model):
-    """Category/type of provided help representation."""
-    __tablename__ = "categories"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False, unique=True)
-    description = Column(Text)
-    sort_order = Column(Integer, nullable=False, default=0)
-
-    @classmethod
-    def all(cls):
-        return cls.query.order_by(cls.sort_order).all()
-
-    @classmethod
-    def get_by_name(cls, name):
-        return cls.query.filter(cls.name == name).first()
-
-    def to_json(self):
-        return dict(
-            id=self.id,
-            name=self.name,
-            description=self.description,
-            services=Service.get_by_category(self.id),
-            sort_order=self.sort_order
-        )
-
-
-class Service(Model):
-    """Service of provider."""
-    __tablename__ = 'service'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False, unique=True)
-    description = Column(Text)
-    category_id = Column(ForeignKey('categories.id'), nullable=False)
-    category = relationship(
-        'Category', backref=backref('services', cascade="all, delete-orphan"))
-    sort_order = Column(Integer, nullable=False, default=0)
-
-    @classmethod
-    def get_by_category(cls, category_id):
-        return cls.query.filter(cls.category_id == category_id) \
-            .order_by(cls.sort_order) \
-            .all()
-
-    @classmethod
-    def get_by_name(cls, name):
-        return cls.query.filter(cls.name == name).first()
-
-    def to_json(self):
-        return dict(
-            id=self.id,
-            name=self.name,
-            description=self.description,
-            category=dict(
-                id=self.category.id,
-                name=self.category.name,
-                description=self.category.description
-            ),
-            sort_order=self.sort_order
-        )
-
-
-class Response(Model):
-    """Response model."""
-
-    __tablename__ = 'responses'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(ForeignKey('users.id'))
-    user = relationship('User', backref='responses')
-    created_at = Column(DateTime, default=datetime.utcnow)
-    alert_id = Column(ForeignKey('alerts.id'))
-    alert = relationship('Alert', backref='responses')
-    message = Column(Text, nullable=True, default='')
-
-    @classmethod
-    def get_by_user_and_alert(cls, user, alert):
-        return cls.query.filter(
-            cls.user == user).filter(cls.alert == alert).all()
-
-    def to_json(self):
-        # datetime.isoformat does not append +0000 when using UTC, javascript
-        # needs it, or the date is parsed as if it were in the local timezone
-        ldt = self.created_at.isoformat()
-        localeDateTime = ldt if ldt[-6] == "+" else "%s+0000" % ldt
-
-        return dict(
-            user=self.user,
-            created_at=localeDateTime,
-            alert=self.alert,
-            message=self.message
-        )
-
-
 user_categories = Table(
     'user_services', Model.metadata,
-    Column('user_id', Integer, ForeignKey('users.id')),
-    Column('service_id', Integer, ForeignKey('service.id'))
+    Column('user_id', Integer, ForeignKey('users.id'), nullable=False),
+    Column('service_id', Integer, ForeignKey('service.id'), nullable=False)
 )
 
 alert_services = Table(
     'alert_services', Model.metadata,
-    Column('alert_id', Integer, ForeignKey('alerts.id')),
-    Column('service_id', Integer, ForeignKey('service.id'))
+    Column('alert_id', Integer, ForeignKey('alerts.id'), nullable=False),
+    Column('service_id', Integer, ForeignKey('service.id'), nullable=False)
 )

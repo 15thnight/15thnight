@@ -5,7 +5,8 @@ import {
     GET_USERS, GET_USER, GET_USER_ERROR,
     SUBMIT_FORM_SUCCESS, SUBMIT_FORM_ERROR, CLEAR_FORM_STATUS,
     GET_ALERTS, GET_ALERT, GET_ALERT_ERROR,
-    GETTING_CATEGORIES, GET_CATEGORIES, GET_CATEGORY, GET_CATEGORY_ERROR,
+    GETTING_CATEGORIES, GET_CATEGORIES, GET_CATEGORY,
+    GET_SERVICE, GET_SERVICES,
     CLEAR_FLASH, APP_ERROR
 } from 'constants';
 
@@ -16,6 +17,13 @@ const request_factory = csrfToken => {
 }
 
 let request = request_factory(document.getElementById('csrf').content);
+
+function dispatchAppError(message) {
+    return {
+        type: APP_ERROR,
+
+    }
+}
 
 export function loginUser(data) {
     let promise = request.post('/api/v1/login', data);
@@ -28,10 +36,7 @@ export function loginUser(data) {
                 });
             },
             err => {
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while logging in.'
-                });
+
             });
     }
 }
@@ -47,10 +52,7 @@ export function logoutUser() {
                 request = request_factory(res.data.csrf_token);
             },
             err => {
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while logging out.'
-                });
+                dispatch(dispatchAppError('An unknown error occured while logging out.'));
             }
         )
     }
@@ -67,10 +69,7 @@ export function getUsers() {
                 });
             },
             err => {
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An error occured fetching user list.'
-                });
+                dispatch(dispatchAppError('An error occured fetching user list.'));
             }
         )
     }
@@ -94,10 +93,7 @@ export function getUser(id) {
                         error: err.response.data.error
                     })
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An error occured fetching user list.'
-                });
+                dispatch(dispatchAppError('An error occured fetching user list.'));
             }
         )
     }
@@ -120,10 +116,7 @@ export function createUser(data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while creating user.'
-                });
+                dispatch(dispatchAppError('An unknown error occured while creating user.'));
             });
     }
 }
@@ -146,10 +139,7 @@ export function editUser(id, data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while creating user.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while creating user.'));
             });
     }
 }
@@ -165,10 +155,7 @@ export function deleteUser(id) {
                 })
             },
             err => {
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while deleting user.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while deleting user.'));
             });
     }
 }
@@ -191,10 +178,7 @@ export function getCategories() {
                 });
             },
             err => {
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while getting alerts.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while getting alerts.'));
             }
         )
     }
@@ -218,10 +202,7 @@ export function getCategory(id) {
                         error: err.response.data.error
                     })
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An error occured fetching user list.'
-                });
+                dispatch(dispatchAppError('An error occured fetching user list.'));
             }
         )
     }
@@ -244,10 +225,7 @@ export function createCategory(data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while creating category.'
-                });
+                dispatch(dispatchAppError('An unknown error occured while creating category.'));
             });
     }
 }
@@ -270,10 +248,7 @@ export function editCategory(id, data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while creating category.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while creating category.'));
             });
     }
 }
@@ -289,10 +264,7 @@ export function deleteCategory(id) {
                 });
             },
             err => {
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while deleting category.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while deleting category.'));
             });
     }
 }
@@ -308,10 +280,7 @@ export function getAlerts() {
                 });
             },
             err => {
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while getting alerts.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while getting alerts.'));
             }
         )
     }    
@@ -335,10 +304,7 @@ export function getAlert(id) {
                         error: err.response.data.error
                     })
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while getting alerts.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while getting alerts.'));
             }
         )
     }
@@ -361,10 +327,7 @@ export function sendAlert(data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while sending alert.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while sending alert.'));
             }
         )
     }
@@ -387,10 +350,7 @@ export function sendResponse(data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while sending response.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while sending response.'));
             }
         )
     }
@@ -413,10 +373,7 @@ export function changePassword(data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while changing password.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while changing password.'));
             }
         )
     }
@@ -443,10 +400,7 @@ export function updateProfile(data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while updating profile.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while updating profile.'));
             }
         )
     }
@@ -469,10 +423,7 @@ export function forgotPassword(data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while sending password reset email.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while sending password reset email.'));
             }
         )
     }
@@ -499,14 +450,114 @@ export function resetPassword(data) {
                         error: err.response.data.error
                     });
                 }
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while resetting password.'
-                })
+                dispatch(dispatchAppError('An unknown error occured while resetting password.'));
             }
         )
     }
 }
+
+export function getServices() {
+    let promise = request.get('/api/v1/service');
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: GET_SERVICES,
+                    categories: res.data
+                });
+            },
+            err => {
+                dispatch(dispatchAppError('An unknown error occured while getting services.'));
+            }
+        )
+    }
+}
+
+export function getService(id) {
+    let promise = request.get('/api/v1/service/' + id);
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: GET_SERVICE,
+                    id: id,
+                    category: res.data
+                });
+            },
+            err => {
+                if (err.response.data && err.response.data.error) {
+                    return dispatch({
+                        type: GET_SERVICE_ERROR,
+                        error: err.response.data.error
+                    })
+                }
+                dispatch(dispatchAppError('An error occured fetching service list.'));
+            }
+        )
+    }
+}
+
+export function createService(data) {
+    let promise = request.post('/api/v1/service', data);
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: SUBMIT_FORM_SUCCESS,
+                    message: 'Successfully created service'
+                });
+            },
+            err => {
+                if (err.response.data && err.response.data.error) {
+                    return dispatch({
+                        type: SUBMIT_FORM_ERROR,
+                        error: err.response.data.error
+                    });
+                }
+                dispatch(dispatchAppError('An unknown error occured while creating service.'));
+            });
+    }
+}
+
+export function editService(id, data) {
+    let promise = request.put('/api/v1/service/' + id, data);
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: SUBMIT_FORM_SUCCESS,
+                    message: 'Successfully updated service.'
+                })
+            },
+            err => {
+                // TODO: duplicate code here, simplify
+                if (err.response.data && err.response.data.error) {
+                    return dispatch({
+                        type: SUBMIT_FORM_ERROR,
+                        error: err.response.data.error
+                    });
+                }
+                dispatch(dispatchAppError('An unknown error occured while creating service.'));
+            });
+    }
+}
+
+export function deleteService(id) {
+    let promise = request.delete('/api/v1/service/' + id);
+    return dispatch => {
+        promise.then(
+            res => {
+                dispatch({
+                    type: SUBMIT_FORM_SUCCESS,
+                    message: 'Successfully deleted service.'
+                });
+            },
+            err => {
+                dispatch(dispatchAppError('An unknown error occured while deleting service.'));
+            });
+    }
+}
+
 
 export function clearFlash(id) {
     return {

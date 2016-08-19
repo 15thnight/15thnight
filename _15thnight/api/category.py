@@ -1,7 +1,7 @@
 from flask import Blueprint
 from flask.ext.login import login_required
 
-from _15thnight.forms import AddCategoryForm
+from _15thnight.forms import CategoryForm
 from _15thnight.models import Category
 from _15thnight.util import required_access, jsonify, api_error
 
@@ -33,7 +33,7 @@ def create_category():
     """
     Create a category. Must be an admin.
     """
-    form = AddCategoryForm()
+    form = CategoryForm()
     if not form.validate_on_submit():
         return api_error(form.errors)
 
@@ -55,7 +55,7 @@ def update_category(category_id):
     """
     Update an category.
     """
-    form = AddCategoryForm()
+    form = CategoryForm()
     if not form.validate_on_submit():
         return api_error(form.errors)
     category = Category.get(category_id)

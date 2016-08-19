@@ -27,6 +27,12 @@ class BaseModel(object):
         """Get a model by it's PK"""
         return self.query.filter(self.id == id).first()
 
+    @classmethod
+    def get_by_ids(cls, id_list):
+        if len(id_list) == 0:
+            return []
+        return cls.query.filter(cls.id.in_(id_list)).all()
+
     def save(self, commit=True):
         """Creates or updates a model in the database"""
         db_session.add(self)

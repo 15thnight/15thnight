@@ -16,6 +16,13 @@ class InputField extends React.Component {
         this.props.onChange(this.props.name, e.target.value);
     }
 
+    componentDidMount() {
+        let { type, values, value, name } = this.props;
+        if (type === 'select' && values.indexOf(value) < 0) {
+            this.props.onChange(name, values[0][0])
+        }
+    }
+
     render() {
         let { type, name, label, errors } = this.props;
         label += ':';

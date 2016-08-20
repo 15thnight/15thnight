@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 
 from _15thnight.forms import FullUserForm, BaseUserForm
-from _15thnight.models import Category, User
+from _15thnight.models import Service, User
 from _15thnight.util import required_access, jsonify, api_error
 
 user_api = Blueprint('user_api', __name__)
@@ -34,15 +34,15 @@ def create_user():
     form = FullUserForm()
     if not form.validate_on_submit():
         return api_error(form.errors)
-    categories = []
+    services = []
     if form.role.data == 'provider':
-        categories = Category.get_by_ids(form.categories.data)
+        services = Service.get_by_ids(form.services.data)
     user = User(
         email=form.email.data,
         password=form.password.data,
         phone_number=form.phone_number.data,
         role=form.role.data,
-        categories=categories
+        services=services
     )
     user.save()
     return jsonify(user)
@@ -60,9 +60,9 @@ def update_user(user_id):
     user = User.get(user_id)
     if not user:
         return api_error('User not found', 404)
-    categories = []
+    services = []
     if form.role.data == 'provider':
-        user.categories = Category.get_by_ids(form.categories.data)
+        user.services = Service.get_by_ids(form.services.data)
     user.email = form.email.data
     if 'password' in request.json:
         user.set_password(form.password.data)

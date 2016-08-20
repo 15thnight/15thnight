@@ -31,11 +31,11 @@ class ManageUsers extends React.Component {
                     </thead>
                     <tbody>
                         { users.map((user, key) => {
-                            let capabilities = user.role === 'provider' ?
-                                user.capabilities.map(capability => { return capability.name}).join(', ') :
+                            let services = user.role === 'provider' ?
+                                user.services.map(service => { return service.name}).join(', ') :
                                 'N/A';
-                            if (user.role === 'provider' && user.capabilities.length == 0) {
-                                capabilities = 'None Selected';
+                            if (user.role === 'provider' && user.services.length == 0) {
+                                services = 'None Selected';
                             }
                             return (
                                 <tr key={key}>
@@ -43,7 +43,7 @@ class ManageUsers extends React.Component {
                                     <td>{ user.phone_number }</td>
                                     <td>{ user.created_at }</td>
                                     <td>{ user.role }</td>
-                                    <td>{ capabilities }</td>
+                                    <td>{ services }</td>
                                     <td><Link to={"/dashboard/edit-user/" + user.id} className="btn btn-primary">Edit</Link></td>
                                 </tr>
                             )

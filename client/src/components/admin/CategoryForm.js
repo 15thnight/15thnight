@@ -3,11 +3,13 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { InputField } from 'form';
+import { InputField, FormGroup } from 'form';
 import {
     createCategory, editCategory, getCategory, deleteCategory,
     clearFormStatus
 } from 'actions';
+
+import styles from './CategoryForm.css';
 
 class CategoryForm extends React.Component {
 
@@ -16,6 +18,7 @@ class CategoryForm extends React.Component {
         this.defaultState = {
             name: '',
             description: '',
+            services: [],
             error: {}
         }
 
@@ -42,9 +45,12 @@ class CategoryForm extends React.Component {
         }
         if (this.props.id && nextProps.category[this.props.id]) {
             let category = nextProps.category[this.props.id];
+            let { services } = category;
+            services.map((service, key) => service.internalSort = key);
             this.setState({
                 name: category.name,
-                description: category.description
+                description: category.description,
+                services: category.services
             });
         }
     }
@@ -64,19 +70,76 @@ class CategoryForm extends React.Component {
         this.setState({ error: {} });
         let data = {
             name: this.state.name,
-            description: this.state.description
+            description: this.state.description,
+            services: this.state.services.map(service => {
+                return {
+                    id: service.id,
+                    sort_order: service.internalSort
+                }
+            })
         }
         this.props.id ? this.props.editCategory(this.props.id, data) : this.props.createCategory(data);
     }
 
+    handleSort(sorted_service, direction) {
+        let { services } = this.state;
+        let swapSort = direction === 'up' ? sorted_service.internalSort - 1 : sorted_service.internalSort + 1;
+        services.map((service, key) => {
+            if (service.internalSort === swapSort) {
+                direction === 'up' ? service.internalSort += 1 : service.internalSort -= 1;
+            }
+        });
+        sorted_service.internalSort = swapSort;
+        services.sort((a, b) => a.internalSort < b.internalSort ? -1 : 1)
+        this.setState({ services });
+    }
+
+    renderServices() {
+        let { services } = this.state;
+        return (
+            <FormGroup label="Services">
+                <table className="table">
+                    <tbody>
+                        {services.map((service, key) => {
+                            return (
+                                <tr key={key}>
+                                    <td className={styles.sortColumn}>
+                                         {
+                                            key !== 0 &&
+                                            <span className="btn btn-primary" onClick={this.handleSort.bind(this, service, 'up')}>
+                                                <span className="glyphicon glyphicon-chevron-up"></span>
+                                            </span>
+                                        }
+                                    </td>
+                                    <td className={styles.sortColumn}>
+                                        {
+                                            key !== services.length - 1 &&
+                                            <span className="btn btn-primary"  onClick={this.handleSort.bind(this, service, 'down')}>
+                                                <span className="glyphicon glyphicon-chevron-down"></span>
+                                            </span>
+                                        }
+                                    </td>
+                                    <td className={styles.nameColumn}>{service.name}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </FormGroup>
+        )
+    }
+
     render() {
+        let { services } = this.state;
         return (
             <div className="text-center row col-sm-offset-3 col-sm-6">
                 <h1>{ this.props.id ? "Edit" : "Create"} Category</h1>
-                { this.props.id &&
+                {
+                    this.props.id &&
                     <p className="text-right">
-                        <div className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Category</div>
-                    </p> }
+                        <span className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Category</span>
+                    </p>
+                }
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
                     <InputField
                       label="Name"
@@ -91,6 +154,10 @@ class CategoryForm extends React.Component {
                       value={this.state.description}
                       errors={this.state.error.description}
                       onChange={this.handleInputChange.bind(this)} />
+                    {
+                        services.length > 0 &&
+                        this.renderServices()
+                    }
                     <button className="btn btn-success" type="submit">
                         { this.props.id ? "Submit" : "Create" } Category
                     </button>

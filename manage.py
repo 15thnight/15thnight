@@ -29,19 +29,19 @@ def seed_categories():
 
     food = Category.get_by_name("Food")
     if not food:
-        food = Category("Food", "")
+        food = Category("Food", "", 0)
         food.save()
     shelter = Category.get_by_name("Shelter")
     if not shelter:
-        shelter = Category("Shelter", "Housing for a limited time.")
+        shelter = Category("Shelter", "Housing for a limited time.", 0)
         shelter.save()
     clothing = Category.get_by_name("Clothing")
     if not clothing:
-        clothing = Category("Clothing", "Shirts, shoes, and all things.")
+        clothing = Category("Clothing", "Shirts, shoes, and all things.", 0)
         clothing.save()
     other = Category.get_by_name("Other")
     if not other:
-        other = Category("Other", "Other help that doesn't fit elsewhere")
+        other = Category("Other", "Other help that doesn't fit elsewhere", 0)
         other.save()
 
     return (food, shelter, clothing, other)

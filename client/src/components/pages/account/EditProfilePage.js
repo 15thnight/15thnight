@@ -25,7 +25,7 @@ class EditProfilePage extends React.Component {
         this.setState({
             email: user.email,
             phone_number: user.phone_number,
-            categories: user.capabilities.map(capability => capability.id)
+            categories: user.services.map(service => service.id)
         })
     }
 

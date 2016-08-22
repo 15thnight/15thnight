@@ -1,13 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router';
 
+import styles from './Navbar.css';
+
 
 export default class Navbar extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            open: false
+            accountDropdownOpen: false,
+            manageDropdownOpen: false
         }
     }
 
@@ -21,35 +24,76 @@ export default class Navbar extends React.Component {
 
 
     handleBodyClick(e) {
-        if (!this.state.open) {
+        if (!this.state.accountDropdownOpen && !this.state.manageDropdownOpen) {
             return;
         }
         let element = e.target;
-        while (element.tagName !== 'HTML' && element.id !== 'user_dropdown') {
+        while (element.tagName !== 'HTML') {
+            if (element.className === 'dropdown-toggle') {
+                return
+            }
             element = element.parentNode;
         }
-        if (element.id !== 'user_dropdown') {
-            this.setState({ open: false });
-        }
+        this.setState({ accountDropdownOpen: false, manageDropdownOpen: false });
     }
 
-    handleDropdownToggleClick(e) {
+    handleDropdownToggleClick(menu, e) {
         e.preventDefault();
-        this.setState({ open: !this.state.open });
+        let state = { accountDropdownOpen: false, manageDropdownOpen: false };
+        if (menu === 'account') {
+            state.accountDropdownOpen = !this.state.accountDropdownOpen;
+        } else if (menu === 'manage') {
+            state.manageDropdownOpen = !this.state.manageDropdownOpen;
+        }
+        this.setState(state);
     }
 
     render() {
         let { current_user } = this.props;
         let user_menu = (<li><Link to="/login">Login</Link></li>);
-        let dropdownClass = 'dropdown';
-        if (this.state.open) {
-            dropdownClass += ' open';
-        }
         if (current_user) {
-            user_menu = (
-                <li id="user_dropdown" className={dropdownClass}>
-                    <a href="#" className="dropdown-toggle" onClick={this.handleDropdownToggleClick.bind(this)}>
-                        {current_user.email}
+            user_menu = [];
+            let accountDropdownClass = 'dropdown';
+            if (this.state.accountDropdownOpen) {
+                accountDropdownClass += ' open';
+            }
+            switch(current_user.role) {
+                case 'provider':
+                    user_menu.push(
+                        <li key='active-alerts'><Link to='/active-alerts'>Active Alerts</Link></li>
+                    );
+                    break;
+                case 'advocate':
+                    user_menu.push(
+                        <li key='send-alert'><Link to='/send-alert'>Send an Alert</Link></li>,
+                        <li key='alert-history'><Link to='/alert-history'>Alert History</Link></li>
+                    );
+                    break;
+                case 'admin':
+                    let manageDropdownClass = 'dropdown';
+                    if (this.state.manageDropdownOpen) {
+                        manageDropdownClass += ' open';
+                    }
+                    user_menu.push(
+                        <li key='alert-history'><Link to='/alert-history'>Alert History</Link></li>,
+                        <li key='manage-dropdown' className={manageDropdownClass}>
+                            <a href="#" className="dropdown-toggle" onClick={this.handleDropdownToggleClick.bind(this, 'manage')}>
+                                Manage
+                                <span className="caret"></span>
+                            </a>
+                            <ul className="dropdown-menu">
+                                <li><Link to="/manage-users">Users</Link></li>
+                                <li><Link to="/manage-categories">Categories</Link></li>
+                                <li><Link to="/manage-services">Services</Link></li>
+                            </ul>
+                        </li>
+                    );
+                    break;
+            }
+            user_menu.push(
+                <li key='account-dropdown' className={accountDropdownClass}>
+                    <a href="#" className="dropdown-toggle" onClick={this.handleDropdownToggleClick.bind(this, 'account')}>
+                        Account
                         <span className="caret"></span>
                     </a>
                     <ul className="dropdown-menu">
@@ -59,7 +103,7 @@ export default class Navbar extends React.Component {
                         <li><a href="/logout">Logout</a></li>
                     </ul>
                 </li>
-            )
+            );
         }
         return(
             <nav className="navbar navbar-default navbar-fixed-top">
@@ -76,13 +120,18 @@ export default class Navbar extends React.Component {
                     </div>
                     <div className="collapse navbar-collapse" id="navbar">
                         <ul className="nav navbar-nav navbar-right">
-                            { current_user &&
-                                <li><Link to="/dashboard">Dashboard</Link></li> }
-                            <li><Link to="/about">About</Link></li>
                             { user_menu }
                         </ul>
                     </div>
                 </div>
+                {
+                    current_user &&
+                    <div className={styles.userBar}>
+                        <div className={styles.userBarContainer + ' container'}>
+                            Logged in as <strong>{ current_user.email }</strong>
+                        </div>
+                    </div>
+                }
             </nav>
         );
     }

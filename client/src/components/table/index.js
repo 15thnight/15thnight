@@ -1,3 +1,1 @@
-import AlertTable from './AlertTable';
-
-export { AlertTable };
+export { default as AlertTable } from './AlertTable';

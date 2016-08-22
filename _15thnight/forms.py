@@ -126,6 +126,6 @@ class UpdateProfileForm(Form):
 
     def __init__(self, *args, **kwargs):
         super(UpdateProfileForm, self).__init__(*args, **kwargs)
-        self.categories.choices = [
+        self.services.choices = [
             (service.id, service.name) for service in Service.all()
         ]

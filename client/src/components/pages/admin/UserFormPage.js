@@ -35,30 +35,25 @@ class UserForm extends React.Component {
     }
 
     componentWillMount() {
-        if (this.props.id) {
-            this.props.getUser(this.props.id);
+        if (this.props.params.id) {
+            this.props.getUser(this.props.params.id);
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.submitFormSuccess) {
-            this.props.router.push('/dashboard/manage-users');
+            this.props.router.push('/manage-users');
             return this.props.clearFormStatus();
         }
         if (nextProps.submitFormError) {
             this.setState({ error: nextProps.submitFormError });
             return this.props.clearFormStatus();
         }
-        if (this.props.id && nextProps.user[this.props.id]) {
-            let user = nextProps.user[this.props.id];
-            this.setState({
-                email: user.email,
-                phone_number: user.phone_number,
-                role: user.role,
-                services: user.services.map(service => service.id),
-                editingPassword: false,
-                editingUser: user
-            });
+        if (this.props.params.id && nextProps.user[this.props.params.id]) {
+            let editingUser = nextProps.user[this.props.params.id];
+            let { email, phone_number, role, services } = editingUser;
+            services = services.map(service => service.id);
+            this.setState({ email, phone_number, role, services, editingUser });
         }
     }
 
@@ -67,7 +62,7 @@ class UserForm extends React.Component {
     }
 
     handleDeleteClick() {
-        this.props.deleteUser(this.props.id);
+        this.props.deleteUser(this.props.params.id);
     }
 
     handleCategoryChange(services) {
@@ -81,22 +76,22 @@ class UserForm extends React.Component {
     handleFormSubmit(e) {
         e.preventDefault();
         this.setState({ error: {} });
-        let submitPassword = !this.props.id || this.state.editingPassword;
+        let submitPassword = !this.props.params.id || this.state.editingPassword;
         let { email, phone_number, role, services, password, confirm } = this.state;
         let data = { email, phone_number, role, services }
         if (submitPassword && password !== confirm) {
-            let error = 'Passwords do not match.';
+            let error = ['Passwords do not match.'];
             return this.setState({
                 error: {
-                    password: [error],
-                    confirm: [error]
+                    password: error,
+                    confirm: error
                 }
             });
         }
         if (submitPassword) {
             data.password = password;
         }
-        this.props.id ? this.props.editUser(this.props.id, data) : this.props.createUser(data);
+        this.props.params.id ? this.props.editUser(this.props.params.id, data) : this.props.createUser(data);
     }
 
     handleTogglePassword() {
@@ -132,7 +127,7 @@ class UserForm extends React.Component {
             )
         }
         let capabilityStyle = {display: this.state.role === 'provider' ? 'block' : 'none'}
-        const passwordForm = !this.props.id || (this.props.id && this.state.editingPassword) ? (
+        const passwordForm = !this.props.params.id || (this.props.params.id && this.state.editingPassword) ? (
             <div>
                 <InputField
                   type="password"
@@ -150,7 +145,7 @@ class UserForm extends React.Component {
                   onChange={this.handleInputChange.bind(this)} />
             </div>
         ) : null;
-        const isEditingPassword = this.props.id ? (
+        const isEditingPassword = this.props.params.id ? (
             <FormGroup>
                 <div
                   className="btn btn-primary"
@@ -165,7 +160,7 @@ class UserForm extends React.Component {
             ['admin',    'Admin']
         ];
         let deleteButton = null;
-        if (this.props.id && parseInt(this.props.id) !== this.props.current_user.id) {
+        if (this.props.params.id && parseInt(this.props.params.id) !== this.props.current_user.id) {
             deleteButton = (
                 <div className="form-group text-right">
                     <div
@@ -178,7 +173,7 @@ class UserForm extends React.Component {
         }
         return (
             <div className="text-center row col-sm-offset-3 col-sm-6">
-                <h1>{ this.props.id ? "Edit User" : "Register User"}</h1>
+                <h1>{ this.props.params.id ? "Edit User" : "Register User"}</h1>
                 {deleteButton}
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
                     <InputField
@@ -210,7 +205,7 @@ class UserForm extends React.Component {
                           onCategoryChange={this.handleCategoryChange.bind(this)} />
                     </div>
                     <button className="btn btn-success" type="submit">
-                        { this.props.id ? "Submit User" : "Register User" }
+                        { this.props.params.id ? "Submit User" : "Register User" }
                     </button>
                 </form>
             </div>

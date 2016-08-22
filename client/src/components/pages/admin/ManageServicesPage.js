@@ -17,7 +17,7 @@ class ManageServices extends React.Component {
             <div className="tab-pane" id="manage-users">
                 <h1 className="text-center">Manage Services</h1>
                 <div className="text-right">
-                    <Link to="/dashboard/add-service" className="btn btn-success">Add Services</Link>
+                    <Link to="/add-service" className="btn btn-success">Add Services</Link>
                 </div>
                 <table className="table">
                     <thead>
@@ -35,7 +35,7 @@ class ManageServices extends React.Component {
                                     <td>{service.name}</td>
                                     <td>{service.description}</td>
                                     <td>{service.category.name}</td>
-                                    <td><Link to={"/dashboard/edit-service/" + service.id} className="btn btn-primary">Edit</Link></td>
+                                    <td><Link to={"/edit-service/" + service.id} className="btn btn-primary">Edit</Link></td>
                                 </tr>
                             )
                         }) }

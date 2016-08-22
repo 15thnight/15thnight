@@ -33,7 +33,7 @@ export default class AlertTable extends React.Component {
                             if (role === 'provider') {
                                 responseColumn = (
                                     <Link
-                                      to={"/respond_to/" + alert.id}
+                                      to={"/respond-to/" + alert.id}
                                       className="btn btn-success">
                                         Respond
                                     </Link>

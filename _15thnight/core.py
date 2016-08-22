@@ -24,7 +24,7 @@ def send_out_alert(alert_form):
     providers = User.providers_with_services(alert_form.needs.data)
     for user in providers:
         body = ('%s, there is a new 15th night alert.\n'
-                'Go to %s/respond_to/%s to respond.') % (
+                'Go to %s/respond-to/%s to respond.') % (
                     user.email, HOST_NAME, str(alert.id))
         queue_send_message.apply_async(
             kwargs=dict(

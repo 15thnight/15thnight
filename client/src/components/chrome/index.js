@@ -1,11 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link, withRouter } from 'react-router';
 
-import Navbar from './Navbar';
+import { getCurrentUser } from 'actions';
+import Navbar from './Navbar.js';
 import Flash from './Flash';
 
 class Chrome extends React.Component {
+
+    componentWillMount() {
+        this.props.getCurrentUser();
+    }
 
     render() {
         let { current_user } = this.props;
@@ -27,4 +31,6 @@ function mapStateToProps(state, ownProps) {
     }
 }
 
-export default connect(mapStateToProps)(withRouter(Chrome));
+export default connect(mapStateToProps, {
+    getCurrentUser
+})(Chrome);

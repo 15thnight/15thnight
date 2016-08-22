@@ -26,33 +26,30 @@ class ServiceForm extends React.Component {
 
     componentWillMount() {
         this.props.getCategories();
-        if (this.props.id) {
-            this.props.getService(this.props.id);
+        if (this.props.params.id) {
+            this.props.getService(this.props.params.id);
         }
     }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.submitFormSuccess) {
-            this.props.router.push('/dashboard/manage-services');
+            this.props.router.push('/manage-services');
             return this.props.clearFormStatus();
         }
         if (nextProps.submitFormError) {
             this.setState({ error: nextProps.submitFormError });
             return this.props.clearFormStatus();
         }
-        if (this.props.id && nextProps.service[this.props.id]) {
-            let service = nextProps.service[this.props.id];
-            this.setState({
-                name: service.name,
-                description: service.description,
-                category: service.category
-            });
+        if (this.props.params.id && nextProps.service[this.props.params.id]) {
+            let service = nextProps.service[this.props.params.id];
+            let { name, description, category } = service;
+            this.setState({ name, description, category });
         }
     }
 
     handleDeleteClick() {
         if (confirm('Are you sure you wish to delete this service?')) {
-            this.props.deleteService(this.props.id);
+            this.props.deleteService(this.props.params.id);
         }
     }
 
@@ -65,7 +62,7 @@ class ServiceForm extends React.Component {
         this.setState({ error: {} });
         let { name, description, category } = this.state;
         let data = { name, description, category };
-        this.props.id ? this.props.editService(this.props.id, data) : this.props.createService(data);
+        this.props.params.id ? this.props.editService(this.props.params.id, data) : this.props.createService(data);
     }
 
     render() {
@@ -75,8 +72,8 @@ class ServiceForm extends React.Component {
         let categories = this.props.categories.map(category => [category.id, category.name])
         return (
             <div className="text-center row col-sm-offset-3 col-sm-6">
-                <h1>{ this.props.id ? "Edit" : "Create"} Service</h1>
-                { this.props.id &&
+                <h1>{ this.props.params.id ? "Edit" : "Create"} Service</h1>
+                { this.props.params.id &&
                     <p className="text-right">
                         <div className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Service</div>
                     </p> }
@@ -103,7 +100,7 @@ class ServiceForm extends React.Component {
                       errors={this.state.error.category}
                       onChange={this.handleInputChange.bind(this)} />
                     <button className="btn btn-success" type="submit">
-                        { this.props.id ? "Submit" : "Create" } Service
+                        { this.props.params.id ? "Submit" : "Create" } Service
                     </button>
                 </form>
             </div>

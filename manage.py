@@ -14,7 +14,7 @@ manager = Manager(app)
 @manager.option('-p', '--password', help='Password')
 @manager.option('-r', '--role', help='Set role')
 def create_user(email, password, role):
-    user = User(email, password, '', False, False, False, False, role)
+    user = User(email, password, '', [], role)
     user.save()
 
 

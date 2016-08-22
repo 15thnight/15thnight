@@ -14,13 +14,17 @@ AWS_SECRET_ACCESS_KEY = ""
 EMAIL_SENDER = ""
 # End AWS Deprecated config
 
-MAIL_SERVER = 'locahost'
+# Mail Configuration
+MAIL_SERVER = 'localhost'
 MAIL_PORT = 25
 MAIL_USERNAME = None
+# Even if there is no MAIL_USERNAME, MAIL_DEFAULT_SENTER must be
+# set to a valid email address (that will populate the from header)
 MAIL_DEFAULT_SENDER = MAIL_USERNAME
 MAIL_PASSWORD = None
 MAIL_USE_TLS = False
 MAIL_USE_SSL = False
+# End Mail Configuration
 
 # Config option for using manage.py to test twilio access.
 # This should be in the form of 10 digits. (e.g. 2125553456)
@@ -32,5 +36,5 @@ HOST_NAME = 'http://localhost:5000'
 CELERY_BROKER = "sqla+%s" % DATABASE_URL
 DEBUG = True
 
-# hours
+# Life is in hours
 RESET_TOKEN_LIFE = 24

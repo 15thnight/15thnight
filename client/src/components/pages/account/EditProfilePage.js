@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { InputField, CategoryField } from 'form';
-import { updateProfile } from 'actions';
+import { updateProfile, clearFormStatus } from 'actions';
 
 const { stringify, parse } = JSON;
 
@@ -14,23 +14,27 @@ class EditProfilePage extends React.Component {
         this.defaultState = {
             email: '',
             phone_number: '',
-            categories: [],
+            services: [],
             error: {}
         }
         this.state = parse(stringify(this.defaultState));
     }
 
-    componentWillMount() {
-        let { user } = this.props;
-        this.setState({
-            email: user.email,
-            phone_number: user.phone_number,
-            categories: user.services.map(service => service.id)
-        })
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.submitFormError) {
+            this.setState({ error: nextProps.submitFormError });
+            return this.props.clearFormStatus();
+        }
     }
 
-    handleCategoryChange(categories) {
-        this.setState({ categories: categories });
+    componentWillMount() {
+        let { name, organization, email, phone_number, services } = this.props.user;
+        services = services.map(service => service.id);
+        this.setState({ name, organization, email, phone_number, services });
+    }
+
+    handleCategoryChange(services) {
+        this.setState({ services: services });
     }
 
     handleInputChange(name, value) {
@@ -40,8 +44,8 @@ class EditProfilePage extends React.Component {
     handleFormSubmit(e) {
         e.preventDefault();
         this.setState({ error: {} });
-        let { email, phone_number, categories } = this.state;
-        this.props.updateProfile({ email, phone_number, categories });
+        let { name, organization, email, phone_number, services } = this.state;
+        this.props.updateProfile({ name, organization, email, phone_number, services });
     }
 
     render() {
@@ -51,6 +55,18 @@ class EditProfilePage extends React.Component {
                 <h1>Edit Profile</h1>
                 <br/>
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
+                    <InputField
+                      label="Name"
+                      name="name"
+                      value={this.state.name}
+                      errors={this.state.error.name}
+                      onChange={this.handleInputChange.bind(this)} />
+                    <InputField
+                      label="Organization"
+                      name="organization"
+                      value={this.state.organization}
+                      errors={this.state.error.organization}
+                      onChange={this.handleInputChange.bind(this)} />
                     <InputField
                       label="Email"
                       name="email"
@@ -67,7 +83,7 @@ class EditProfilePage extends React.Component {
                         user.role === 'provider' &&
                         <CategoryField
                           label="Capabilities:"
-                          value={this.state.categories}
+                          value={this.state.services}
                           onCategoryChange={this.handleCategoryChange.bind(this)} />
                     }
                     <button className="btn btn-success" type="submit">
@@ -81,10 +97,11 @@ class EditProfilePage extends React.Component {
 
 function mapStateToProps(state) {
     return {
-        user: state.current_user
+        user: state.current_user,
+        submitFormError: state.submitFormError
     }
 }
 
 export default connect(mapStateToProps, {
-    updateProfile
+    updateProfile, clearFormStatus
 })(withRouter(EditProfilePage));

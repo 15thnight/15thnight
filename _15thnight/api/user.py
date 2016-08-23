@@ -38,6 +38,8 @@ def create_user():
     if form.role.data == 'provider':
         services = Service.get_by_ids(form.services.data)
     user = User(
+        name=form.name.data,
+        organization=form.organization.data,
         email=form.email.data,
         password=form.password.data,
         phone_number=form.phone_number.data,
@@ -66,6 +68,8 @@ def update_user(user_id):
     user.email = form.email.data
     if 'password' in request.json:
         user.set_password(form.password.data)
+    user.name = form.name.data
+    user.organization = form.organization.data
     user.phone_number = form.phone_number.data
     user.role = form.role.data
     user.save()

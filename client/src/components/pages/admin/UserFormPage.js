@@ -20,6 +20,8 @@ class UserForm extends React.Component {
     constructor(props) {
         super(props);
         this.defaultState = {
+            name: '',
+            organization: '',
             email: '',
             password: '',
             confirm: '',
@@ -51,9 +53,9 @@ class UserForm extends React.Component {
         }
         if (this.props.params.id && nextProps.user[this.props.params.id]) {
             let editingUser = nextProps.user[this.props.params.id];
-            let { email, phone_number, role, services } = editingUser;
+            let { name, organization, email, phone_number, role, services } = editingUser;
             services = services.map(service => service.id);
-            this.setState({ email, phone_number, role, services, editingUser });
+            this.setState({ name, organization, email, phone_number, role, services, editingUser });
         }
     }
 
@@ -77,8 +79,8 @@ class UserForm extends React.Component {
         e.preventDefault();
         this.setState({ error: {} });
         let submitPassword = !this.props.params.id || this.state.editingPassword;
-        let { email, phone_number, role, services, password, confirm } = this.state;
-        let data = { email, phone_number, role, services }
+        let { name, organization, email, phone_number, role, services, password, confirm } = this.state;
+        let data = { name, organization, email, phone_number, role, services }
         if (submitPassword && password !== confirm) {
             let error = ['Passwords do not match.'];
             return this.setState({
@@ -106,6 +108,12 @@ class UserForm extends React.Component {
                     <div>Are you sure you wish to delete this user?</div>
                     <br/>
                     <div className="form-horizontal">
+                        <StaticField label="Name">
+                          {this.state.editingUser.name}
+                        </StaticField>
+                        <StaticField label="Organization">
+                          {this.state.editingUser.organization}
+                        </StaticField>
                         <StaticField label="Email">
                           {this.state.editingUser.email}
                         </StaticField>
@@ -176,6 +184,18 @@ class UserForm extends React.Component {
                 <h1>{ this.props.params.id ? "Edit User" : "Register User"}</h1>
                 {deleteButton}
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
+                    <InputField
+                      label="Name"
+                      value={this.state.name}
+                      name="name"
+                      errors={this.state.error.name}
+                      onChange={this.handleInputChange.bind(this)} />
+                    <InputField
+                      label="Organization"
+                      value={this.state.organization}
+                      name="organization"
+                      errors={this.state.error.organization}
+                      onChange={this.handleInputChange.bind(this)} />
                     <InputField
                       label="Email"
                       value={this.state.email}

@@ -23,6 +23,8 @@ class User(Model):
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated = Column(DateTime, default=datetime.utcnow)
+    name = Column(String(255), nullable=False)
+    organization = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     password = Column(Text, nullable=False)
     phone_number = Column(String(20), nullable=False)
@@ -33,7 +35,10 @@ class User(Model):
     reset_token = Column(String(255))
     reset_created_at = Column(DateTime)
 
-    def __init__(self, email, password, phone_number, services, role):
+    def __init__(self, name, organization, email, password, phone_number, 
+            services, role):
+        self.name = name
+        self.organization = organization
         self.email = email.lower()
         self.set_password(password)
         self.phone_number = phone_number
@@ -116,6 +121,8 @@ class User(Model):
     def to_json(self):
         return dict(
             id=self.id,
+            name=self.name,
+            organization=self.organization,
             email=self.email,
             role=self.role,
             phone_number=self.phone_number,

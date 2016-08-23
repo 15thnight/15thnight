@@ -20,7 +20,14 @@ GENDERS = [
     ('male', 'Male'), ('female', 'Female'), ('unspecified', 'Unspecified')
 ]
 
-
+user_name_field = TextField(
+    'Name',
+    validators=[DataRequired(), Length(max=255)]
+)
+user_organization_field = TextField(
+    'Organization',
+    validators=[DataRequired(), Length(max=255)]
+)
 user_email_feild = TextField(
     'Email Address',
     validators=[DataRequired(), Email(message=None), Length(min=6, max=255)]
@@ -49,6 +56,8 @@ class BaseUserForm(Form):
     password, phone number, and checked boxes.
 
     """
+    name = user_name_field
+    organization = user_organization_field
     email = user_email_feild
     phone_number = user_phone_number_field
     role = SelectField('User Role', choices=USER_ROLES)
@@ -120,6 +129,8 @@ class ChangePasswordForm(Form):
 
 
 class UpdateProfileForm(Form):
+    name = user_name_field
+    organization = user_organization_field
     email = user_email_feild
     phone_number = user_phone_number_field
     services = service_field

@@ -1,4 +1,5 @@
 from celery import Celery
+from flask_mail import Message
 
 from _15thnight.email import mailer
 from _15thnight.email_client import send_email
@@ -34,9 +35,10 @@ def queue_send_message(email, number, subject, body):
     """
     if number:
         send_sms(to_number=number, body=body)
-    send_email(email, subject, body)
+    #send_email(email, subject, body)
+    message = Message(body=body, subject=subject, recipients=[email])
+    mailer.send(message)
 
 @celery.task
 def queue_send_email(message):
-    print message
     mailer.send(message)

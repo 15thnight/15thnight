@@ -21,6 +21,8 @@ class ManageUsers extends React.Component {
                 <table className="table">
                     <thead>
                         <tr>
+                            <th>Name</th>
+                            <th>Organization</th>
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Created At</th>
@@ -39,6 +41,8 @@ class ManageUsers extends React.Component {
                             }
                             return (
                                 <tr key={key}>
+                                    <td>{ user.name }</td>
+                                    <td>{ user.organization }</td>
                                     <td>{ user.email }</td>
                                     <td>{ user.phone_number }</td>
                                     <td>{ user.created_at }</td>

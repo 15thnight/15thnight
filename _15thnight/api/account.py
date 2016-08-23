@@ -149,6 +149,8 @@ def update_profile():
     form = UpdateProfileForm(request.json_multidict)
     if not form.validate_on_submit():
         return api_error(form.errors)
+    current_user.name = form.name.data
+    current_user.organization = form.organization.data
     current_user.email = form.email.data
     current_user.phone_number = form.phone_number.data
     if current_user.is_provider:

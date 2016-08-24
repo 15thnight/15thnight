@@ -35,8 +35,8 @@ class User(Model):
     reset_token = Column(String(255))
     reset_created_at = Column(DateTime)
 
-    def __init__(self, name, organization, email, password, phone_number, 
-            services, role):
+    def __init__(self, name, organization, email, password, phone_number,
+                 services, role):
         self.name = name
         self.organization = organization
         self.email = email.lower()
@@ -253,6 +253,10 @@ class Service(Model):
         return cls.query.filter(cls.category_id == category_id) \
             .order_by(cls.sort_order) \
             .all()
+
+    @classmethod
+    def get_by_name(cls, name):
+        return cls.query.filter(cls.name == name).first()
 
     def to_json(self):
         return dict(

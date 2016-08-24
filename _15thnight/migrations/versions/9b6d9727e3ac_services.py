@@ -34,15 +34,15 @@ def upgrade():
         'alert_services',
         sa.Column('alert_id', sa.Integer(), nullable=False),
         sa.Column('service_id', sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(['alert_id'], ['alert.id'], ),
-        sa.ForeignKeyConstraint(['service_id'], ['service_id.id'], ),
+        sa.ForeignKeyConstraint(['alert_id'], ['alerts.id'], ),
+        sa.ForeignKeyConstraint(['service_id'], ['service.id'], ),
     )
     op.create_table(
         'user_services',
         sa.Column('user_id', sa.Integer(), nullable=False),
         sa.Column('service_id', sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-        sa.ForeignKeyConstraint(['service_id'], ['service_id.id'], ),
+        sa.ForeignKeyConstraint(['service_id'], ['service.id'], ),
     )
     ### end Alembic commands ###
 

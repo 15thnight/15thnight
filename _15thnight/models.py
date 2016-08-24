@@ -239,7 +239,7 @@ class Category(Model):
 
 class Service(Model):
     """Service of provider."""
-    __tablename__ = 'service'
+    __tablename__ = 'services'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False, unique=True)

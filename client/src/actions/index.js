@@ -361,7 +361,7 @@ export function sendAlert(data) {
             res => {
                 dispatch({
                     type: SUBMIT_FORM_SUCCESS,
-                    message: 'Successfully sent alert.'
+                    message: 'Alert sent successfully.'
                 });
             },
             err => {
@@ -384,7 +384,7 @@ export function sendResponse(data) {
             res => {
                 dispatch({
                     type: SUBMIT_FORM_SUCCESS,
-                    message: 'Successfully sent response.'
+                    message: 'Response sent successfully.'
                 });
             },
             err => {

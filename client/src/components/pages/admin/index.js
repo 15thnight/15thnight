@@ -5,3 +5,4 @@ export { default as ManageServicesPage } from './ManageServicesPage';
 export { default as ManageUsersPage } from './ManageUsersPage';
 export { default as ServiceFormPage } from './ServiceFormPage';
 export { default as UserFormPage } from './UserFormPage';
+export { default as DataVisualizationPage } from './DataVisualizationPage';

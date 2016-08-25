@@ -6,7 +6,8 @@ import {
     ManageServicesPage,
     ManageUsersPage,
     ServiceFormPage,
-    UserFormPage
+    UserFormPage,
+    DataVisualizationPage
 } from 'pages/admin';
 
 
@@ -25,7 +26,8 @@ const childRoutes = [
 
     { path: '/edit-user/:id'     , component: UserFormPage },
     { path: '/edit-category/:id' , component: CategoryFormPage },
-    { path: '/edit-service/:id'  , component: ServiceFormPage }
+    { path: '/edit-service/:id'  , component: ServiceFormPage },
+    { path: '/visualize-data', component: DataVisualizationPage}
 ]
 
 export default { childRoutes }

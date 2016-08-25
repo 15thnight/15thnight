@@ -85,6 +85,7 @@ export default class Navbar extends React.Component {
                                 <li><Link to="/manage-users">Users</Link></li>
                                 <li><Link to="/manage-categories">Categories</Link></li>
                                 <li><Link to="/manage-services">Services</Link></li>
+                                <li><Link to="/visualize-data">Visualize Data</Link></li>
                             </ul>
                         </li>
                     );

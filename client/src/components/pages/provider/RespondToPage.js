@@ -65,7 +65,7 @@ class RespondToPage extends React.Component {
             return (<h1 className="text-center">Loading Alert...</h1>);
         }
         let { alert } = this.state;
-        let needs ;
+        let needs = alert.needs.map(need => need.name).join(', ');
         return (
            <div className="text-center col-sm-offset-3 col-sm-6">
                 <h2>Alert</h2>

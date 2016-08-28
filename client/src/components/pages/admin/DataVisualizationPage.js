@@ -2,32 +2,80 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
 import Chart1 from './LineChart';
+import ProgressBar from 'react-bootstrap/lib/Progressbar';
+import Chart2 from './DonutChart';
 
-import { getServices } from 'actions';
+import { getUsers, getAlerts} from 'actions';
 
 require('./tableStyles.scss');
 
 
 class DataVisualizationPage extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.defaultState = {
+            width: 0,
+            
+        }
+
+        this.state = this.defaultState;
+    }
+
+    componentWillMount() {
+        this.props.getUsers();
+        this.props.getAlerts();
+    }
+
+    filterAdvocates(users) {
+        let advocates = users.filter(function(user) { return user.role == "advocate"});
+        return advocates;
+    }
+
+    filterAdmin(users){
+        let admin = users.filter(function(user) { return user.role == "admin"});
+        return admin;
+    }
+
+    filterProviders(users){
+        let providers = users.filter(function(user) { return user.role == "providers"});
+        return providers;
+    }
+
+    alertAmountPrevious(alerts){
+        console.log(alerts[0])
+        var currentTime = new Date();
+
+    }
+
     render() {
+        let {users, current_user, alerts} = this.props;
+        let advocates = this.filterAdvocates(users);
+        let providers = this.filterProviders(users);
+        let admin = this.filterAdmin(users);
+
+        let advocatesAmount = advocates.length;
+        let providersAmount = providers.length;
+        let alertAmount = alert.length;
+        let alertAmountPrevious = this.alertAmountPrevious(alerts);
+
         var dashboard;
         dashboard = (
             <div className="dashboard">
                 <div className="row tile_count">
                     <div className="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
                       <span className="count_top"><i className="fa fa-user"></i> Total Advocates</span>
-                      <div className="count">2500</div>
+                      <div className="count">{advocatesAmount}</div>
                       <span className="count_bottom"><i className="green">4% </i> From last Week</span>
                     </div>
                     <div className="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
-                      <span className="count_top"><i className="fa fa-clock-o"></i> Average Time</span>
+                      <span className="count_top"><i className="fa fa-clock-o"></i> Average Response Time</span>
                       <div className="count">123.50</div>
                       <span className="count_bottom"><i className="green"><i className="fa fa-sort-asc"></i>3% </i> From last Week</span>
                     </div>
                     <div className="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
-                      <span className="count_top"><i className="fa fa-user"></i> Total Males</span>
-                      <div className="count green">2,500</div>
+                      <span className="count_top"><i className="fa fa-user"></i> Total Providers</span>
+                      <div className="count green">{providersAmount}</div>
                       <span className="count_bottom"><i className="green"><i className="fa fa-sort-asc"></i>34% </i> From last Week</span>
                     </div>
                     <div className="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
@@ -41,8 +89,8 @@ class DataVisualizationPage extends React.Component {
                       <span className="count_bottom"><i className="green"><i className="fa fa-sort-asc"></i>34% </i> From last Week</span>
                     </div>
                     <div className="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
-                      <span className="count_top"><i className="fa fa-user"></i> Total Connections</span>
-                      <div className="count">7,325</div>
+                      <span className="count_top"><i className="fa fa-user"></i>Total Alerts</span>
+                      <div className="count">{alertAmount}</div>
                       <span className="count_bottom"><i className="green"><i className="fa fa-sort-asc"></i>34% </i> From last Week</span>
                     </div>
               </div>
@@ -54,35 +102,35 @@ class DataVisualizationPage extends React.Component {
         var bottom = (
             <div className="row">
                 <div className="col-md-12 col-sm-12 col-xs-12">
-                    <div className="x_panel tile fixed_height_320">
+                    <div className="x_panel tile fixed_height_390" id="fixed_height_390">
                         <div className="row x_title">
                             <div className="col-md-6">
                             <h3>Network Activities <small>Graph title sub-title</small></h3>
                             </div>
                             <div className="col-md-9 col-sm-9 col-xs-12">
-                                <div style={{width:'100%'}} id="test" className="test">
-                                   <Chart1/>
+                                <div style={{width:'100%', height:'100%'}} id="test" className="test">
+                                   <Chart1 users={users}/>
                                 </div>
                             </div>
                             <div className="col-md-3 col-sm-3 col-xs-12 bg-white">
                                 <div className="x_title">
-                                    <h3>Top Campaign Performance</h3>
+                                    <h3>Filter By:</h3>
                                     <div className="clearfix"></div>
                                 </div>
                                 <div className="col-md-12 col-sm-12 col-xs-6">
                                     <div>
-                                        <i className="fa fa-bar-chart"></i><a href="#">Filter</a>
+                                        <i className="fa fa-bar-chart"></i><a href="#">Alerts</a>
                                     </div>
                                     <div>
-                                        <i className="fa fa-bar-chart"></i><a href="#">Filter</a>
+                                        <i className="fa fa-bar-chart"></i><a href="#">Advocates</a>
                                     </div>
                                 </div>
                                 <div className="col-md-12 col-sm-12 col-xs-6">
                                     <div>
-                                        <i className="fa fa-bar-chart"></i><a href="#">Filter</a>
+                                        <i className="fa fa-bar-chart"></i><a href="#">Providers</a>
                                     </div>
                                     <div>
-                                        <i className="fa fa-bar-chart"></i><a href="#">Filter</a>
+                                        <i className="fa fa-bar-chart"></i><a href="#">Successes</a>
                                     </div>
                                 </div>
                                 <div className="clearfix"></div>
@@ -96,7 +144,7 @@ class DataVisualizationPage extends React.Component {
                 <div className="col-md-4 col-sm-4 col-xs-12">
                     <div className="x_panel tile fixed_height_320">
                         <div className="x_title">
-                            <h2>App Versions</h2>
+                            <h2>Requested Items</h2>
                             <ul className="nav navbar-right panel_toolbox">
                                 <li><a className="collapse-link"><i className="fa fa-chevron-up"></i></a>
                                 </li>
@@ -116,18 +164,28 @@ class DataVisualizationPage extends React.Component {
                         </div>
 
                         <div className="x_content">
-                            <h4>App Usage across versions</h4>
-
-
+                            <h4>Success Rates</h4>
                                 <div className="widget_summary">
                                     <div className="w_left w_25">
-                                        <span>0.1.5.3</span>
+                                        <span>Shoes</span>
                                     </div>
                                     <div className="w_center w_55">
                                         <div className="progress">
-                                            <div className="progress-bar bg-green" role="progressbar" aria-valuenow="60" aria-valuemax="100" styles="width: 45%;">
-                                                <span className="sr-only">60% Complete</span>
-                                            </div>
+                                            <ProgressBar now={60} label={`${60}%`} />
+                                        </div>
+                                    </div>
+                                    <div className="w_right w_20">
+                                        <span>53k</span>
+                                    </div>
+                                    <div className="clearfix"></div>
+                                </div>
+                                <div className="widget_summary">
+                                    <div className="w_left w_25">
+                                        <span>Shelter</span>
+                                    </div>
+                                    <div className="w_center w_55">
+                                        <div className="progress">
+                                            <ProgressBar now={60} label={`${60}%`} />
                                         </div>
                                     </div>
                                     <div className="w_right w_20">
@@ -141,9 +199,7 @@ class DataVisualizationPage extends React.Component {
                                     </div>
                                     <div className="w_center w_55">
                                         <div className="progress">
-                                            <div className="progress-bar bg-green" role="progressbar" aria-valuenow="60" aria-valuemax="100" styles="width: 45%;">
-                                                <span className="sr-only">60% Complete</span>
-                                            </div>
+                                            <ProgressBar now={60} label={`${60}%`} />
                                         </div>
                                     </div>
                                     <div className="w_right w_20">
@@ -157,9 +213,7 @@ class DataVisualizationPage extends React.Component {
                                     </div>
                                     <div className="w_center w_55">
                                         <div className="progress">
-                                            <div className="progress-bar bg-green" role="progressbar" aria-valuenow="60" aria-valuemax="100" styles="width: 45%;">
-                                                <span className="sr-only">60% Complete</span>
-                                            </div>
+                                            <ProgressBar now={60} label={`${60}%`} />
                                         </div>
                                     </div>
                                     <div className="w_right w_20">
@@ -173,25 +227,7 @@ class DataVisualizationPage extends React.Component {
                                     </div>
                                     <div className="w_center w_55">
                                         <div className="progress">
-                                            <div className="progress-bar bg-green" role="progressbar" aria-valuenow="60" aria-valuemax="100" styles="width: 45%;">
-                                                <span className="sr-only">60% Complete</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="w_right w_20">
-                                        <span>53k</span>
-                                    </div>
-                                    <div className="clearfix"></div>
-                                </div>
-                                <div className="widget_summary">
-                                    <div className="w_left w_25">
-                                        <span>0.1.5.3</span>
-                                    </div>
-                                    <div className="w_center w_55">
-                                        <div className="progress">
-                                            <div className="progress-bar bg-green" role="progressbar" aria-valuenow="60" aria-valuemax="100" styles="width: 45%;">
-                                                <span className="sr-only">60% Complete</span>
-                                            </div>
+                                            <ProgressBar now={60} label={`${60}%`} />
                                         </div>
                                     </div>
                                     <div className="w_right w_20">
@@ -223,7 +259,7 @@ class DataVisualizationPage extends React.Component {
                                     <div className="clearfix"></div>
                                 </div>
                                 <div className="x_content">
-                                    <table className="" styles="width:100%">
+                                    <table className="" style={{width:'100%'}}>
                                         <tr>
                                             <th styles="width:37%">
                                                 <p>Top 5</p>
@@ -239,7 +275,9 @@ class DataVisualizationPage extends React.Component {
                                         </tr>
                                         <tr>
                                             <td>
-                                                <canvas id="canvas1" height="140" width="140" styles="margin: 15px 10px 10px 0"></canvas>
+                                                <div style={{width:'200px', height:'200px'}} id="donutchart">
+                                                    <Chart2 />
+                                                </div>
                                                 
                                             </td>
                                             <td>
@@ -311,11 +349,7 @@ class DataVisualizationPage extends React.Component {
 
                     </div>
 
-
-                
-
             );
-        console.log('DataVisualizationPage...');
         return (
             <div className="container">
                 {dashboard}
@@ -328,10 +362,12 @@ class DataVisualizationPage extends React.Component {
 
 function mapStateToProps(state) {
     return {
-        services: state.services
+        current_user: state.current_user,
+        users: state.users,
+        alerts: state.alerts
     }
 }
 
 export default connect(mapStateToProps, {
-    getServices
+    getUsers, getAlerts
 })(DataVisualizationPage);

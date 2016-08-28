@@ -6,12 +6,20 @@ import ReactFauxDOM from 'react-faux-dom';
 
 var LineChart=React.createClass({
 
-    render:function(){
-        var margin = {top: 0, right: 10, bottom: 110, left: 40},
-    margin2 = {top: 320, right: 10, bottom: 40, left: 40},
-    width = 600 - margin.left - margin.right,
-    height = 380 - margin.top - margin.bottom,
-    height2 = 400 - margin2.top - margin2.bottom;
+  getInitialState: function(){
+    return {rendered: false};
+  },
+
+  createChart: function(){
+
+    const width1 = document.getElementById('test').clientWidth;
+    const height1 = document.getElementById('fixed_height_390').clientHeight;
+
+    var margin = {top: 0, right: 10, bottom: 180, left: 40},
+    margin2 = {top: 240, right: 10, bottom: 80, left: 40},
+    width = width1 - margin.left - margin.right,
+    height = height1 - margin.top - margin.bottom,
+    height2 = height1 - margin2.top - margin2.bottom;
     
 var formatDate = d3.time.format("%d-%b-%y");
 
@@ -45,9 +53,7 @@ var area2 = d3.svg.area()
     .y0(height2)
     .y1(function(d) { return y2(d.close); });
 
-var node = ReactFauxDOM.createElement('div')
-
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#test").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom);
 
@@ -132,9 +138,19 @@ function type(d) {
   d.close = +d.close;
   return d;
 }
+  },
 
+  componentDidMount: function(){
+    this.setState({rendered: true});
+    this.createChart();
+    },
+
+    render:function(){
+      if(this.state.rendered){
+        this.createChart();
+      }
         return (
-            <div className="chart" id="test">
+            <div>
                 
             
             </div>

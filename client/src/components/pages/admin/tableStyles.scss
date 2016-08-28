@@ -1517,3 +1517,17 @@ svg {
   fill-opacity: .125;
   shape-rendering: crispEdges;
 }
+tbody{
+  border-bottom: none;
+}
+.arc text {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+#donutchart{
+
+}

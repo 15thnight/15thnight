@@ -78,3 +78,14 @@ def delete_service(service_id):
         return api_error('Service not found', 404)
     service.delete()
     return '', 200
+
+
+@service_api.route('/service/by-name/<string:service_name>', methods=['GET'])
+@required_access('admin')
+def get_service_by_name(service_name):
+    """
+    Check if service exists by name.
+    """
+    return (
+        jsonify(True) if Service.get_by_name(service_name) else jsonify(False)
+    )

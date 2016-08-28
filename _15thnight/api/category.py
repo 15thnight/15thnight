@@ -75,6 +75,20 @@ def update_category(category_id):
     category.save()
     return '', 200
 
+
+@category_api.route('/category/<int:category_id>', methods=['DELETE'])
+@required_access('admin')
+def delete_category(category_id):
+    """
+    Delete an category.
+    """
+    category = Category.get(category_id)
+    if not category:
+        return api_error('Category not found', 404)
+    category.delete()
+    return '', 200
+
+
 @category_api.route('/category/sort_order', methods=['PUT'])
 @required_access('admin')
 def set_category_sort():
@@ -91,14 +105,15 @@ def set_category_sort():
     return jsonify(Category.all())
 
 
-@category_api.route('/category/<int:category_id>', methods=['DELETE'])
+@category_api.route(
+    '/category/by-name/<string:service_name>', methods=['GET'])
 @required_access('admin')
-def delete_category(category_id):
+def get_category_by_name(category_name):
     """
-    Delete an category.
+    Check if category exists by name.
     """
-    category = Category.get(category_id)
-    if not category:
-        return api_error('Category not found', 404)
-    category.delete()
-    return '', 200
+    return (
+        jsonify(True)
+        if Category.get_by_name(category_name)
+        else jsonify(False)
+    )

@@ -3,7 +3,8 @@ import uuid
 from datetime import datetime, timedelta
 
 from sqlalchemy import (
-    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc
+    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text,
+    UniqueConstraint, desc
 )
 from sqlalchemy.orm import backref, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -148,6 +149,7 @@ class Alert(Model):
     age = Column(Integer, nullable=False, default=0)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     user = relationship('User', backref='alerts')
+    # needs - a list of needs (services) needed by the child
     needs = relationship(
         "Service", secondary="alert_services", backref="alerts")
 
@@ -197,6 +199,18 @@ class Alert(Model):
         if response:
             return response
         return False
+
+    def is_resolved(self):
+        """
+        Check the alerts_services table to see if this alert has any services
+        left unresolved.
+        """
+        this_alert_services = AlertService.query.filter(alert_id=self.id).all()
+        for need in this_alert_services:
+            if not need.respnse:
+                return False
+
+        return True
 
     def to_json(self):
         return dict(
@@ -281,8 +295,8 @@ class Response(Model):
     user_id = Column(ForeignKey('users.id'))
     user = relationship('User', backref='responses')
     created_at = Column(DateTime, default=datetime.utcnow)
-    alert_id = Column(ForeignKey('alerts.id'))
-    alert = relationship('Alert', backref='responses')
+    alert_service = relationship(
+        'AlertService', backref=backref("response", uselist=False))
     message = Column(Text, nullable=True, default='')
 
     @classmethod
@@ -299,14 +313,25 @@ class Response(Model):
         )
 
 
+class AlertService(Model):
+    """Many-to-Many Alert/Service table with extra details."""
+
+    __tablename__ = 'alert_services'
+    alert_id = Column(Integer, ForeignKey('alerts.id'), nullable=False)
+    service_id = Column(Integer, ForeignKey('service.id'), nullable=False)
+    __table_args__ = (
+        UniqueConstraint('alert_id', 'service_id', name="alert_service_uc"),
+    )
+
+    def is_resolved(self):
+        if not self.response:
+            return False
+
+        return True
+
+
 user_categories = Table(
     'user_services', Model.metadata,
-    Column('user_id', Integer, ForeignKey('users.id')),
-    Column('service_id', Integer, ForeignKey('service.id'))
-)
-
-alert_services = Table(
-    'alert_services', Model.metadata,
-    Column('alert_id', Integer, ForeignKey('alerts.id')),
-    Column('service_id', Integer, ForeignKey('service.id'))
+    Column('user_id', Integer, ForeignKey('users.id'), nullable=False),
+    Column('service_id', Integer, ForeignKey('service.id'), nullable=False)
 )

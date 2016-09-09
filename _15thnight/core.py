@@ -56,8 +56,8 @@ def respond_to_alert(provider, message, alert):
 
     queue_send_message.apply_async(
         kwargs=dict(
-            email=provider.email,
-            number=provider.phone_number,
+            email=advocate.email,
+            number=advocate.phone_number,
             subject='15th Night Alert Response',
             body=body
         )

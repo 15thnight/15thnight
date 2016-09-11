@@ -37,7 +37,7 @@ class LoginPage extends React.Component {
     render() {
         return (
             <div className="col-md-6 col-md-offset-3 text-center">
-                <h1>Please Sign In</h1>
+                <h1>Please Sign In{ this.props.alertRedirect && " to Respond to the Alert"}</h1>
                 <br/>
                 <FormErrors errors={this.state.error.form} />
                 <form className="form-horizontal" onSubmit={this.handleSubmit.bind(this)}>
@@ -72,7 +72,8 @@ class LoginPage extends React.Component {
 function mapStateToProps(state, ownProps) {
     return {
         current_user: state.current_user,
-        submitFormError: state.submitFormError
+        submitFormError: state.submitFormError,
+        alertRedirect: state.alertRedirect
     }
 }
 

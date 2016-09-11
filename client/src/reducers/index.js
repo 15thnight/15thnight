@@ -4,7 +4,7 @@ import {
     LOGIN_USER, LOGOUT_USER, UPDATE_USER,
     GET_USERS, GET_USER, GET_USER_ERROR,
     SUBMIT_FORM_SUCCESS, SUBMIT_FORM_ERROR, CLEAR_FORM_STATUS,
-    GET_ALERTS, GET_ALERT, GET_ALERT_ERROR,
+    GET_ALERTS, GET_ALERT, GET_ALERT_ERROR, SET_ALERT_REDIRECT,
     GETTING_CATEGORIES, GET_CATEGORIES, GET_CATEGORY, GET_CATEGORY_ERROR,
     GETTING_SERVICES, GET_SERVICES, GET_SERVICE, GET_SERVICE_ERROR,
     CLEAR_FLASH, APP_ERROR
@@ -136,6 +136,15 @@ function alert(state = {}, action) {
     }
 }
 
+function alertRedirect(state = null, action) {
+    switch (action.type) {
+        case SET_ALERT_REDIRECT:
+            return action.alertRedirect;
+        default:
+            return state;
+    }
+}
+
 function submitFormError(state = null, action) {
     switch (action.type) {
         case SUBMIT_FORM_ERROR:
@@ -169,6 +178,7 @@ const rootReducer = combineReducers({
     alerts,
     alert,
     flash,
+    alertRedirect,
     submitFormSuccess,
     submitFormError
 });

@@ -1,12 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
-import { getAlerts } from 'actions';
+import { getAlerts, setAlertRedirect } from 'actions';
 import { AlertTable } from 'table';
 
 class ProviderActiveAlertsPage extends React.Component {
 
     componentWillMount() {
+        if (this.props.alertRedirect) {
+            this.props.setAlertRedirect(null);
+            return this.props.router.push('/respond-to/' + this.props.alertRedirect);
+        }
         this.props.getAlerts();
     }
 
@@ -29,10 +34,12 @@ class ProviderActiveAlertsPage extends React.Component {
 
 function mapStateToProps(state) {
     return {
-        alerts: state.alerts
+        alerts: state.alerts,
+        alertRedirect: state.alertRedirect
     }
 }
 
 export default connect(mapStateToProps, {
-    getAlerts
-})(ProviderActiveAlertsPage);
+    getAlerts,
+    setAlertRedirect
+})(withRouter(ProviderActiveAlertsPage));

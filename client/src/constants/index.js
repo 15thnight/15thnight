@@ -13,6 +13,7 @@ export const GET_USER_ERROR = 'get_user_error';
 export const GET_ALERTS = 'get_alerts';
 export const GET_ALERT = 'get_alert';
 export const GET_ALERT_ERROR = 'get_alert_error';
+export const SET_ALERT_REDIRECT = 'set_alert_redirect';
 
 export const GET_CATEGORY = 'get_category';
 export const GET_CATEGORY_ERROR = 'get_category_error';

@@ -4,7 +4,7 @@ import {
     LOGIN_USER, LOGOUT_USER, UPDATE_USER,
     GET_USERS, GET_USER, GET_USER_ERROR,
     SUBMIT_FORM_SUCCESS, SUBMIT_FORM_ERROR, CLEAR_FORM_STATUS,
-    GET_ALERTS, GET_ALERT, GET_ALERT_ERROR,
+    GET_ALERTS, GET_ALERT, GET_ALERT_ERROR, SET_ALERT_REDIRECT,
     GETTING_CATEGORIES, GET_CATEGORIES, GET_CATEGORY,
     GET_SERVICE, GET_SERVICES,
     CLEAR_FLASH, APP_ERROR
@@ -374,6 +374,13 @@ export function sendAlert(data) {
                 dispatch(dispatchAppError('An unknown error occured while sending alert.'));
             }
         )
+    }
+}
+
+export function setAlertRedirect(alertRedirect) {
+    return {
+        type: SET_ALERT_REDIRECT,
+        alertRedirect
     }
 }
 

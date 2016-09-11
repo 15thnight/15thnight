@@ -25,7 +25,7 @@ class RespondToPage extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (nextProps.submitFormSuccess) {
             this.props.clearFormStatus();
-            return this.props.router.push('/dashboard');
+            return this.props.router.push('/');
         }
         if (nextProps.alert[this.props.params.id]) {
             this.setState({
@@ -97,6 +97,7 @@ class RespondToPage extends React.Component {
 function mapStateToProps(state) {
     return {
         alert: state.alert,
+        alertRedirect: state.alertRedirect,
         submitFormSuccess: state.submitFormSuccess,
         submitFormError: state.submitFormError
     }

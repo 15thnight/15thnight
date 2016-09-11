@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import (
     Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import backref, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from _15thnight.database import Model
@@ -245,7 +245,8 @@ class Service(Model):
     name = Column(String(255), nullable=False, unique=True)
     description = Column(Text)
     category_id = Column(ForeignKey('categories.id'), nullable=False)
-    category = relationship('Category', backref='services')
+    category = relationship(
+        'Category', backref=backref('services', cascade="all, delete-orphan"))
     sort_order = Column(Integer, nullable=False, default=0)
 
     @classmethod

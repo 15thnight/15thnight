@@ -1,4 +1,5 @@
 import axios from 'axios';
+import moment from 'moment'
 
 import {
     LOGIN_USER, LOGOUT_USER, UPDATE_USER,
@@ -20,8 +21,7 @@ let request = request_factory(document.getElementById('csrf').content);
 
 function dispatchAppError(message) {
     return {
-        type: APP_ERROR,
-
+        type: APP_ERROR
     }
 }
 
@@ -41,7 +41,8 @@ export function getCurrentUser(data) {
                     type: APP_ERROR,
                     message: 'An unknown error occured while logging in.'
                 });
-            });
+            }
+        );
     }
 }
 
@@ -189,7 +190,7 @@ export function deleteUser(id) {
 
 export function clearFormStatus() {
     return {
-        type: CLEAR_FORM_STATUS 
+        type: CLEAR_FORM_STATUS
     }
 }
 
@@ -318,6 +319,11 @@ export function getAlerts() {
     return dispatch => {
         promise.then(
             res => {
+                res.data.map(function(alert) {
+                    alert.created_at = moment.tz(
+                        alert.created_at, moment.tz.guess()
+                    ).format('LLL')
+                })
                 dispatch({
                     type: GET_ALERTS,
                     alerts: res.data
@@ -327,7 +333,7 @@ export function getAlerts() {
                 dispatch(dispatchAppError('An unknown error occured while getting alerts.'));
             }
         )
-    }    
+    }
 }
 
 export function getAlert(id) {
@@ -335,6 +341,9 @@ export function getAlert(id) {
     return dispatch => {
         promise.then(
             res => {
+                res.data.created_at = moment.tz(
+                    alert.created_at, moment.tz.guess()
+                ).format('LLL')
                 dispatch({
                     type: GET_ALERT,
                     id: res.data.id,

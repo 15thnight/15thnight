@@ -23,7 +23,7 @@ class ProviderActiveAlertsPage extends React.Component {
             'that you have not responded to.'
         );
         return (
-            <AlertTable 
+            <AlertTable
               alerts={alerts}
               role='provider'
               title='Your Alerts'

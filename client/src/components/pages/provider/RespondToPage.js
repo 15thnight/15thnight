@@ -1,11 +1,15 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { InputField } from 'form';
+import { AlertInfo } from 'alert';
+import { FormErrors, FormGroup, Input } from 'form';
 import {
     getAlert, sendResponse, clearFormStatus
 } from 'actions';
+
+import classes from './RespondToPage.css';
 
 class RespondToPage extends React.Component {
 
@@ -13,8 +17,9 @@ class RespondToPage extends React.Component {
         super(props);
         this.state = {
             alert: null,
-            message: '',
-            error: { }
+            checked: [],
+            message: {},
+            error: {}
         }
     }
 
@@ -34,30 +39,63 @@ class RespondToPage extends React.Component {
         }
     }
 
-    handleInputChange(name, e) {
-        this.setState({ [name]: e.target.value });
+    focusMessage(id) {
+        ReactDOM.findDOMNode(this.refs['textarea' + id].refs.input).focus();
     }
 
     handleSubmit(e) {
         e.preventDefault();
-        this.setState({ error: {} });
+        let error = {};
+        this.setState({ error });
+        if (this.state.checked.length === 0) {
+            error['form'] = ['You must select at least one need you can provide help for.']
+            return this.setState({ error });
+        }
+        let hasError = false;
+        let needs_provided = [];
+        this.state.checked.map(need_id => {
+            let message = this.state.message[need_id];
+            if (!message) {
+                error[need_id] = ['Please provide details about what you can provide.'];
+                hasError = true;
+            } else {
+                needs_provided.push({ need_id, message });
+            }
+        });
+        if (hasError) {
+            return this.setState({ error });
+        }
         this.props.sendResponse({
             alert_id: this.props.params.id,
-            message: this.state.message
+            needs_provided
         });
     }
 
-    renderErrors(errors) {
-        if (!errors || errors.length === 0) {
-            return null;
+    toggleNeed(id) {
+        this.setState({ error: {} });
+        let { checked } = this.state;
+        if (checked.indexOf(id) < 0) {
+            checked.push(id);
+        } else {
+            checked = checked.filter(need_id => need_id !== id)
         }
-        return (
-            <div className="row">
-                {errors.map((error, key) => {
-                    return (<div key={key} className="error">{error}</div>);
-                })}
-            </div>
-        )
+        this.setState({ checked }, () => {
+            this.focusMessage(id);
+        });
+    }
+
+    handleMessageClick(need, e) {
+        this.toggleNeed(need.id);
+    }
+
+    handleCheckboxChange(need, e) {
+        this.toggleNeed(need.id);
+    }
+
+    handleMessageChange(id, value) {
+        let { message } = this.state;
+        message[id] = value;
+        this.setState({ message });
     }
 
     render() {
@@ -65,25 +103,68 @@ class RespondToPage extends React.Component {
             return (<h1 className="text-center">Loading Alert...</h1>);
         }
         let { alert } = this.state;
-        let needs = alert.needs.map(need => need.name).join(', ');
         return (
            <div className="text-center col-sm-offset-3 col-sm-6">
                 <h2>Alert</h2>
-                <h3>Date/Time: { alert.created_at }</h3>
-                <h3>Age: { alert.age }</h3>
-                <h3>Gender: { alert.gender }</h3>
-                <h3>Needs: { needs }</h3>
-                <h3>Message: { alert.description }</h3>
+                {
+                    alert.responses.length > 0 &&
+                    <h3>You have responed to this alert { alert.responses.length } time{ alert.responses.length > 1 && 's'}.</h3>
+                }
+                <AlertInfo alert={alert} />
                 <br/>
-                <h4>If you want to help, type a message and click submit below:</h4>
+                <h4>If you want to help, select which needs you can provide along with some details:</h4>
+                <FormErrors errors={this.state.error['form']} />
                 <form className="form-horizontal" onSubmit={this.handleSubmit.bind(this)}>
-                    <InputField
-                      type="textarea"
-                      label="Response Message"
-                      name="message"
-                      value={this.state.message}
-                      errors={this.state.error.message}
-                      onChange={this.handleInputChange.bind(this)} />
+                    {alert.needs.map(need => {
+                        let { service, provisions } = need;
+                        return (
+                            <FormGroup label={service.name} key={need.id}>
+                                <div className="form-group">
+                                    <div className="col-sm-offset-1 col-sm-11">
+                                        {
+                                            provisions.length > 0 &&
+                                            <div>
+                                                <div>You have responded to this need {provisions.length} time{provisions.length > 1 && 's'}</div>
+                                                { provisions.map(provision => {
+                                                    return (
+                                                        <div>
+                                                            <div>{ provision.created_at }</div>
+                                                            <div>Message: { provision.message }</div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <div className="col-sm-1">
+                                        <Input
+                                          type="checkbox"
+                                          onChange={this.handleCheckboxChange.bind(this, need)}
+                                          checked={this.state.checked.indexOf(need.id) >= 0} />
+                                    </div>
+                                    <div className="col-sm-11">
+                                        <Input
+                                          type="textarea"
+                                          name={need.id}
+                                          placeholder={"Enter details about what you can provide for " + service.name}
+                                          disabled={this.state.checked.indexOf(need.id) < 0}
+                                          ref={'textarea' + need.id}
+                                          value={this.state.message[need.id] || ''}
+                                          onChange={this.handleMessageChange.bind(this)}/>
+                                        {
+                                            this.state.checked.indexOf(need.id) < 0 &&
+                                            <div
+                                              className={classes.textareaMask}
+                                              onClick={this.handleMessageClick.bind(this, need)}></div>
+                                        }
+                                        <FormErrors errors={this.state.error[need.id]} />
+                                    </div>
+                                </div>
+                            </FormGroup>
+                        )
+                    })}
                     <br/>
                     <button className="btn btn-lg btn-success" type="submit">
                         Submit

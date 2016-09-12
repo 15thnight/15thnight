@@ -9,6 +9,8 @@ import {
     GETTING_SERVICES, GET_SERVICES, GET_SERVICE, GET_SERVICE_ERROR,
     CLEAR_FLASH, APP_ERROR
 } from 'constants';
+import { moment_tz, format_datetime } from 'util';
+
 
 function current_user(state = INITIAL_STATE.current_user, action) {
     switch (action.type) {
@@ -117,7 +119,9 @@ function service(state = {}, action) {
 function alerts(state = [], action) {
     switch (action.type) {
         case GET_ALERTS:
-            return action.alerts;
+            let { alerts } = action;
+            alerts.map(alert => alert.created_at = format_datetime(alert.created_at) );
+            return alerts;
         case LOGOUT_USER:
             return [];
         default:
@@ -128,7 +132,17 @@ function alerts(state = [], action) {
 function alert(state = {}, action) {
     switch (action.type) {
         case GET_ALERT:
-            return {[action.id]: action.alert};
+            let { alert } = action;
+            alert.created_at = format_datetime(alert.created_at);
+            alert.needs.map(need => {
+                if (need.provisions) {
+                    need.provisions.map(provision => provision.created_at = format_datetime(provision.created_at, 'lll'));
+                }
+                if (need.resolved_at) {
+                    need.resolved_at = format_datetime(need.resolved_at);
+                }
+            })
+            return {[alert.id]: action.alert};
         case GET_ALERT_ERROR:
             return {[action.id]: action.error};
         default:

@@ -11,6 +11,9 @@ class ExtensibleJSONEncoder(JSONEncoder):
             return obj.to_json()
         return super(ExtensibleJSONEncoder, self).default(obj)
 
+def extend(dict1, dict2):
+    dict1.update(dict2)
+    return dict1
 
 def jsonify(*args, **kwargs):
     """Returns a json response"""
@@ -44,3 +47,14 @@ def required_access(*roles):
             return f(*args, **kwargs)
         return decorated
     return templated
+
+
+def to_local_datetime(dt):
+    """
+    datetime.isoformat does not append +0000 when using UTC, javascript
+    needs it, or the date is parsed as if it were in the local timezone
+    """
+    if not dt:
+        return None
+    ldt = dt.isoformat()
+    return ldt if ldt[-6] == "+" else "%s+0000" % ldt

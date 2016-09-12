@@ -1,5 +1,4 @@
 import axios from 'axios';
-import moment from 'moment'
 
 import {
     LOGIN_USER, LOGOUT_USER, UPDATE_USER,
@@ -25,6 +24,15 @@ function dispatchAppError(message) {
     }
 }
 
+function dispatchFormError(err, message, errType=SUBMIT_FORM_ERROR) {
+    if (err.response.data && err.response.data.error) {
+        return {
+            type: errType,
+            error: err.response.data.error
+        };
+    }
+    return dispatchAppError(message)
+}
 
 export function getCurrentUser(data) {
     let promise = request.get('/api/v1/current_user?'+ new Date().getTime());
@@ -37,10 +45,7 @@ export function getCurrentUser(data) {
                 });
             },
             err => {
-                dispatch({
-                    type: APP_ERROR,
-                    message: 'An unknown error occured while logging in.'
-                });
+                dispatch(dispatchAppError('An unknown error occured while getting user info.'));
             }
         );
     }
@@ -58,13 +63,7 @@ export function loginUser(data) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while logging in.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while logging in.'));
             });
     }
 }
@@ -110,18 +109,12 @@ export function getUser(id) {
             res => {
                 dispatch({
                     type: GET_USER,
-                    id: id,
+                    id,
                     user: res.data
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: GET_USER_ERROR,
-                        error: err.response.data.error
-                    })
-                }
-                dispatch(dispatchAppError('An error occured fetching user list.'));
+                dispatch(dispatchAppError('An error occured fetching user data.'));
             }
         )
     }
@@ -138,13 +131,7 @@ export function createUser(data) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while creating user.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while creating user.'));
             });
     }
 }
@@ -224,13 +211,7 @@ export function getCategory(id) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: GET_CATEGORY_ERROR,
-                        error: err.response.data.error
-                    })
-                }
-                dispatch(dispatchAppError('An error occured fetching user list.'));
+                dispatch(dispatchFormError(err, 'An error occured fetching user list.'));
             }
         )
     }
@@ -264,13 +245,7 @@ export function createCategory(data) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while creating category.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while creating category.'));
             });
     }
 }
@@ -319,11 +294,6 @@ export function getAlerts() {
     return dispatch => {
         promise.then(
             res => {
-                res.data.map(function(alert) {
-                    alert.created_at = moment.tz(
-                        alert.created_at, moment.tz.guess()
-                    ).format('LLL')
-                })
                 dispatch({
                     type: GET_ALERTS,
                     alerts: res.data
@@ -341,23 +311,13 @@ export function getAlert(id) {
     return dispatch => {
         promise.then(
             res => {
-                res.data.created_at = moment.tz(
-                    alert.created_at, moment.tz.guess()
-                ).format('LLL')
                 dispatch({
                     type: GET_ALERT,
-                    id: res.data.id,
                     alert: res.data
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: GET_ALERT_ERROR,
-                        error: err.response.data.error
-                    })
-                }
-                dispatch(dispatchAppError('An unknown error occured while getting alerts.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while getting alerts.'));
             }
         )
     }
@@ -374,15 +334,27 @@ export function sendAlert(data) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while sending alert.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while sending alert.'));
             }
         )
+    }
+}
+
+export function resolveAlertNeed(alertId, needId) {
+    return dispatch => {
+        request
+            .post('/api/v1/alert/' + alertId + '/resolve/' + needId)
+            .then(
+                res => {
+                    dispatch({
+                        type: GET_ALERT,
+                        alert: res.data
+                    })
+                },
+                err => {
+                    // TODO
+                }
+            )
     }
 }
 
@@ -404,13 +376,7 @@ export function sendResponse(data) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while sending response.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while sending response.'));
             }
         )
     }
@@ -427,13 +393,7 @@ export function changePassword(data) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while changing password.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while changing password.'));
             }
         )
     }
@@ -454,13 +414,7 @@ export function updateProfile(data) {
                 })
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while updating profile.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while updating profile.'));
             }
         )
     }
@@ -477,13 +431,7 @@ export function forgotPassword(data) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while sending password reset email.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while sending password reset email.'));
             }
         )
     }
@@ -504,13 +452,7 @@ export function resetPassword(data) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while resetting password.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while resetting password.'));
             }
         )
     }
@@ -545,13 +487,7 @@ export function getService(id) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: GET_SERVICE_ERROR,
-                        error: err.response.data.error
-                    })
-                }
-                dispatch(dispatchAppError('An error occured fetching service list.'));
+                dispatch(dispatchFormError(err, 'An error occured fetching service list.'));
             }
         )
     }
@@ -568,13 +504,7 @@ export function createService(data) {
                 });
             },
             err => {
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while creating service.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while creating service.'));
             });
     }
 }
@@ -590,14 +520,7 @@ export function editService(id, data) {
                 })
             },
             err => {
-                // TODO: duplicate code here, simplify
-                if (err.response.data && err.response.data.error) {
-                    return dispatch({
-                        type: SUBMIT_FORM_ERROR,
-                        error: err.response.data.error
-                    });
-                }
-                dispatch(dispatchAppError('An unknown error occured while creating service.'));
+                dispatch(dispatchFormError(err, 'An unknown error occured while editing service.'));
             });
     }
 }

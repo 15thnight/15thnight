@@ -2,11 +2,12 @@ from flask_wtf import Form
 from flask_wtf.csrf import CsrfProtect
 from wtforms import (
     IntegerField, PasswordField, SelectField,
-    SelectMultipleField, TextAreaField, TextField
+    SelectMultipleField, TextAreaField, TextField,
+    ValidationError
 )
 from wtforms.validators import DataRequired, Email, Length
 
-from _15thnight.models import Category, Service
+from _15thnight.models import Category, Service, User
 
 
 csrf_protect = CsrfProtect()
@@ -68,7 +69,11 @@ class BaseUserForm(Form):
         self.services.choices = [
             (service.id, service.name) for service in Service.all()
         ]
+        self.validate_unique_email = kwargs.get('validate_unique_email', True)
 
+    def validate_email(self, field):
+        if self.validate_unique_email and User.get_by_email(field.data):
+            raise ValidationError('This email is already in use.')
 
 class FullUserForm(BaseUserForm):
     password = user_password_field
@@ -78,6 +83,13 @@ class CategoryForm(Form):
     name = TextField("Name", validators=[DataRequired()])
     description = TextAreaField("Description")
 
+    def __init__(self, *args, **kwargs):
+        super(CategoryForm, self).__init__(*args, **kwargs)
+        self.validate_unique_name = kwargs.get('validate_unique_name', True)
+
+    def validate_name(self, field):
+        if self.validate_unique_name and Category.get_by_name(field.data):
+            raise ValidationError('This service name is already in use.')
 
 class ServiceForm(Form):
     name = TextField("Name", validators=[DataRequired()])
@@ -89,7 +101,11 @@ class ServiceForm(Form):
         self.category.choices = [
             (category.id, category.name) for category in Category.all()
         ]
+        self.validate_unique_name = kwargs.get('validate_unique_name', True)
 
+    def validate_name(self, field):
+        if self.validate_unique_name and Service.get_by_name(field.data):
+            raise ValidationError('This service name is already in use.')
 
 class LoginForm(Form):
     email = TextField('Email', validators=[DataRequired()])

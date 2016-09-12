@@ -56,12 +56,18 @@ def update_user(user_id):
     """
     Update an user account.
     """
-    form = FullUserForm() if 'password' in request.json else BaseUserForm()
-    if not form.validate_on_submit():
-        return api_error(form.errors)
     user = User.get(user_id)
     if not user:
         return api_error('User not found', 404)
+    form_kwargs = dict(
+        validate_unique_email=user.email != request.json.get('email')
+    )
+    if 'password' in request.json:
+        form = FullUserForm(**form_kwargs)
+    else:
+        form = BaseUserForm(**form_kwargs)
+    if not form.validate_on_submit():
+        return api_error(form.errors)
     services = []
     if form.role.data == 'provider':
         user.services = Service.get_by_ids(form.services.data)

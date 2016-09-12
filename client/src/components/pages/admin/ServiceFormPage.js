@@ -40,9 +40,12 @@ class ServiceForm extends React.Component {
             this.setState({ error: nextProps.submitFormError });
             return this.props.clearFormStatus();
         }
-        if (this.props.params.id && nextProps.service[this.props.params.id]) {
+        let { id } = this.props.params;
+        if (id && nextProps.service[id] &&
+                this.props.service[id] !== nextProps.service[id]) {
             let service = nextProps.service[this.props.params.id];
             let { name, description, category } = service;
+            category = category.id;
             this.setState({ name, description, category });
         }
     }

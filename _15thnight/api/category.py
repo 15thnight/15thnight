@@ -40,13 +40,9 @@ def create_category():
     name = form.name.data
     description = form.description.data
 
-    try:
-        new_category = Category(name=name, description=description)
-        new_category.save()
-        # TODO Check proper response code
-        return '', 201
-    except Exception, e:
-        return api_error('Unable to create Category: %s. %s' % (name, e))
+    category = Category(name=name, description=description)
+    category.save()
+    return '', 201
 
 
 @category_api.route('/category/<int:category_id>', methods=['PUT'])
@@ -55,12 +51,14 @@ def update_category(category_id):
     """
     Update an category.
     """
-    form = CategoryForm()
-    if not form.validate_on_submit():
-        return api_error(form.errors)
     category = Category.get(category_id)
     if not category:
         return api_error('Category not found', 404)
+    form = CategoryForm(
+        validate_unique_name=category.name != request.json.get('name')
+    )
+    if not form.validate_on_submit():
+        return api_error(form.errors)
 
     category.name = form.name.data
     category.description = form.description.data

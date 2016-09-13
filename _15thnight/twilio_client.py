@@ -17,6 +17,18 @@ from_number = TWILIO_FROM_NUMBER
 twilio_client = TwilioRestClient(account_sid, auth_token)
 
 
+def authenticate_message(msid):
+    """
+    Given a MassageSid, check the twilio API that it in fact exists.
+    """
+
+    try:
+        twilio_client.messages.get(msid)
+        return True
+    except:
+        return False
+
+
 def send_sms(to_number=None, body=None):
     """Sending some texts to some peeps."""
     try:

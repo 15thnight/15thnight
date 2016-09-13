@@ -33,45 +33,37 @@ def seed_services():
 
     food = Category.get_by_name("Food")
     if not food:
-        food = Category()
-        food.name = "Food"
-        food.description = ""
-        food.save()
+        food = Category(name="Food", description="").save()
     food_delivery = Service.get_by_name("Delivery")
     if not food_delivery:
-        food_delivery = Service()
-        food_delivery.name = "Delivery"
-        food_delivery.description = "Quick for those hungry children"
-        food_delivery.category = food
-        food_delivery.save()
+        food_delivery = Service(
+            name="Delivery", description="Quick for those hungry children",
+            category=food
+        ).save()
 
     shelter = Category.get_by_name("Shelter")
     if not shelter:
-        shelter = Category()
-        shelter.name = "Shelter"
-        shelter.description = "Housing for a limited time."
-        shelter.save()
+        shelter = Category(
+            name="Shelter", description="Housing for a limited time.").save()
     shelter_one_night = Service.get_by_name("One night")
     if not shelter_one_night:
-        shelter_one_night = Service()
-        shelter_one_night.name = "One night"
-        shelter_one_night.description = "A bed for the night"
-        shelter_one_night.category = shelter
-        shelter_one_night.save()
+        shelter_one_night = Service(
+            name="One night", description="A bed for the night",
+            category=shelter
+        ).save()
 
     clothing = Category.get_by_name("Clothing")
     if not clothing:
-        clothing = Category()
-        clothing.name = "Clothing",
-        clothing.description = "Shirts, shoes, and all things."
-        clothing.save()
+        clothing = Category(
+            name="Clothing", description="Shirts, shoes, and all things."
+        ).save()
     clothing_young = Service.get_by_name("0-5 clothing")
     if not clothing_young:
-        clothing_young = Service()
-        clothing_young.name = "0-5 clothing"
-        clothing_young.description = "Clothing for chidren ages 0 to 5"
-        clothing_young.category = clothing
-        clothing_young.save()
+        clothing_young = Service(
+            name="0-5 clothing",
+            description="Clothing for chidren ages 0 to 5",
+            category=clothing
+        ).save()
 
     return (food_delivery, shelter_one_night, clothing_young)
 
@@ -82,23 +74,32 @@ def seed_db():
     (food, shelter, clothing) = seed_services()
 
     # Seed an admin, advocate, and a few providers
-    User(
-        'Advocate Alice', 'Self', 'advocate@example.com', '1234', '5415551234',
-        [], 'advocate').save()
-    User('Provider Bob', 'Space', 'provider@example.com', '1234', '5415551234',
-         [food, shelter, clothing], 'provider').save()
-    User(
-        'Food Provider', 'Food4Youth', 'provider+food@example.com', '1234',
-        '5415551234', [food], 'provider').save()
-    User(
-        'Clothing Provider', 'Clothes4Youth', 'provider+clothes@example.com',
-        '1234', '5415551234', [clothing], 'provider').save()
-    User(
-        'Shelter Provider', 'Shelter4Youth', 'provider+shelter@example.com',
-        '1234', '5415551234', [shelter], 'provider').save()
-    User(
-        'Admin', '15th Night', 'admin@example.com', '1234', '5415551234', [],
-        'admin').save()
+    if not User.get_by_email("advocate@example.com"):
+        User(
+            'Advocate Alice', 'Self', 'advocate@example.com', '1234',
+            '5415551234', [], 'advocate').save()
+    if not User.get_by_email("provider@example.com"):
+        User(
+            'Provider Bob', 'Space', 'provider@example.com', '1234',
+            '5415551234', [food, shelter, clothing], 'provider').save()
+    if not User.get_by_email("provider+food@example.com"):
+        User(
+            'Food Provider', 'Food4Youth', 'provider+food@example.com', '1234',
+            '5415551234', [food], 'provider').save()
+    if not User.get_by_email("provider+clothes@example.com"):
+        User(
+            'Clothing Provider', 'Clothes4Youth',
+            'provider+clothes@example.com', '1234', '5415551234', [clothing],
+            'provider').save()
+    if not User.get_by_email("provider+shelter@example.com"):
+        User(
+            'Shelter Provider', 'Shelter4Youth',
+            'provider+shelter@example.com', '1234', '5415551234', [shelter],
+            'provider').save()
+    if not User.get_by_email("admin@example.com"):
+        User(
+            'Admin', '15th Night', 'admin@example.com', '1234', '5415551234',
+            [], 'admin').save()
 
 
 @manager.command

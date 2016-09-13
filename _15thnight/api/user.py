@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from flask_login import current_user
 
 from _15thnight.forms import FullUserForm, BaseUserForm
 from _15thnight.models import Service, User
@@ -59,15 +60,17 @@ def update_user(user_id):
     form = FullUserForm() if 'password' in request.json else BaseUserForm()
     if not form.validate_on_submit():
         return api_error(form.errors)
+
     user = User.get(user_id)
     if not user:
         return api_error('User not found', 404)
-    services = []
+
     if form.role.data == 'provider':
         user.services = Service.get_by_ids(form.services.data)
     user.email = form.email.data
     if 'password' in request.json:
         user.set_password(form.password.data)
+
     user.name = form.name.data
     user.organization = form.organization.data
     user.phone_number = form.phone_number.data
@@ -86,6 +89,16 @@ def delete_user(id):
     if not user:
         return api_error('User not found', 404)
     if user.id == current_user.id:
-        return api_error('Cannot delete self', 404)
+        return api_error('Cannot delete self', 400)
     user.delete()
     return '', 202
+
+
+@user_api.route('/user/by-email/<string:email>', methods=['GET'])
+def get_user_by_email(email):
+    """
+    Check if category exists by name.
+    """
+    return (
+        jsonify(True) if User.get_by_email(email) else jsonify(False)
+    )

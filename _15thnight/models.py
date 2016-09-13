@@ -199,10 +199,15 @@ class Alert(Model):
         return False
 
     def to_json(self):
+        # datetime.isoformat does not append +0000 when using UTC, javascript
+        # needs it, or the date is parsed as if it were in the local timezone
+        ldt = self.created_at.isoformat()
+        localeDateTime = ldt if ldt[-6] == "+" else "%s+0000" % ldt
+
         return dict(
             id=self.id,
             user=self.user,
-            created_at=self.created_at.strftime('%m/%d/%y %I:%M%p'),
+            created_at=localeDateTime,
             description=self.description,
             gender=self.gender,
             age=self.age,
@@ -291,9 +296,14 @@ class Response(Model):
             cls.user == user).filter(cls.alert == alert).all()
 
     def to_json(self):
+        # datetime.isoformat does not append +0000 when using UTC, javascript
+        # needs it, or the date is parsed as if it were in the local timezone
+        ldt = self.created_at.isoformat()
+        localeDateTime = ldt if ldt[-6] == "+" else "%s+0000" % ldt
+
         return dict(
             user=self.user,
-            created_at=self.created_at.strftime('%m/%d/%y %I:%M%p'),
+            created_at=localeDateTime,
             alert=self.alert,
             message=self.message
         )

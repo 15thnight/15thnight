@@ -2,6 +2,8 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import { Router, Route, browserHistory } from 'react-router';
 import { render }from 'react-dom';
+import moment from 'moment';
+import moment_timezone from 'moment-timezone';
 
 import 'lib/bootstrap3/dist/css/bootstrap.min.css';
 
@@ -19,4 +21,4 @@ render(
     <Provider store={store}>
         <Router history={browserHistory} routes={routes} />
     </Provider>
-, document.getElementById('entry'));
+, document.getElementById('entry'))

@@ -4,72 +4,130 @@ import ReactDOM from 'react-dom';
 import ReactNativeSlider from "react-html5-slider";
 import ReactFauxDOM from 'react-faux-dom';
 
-var DonutChart=React.createClass({
+function createChart(dom, props){
+  var width = props.width;
+  var height = props.height;
+  var width = width + 20;
+  var data = props.data;
+  var sum = data.reduce(function(memo, num){
+        return memo + num.count; 
+      }, 0);
 
-  componentDidMount: function(){
-      var width = document.getElementById('donutchart').clientWidth,
-          height =  200,
-          radius = Math.min(width, height) / 2;
+  var chart = d3.select(dom)
+    .append('svg')
+    .attr('class', 'd3').attr('width', width).attr('height', height)
+    .append('g')
+    .attr("transform", "translate(" + (props.width/2) + "," + (height/2) + ")");
 
-var color = d3.scale.ordinal()
-    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+  var outerRadius = props.width/2.2;
+  var innerRadius = props.width/8;
+  var arc = d3.svg.arc()
+    .outerRadius(outerRadius)
+    .innerRadius(innerRadius);
 
-var arc = d3.svg.arc()
-    .outerRadius(radius - 10)
-    .innerRadius(radius - 70);
+  var colors =  ['#FD9827', '#DA3B21', '#3669C9', '#1D9524', '#971497'];
+  var pie = d3.layout.pie()
+    .value(function(d) { return d.count; });
 
-var pie = d3.layout.pie()
-    .sort(null)
-    .value(function(d) { return d.population; });
-
-var svg = d3.select("#donutchart").append("svg")
-    .attr("width", width)
-    .attr("height", height)
-  .append("g")
-    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-var data = [
-    {age: '<5', population: 2704659},
-    {age: '5-13', population: 4499890},
-    {age: '14-17', population: 2159981},
-    {age: '18-24', population: 3853788}
-
-  ];  
-run(data);
-function run(data) {
-
-  var g = svg.selectAll(".arc")
-      .data(pie(data))
+  var g = chart.selectAll(".arc")
+    .data(pie(data))
     .enter().append("g")
-      .attr("class", "arc");
+    .attr("class", "arc")
+    .on("click", function(d) {
+      alert('you clicked ' + d.data.name)
+    })
+    .on('mouseover', function(d, i) {
+      d3.select(this)
+        .transition()
+        .duration(500)
+        .ease('bounce')
+        .attr("transform", function(d) {
+          var dist = 10;
+          d.midAngle = ((d.endAngle - d.startAngle)/ 2) + d.startAngle;
+          var x = Math.sin(d.midAngle) * dist;
+          var y = -Math.cos(d.midAngle) * dist;
+          return 'translate(' + x + ',' + y + ')';
+        });
+      d3.select(this).append("text").style("fill", function(d) { return colors[i]; }).attr("id", "percent")
+          .attr('transform', "translate(0,-5)")
+          .attr("text-anchor", "middle").attr("dy", ".35em").style("font", "bold 15px Arial")
+          .text(function(d) { return (((d.value/sum)*100).toFixed(1) + " %"); 
+        });
+          g.filter(function(e) { return e.value != d.value; }).style('opacity',0.5);
+        }).on('mouseout', function (d, i) {
+            d3.select(this)
+            .transition()
+            .duration(500)
+            .ease('bounce')
+            .attr('transform', 'translate(0,0)');
+            d3.select("#percent").remove();
+            g.filter(function(e) { return e.value != d.value; }).style('opacity',1)
+          });
 
-  g.append("path")
-      .attr("d", arc)
-      .style("fill", function(d) { return color(d.data.age); });
+    g.append("path")
+    .style("fill", function(d, i) { return colors[i]; })
+    .transition().delay(function(d, i) { return i * 400; }).duration(500)
+    .attrTween('d', function(d) {
+         var i = d3.interpolate(d.startAngle, d.endAngle);
+         return function(t) {
+             d.endAngle = i(t);
+           return arc(d);
+         }
+    });
 
-  g.append("text")
-      .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
-      .attr("dy", ".35em")
-      .text(function(d) { return d.data.age; });
+    var center = 
+  g.filter(function(d) { return d.endAngle - d.startAngle > .1; }).append("text").style("fill", "white")
+    .attr('transform', function(d){
+      return "translate(" + arc.centroid(d) + ")";
+    })
+    .attr("text-anchor", "middle").attr("dy", ".35em")
+    .text(function(d) { return d.value; });
+
 };
 
-function type(d) {
-  d.population = +d.population;
-  return d;
-}
-
+var PieChart = React.createClass({
+  propTypes: {
+    width: React.PropTypes.number,
+    height: React.PropTypes.number,
+    data: React.PropTypes.array.isRequired,
   },
 
-    render:function(){
-        
+  getDefaultProps: function() {
+    return {
+      width: 200,
+      height: 200,
+      
+    };
+  },
 
-        return (
-            <div>
-                
-            
-            </div>
-        );
+  getDefaultState: function(){
+    return {
+      render: false
     }
+  },
+
+  render: function() {
+
+    return (
+      <div>
+      </div>
+    );
+  },
+
+  componentDidMount: function() {
+    if(this.props.data !== undefined){
+      var dom = ReactDOM.findDOMNode(this);
+      createChart(dom, this.props);
+    }
+  },
+
+  shouldComponentUpdate: function() {
+      if(this.props.data !== undefined){
+        var dom = ReactDOM.findDOMNode(this);
+        createChart(dom, this.props);
+      }
+      return false;
+  }
 });
 
-export default DonutChart;
+export default PieChart; 

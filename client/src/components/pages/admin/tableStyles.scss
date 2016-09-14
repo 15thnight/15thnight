@@ -330,6 +330,23 @@ table {
   width: 12px;
 }
 /** /top tiles **/
+.one {
+  color: #FD9827;
+}
+.two {
+  color: #DA3B21;
+}
+.three {
+  color: #3669C9;
+}
+.four {
+  color: #1D9524;
+}
+.five {
+  color: #971497;
+}
+
+
 .blue {
   color: #3498DB;
 }
@@ -791,7 +808,7 @@ body {
   height: 320px;
 }
 .fixed_height_390 {
-  height: 390px;
+  height: 500px;
 }
 .fixed_height_200 {
   height: 200px;
@@ -1502,7 +1519,7 @@ svg {
 
 .area {
   fill: steelblue;
-  clip-path: url(#clip);
+  // clip-path: url(#clip);
 }
 
 .axis path,
@@ -1512,11 +1529,11 @@ svg {
   shape-rendering: crispEdges;
 }
 
-.brush .extent {
-  stroke: #fff;
-  fill-opacity: .125;
-  shape-rendering: crispEdges;
-}
+// .brush .extent {
+//   stroke: #fff;
+//   fill-opacity: .125;
+//   shape-rendering: crispEdges;
+//}
 tbody{
   border-bottom: none;
 }

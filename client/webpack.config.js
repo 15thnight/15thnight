@@ -28,16 +28,20 @@ const config = {
     resolve: {
         alias: {
             lib: __dirname + '/node_modules',
+
             actions: __dirname + '/src/actions',
+            alert: __dirname + '/src/components/alert',
             components: __dirname + '/src/components',
             constants: __dirname + '/src/constants',
             form: __dirname + '/src/components/form',
             pages: __dirname + '/src/components/pages',
+            polyfill: __dirname + '/src/polyfill',
             reducers: __dirname + '/src/reducers',
             routes: __dirname + '/src/routes',
             store: __dirname + '/src/store',
             style: __dirname + '/style',
-            table: __dirname + '/src/components/table'
+            table: __dirname + '/src/components/table',
+            util: __dirname + '/src/util'
         },
         extensions: ['', '.js', '.jsx', '.css'],
         modulesDirectories: [

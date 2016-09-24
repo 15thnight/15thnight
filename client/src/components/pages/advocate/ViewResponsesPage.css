@@ -1,0 +1,66 @@
+:local(.resolveProgress) {
+    border-radius: 33px;
+    border: 1px solid #000;
+    background: #ddd;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    margin: 15px 0 15px;
+}
+
+:local(.progressLine) {
+    background-color: green;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+
+:local(.progressPercent) {
+    position: relative;
+    z-index: 1;
+    font-weight: bold;
+    padding: 5px;
+    font-size: 18px;
+}
+
+:local(.need) {
+    border-bottom: 1px solid #aaa;
+    padding-bottom: 15px;
+}
+
+:local(.need:last-child) {
+    border-bottom: none;
+}
+
+:local(.provisionLabel) {
+    display: inline-block;
+    width: 77px;
+    margin-right: 10px;
+    text-align: right;
+    font-weight: bold;
+}
+
+:local(.provisionField) {
+    display: inline-block;
+}
+
+:local(.provision) {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+:local(.provision:last-child) {
+    border-bottom: none;
+    margin: 0;
+    padding: 0;
+}
+
+:local(.unresolved) {
+    color: red;
+}
+
+:local(.resolved) {
+    color: green;
+}

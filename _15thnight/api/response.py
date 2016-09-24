@@ -27,7 +27,7 @@ def create_response():
         - alert_id: alert identifier
         - message: response message
     """
-    if 'alert_id' not in request.json or 'message' not in request.json:
+    if 'alert_id' not in request.json or 'needs_provided' not in request.json:
         return api_error('Invalid form')
 
     alert = Alert.get(int(request.json['alert_id']))
@@ -35,13 +35,13 @@ def create_response():
     if not alert:
         return api_error('Alert not found.', 404)
 
-    respond_to_alert(current_user, request.json['message'], alert)
+    respond_to_alert(current_user, request.json['needs_provided'], alert)
 
     return '', 201
 
 
 @response_api.route('/response/<uuid>', methods=['PUT'])
-@required_access('advocate', 'admin')
+@required_access('provider', 'admin')
 def update_response():
     """
     Update a response to an alert.
@@ -50,11 +50,12 @@ def update_response():
 
 
 @response_api.route('/response/<uuid>', methods=['DELETE'])
-@required_access('advocate', 'admin')
+@required_access('provider', 'admin')
 def delete_response(uuid):
     """
     Delete a response to an alert.
     """
+    return 'Not Implemented', 501 # We currently don't support a UI for this
     alert = Alert.get(uuid)
     if not alert:
         return api_error('Alert not found.', 404)

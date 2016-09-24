@@ -10,6 +10,14 @@
   border-style: thin;
 }
 
+input.disabled, textarea.disabled {
+  user-select : none;
+    -moz-user-select : none;
+    -webkit-user-select : none;
+    color: gray;
+    cursor: pointer;
+}
+
 /* On hover, the color of .btn will transition to white with black text */
 .content .btn:hover, .btn:focus {
   border: 1px solid #22313F;

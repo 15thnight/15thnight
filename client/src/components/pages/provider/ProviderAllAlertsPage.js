@@ -8,25 +8,20 @@ import { AlertTable } from 'table';
 class ProviderActiveAlertsPage extends React.Component {
 
     componentWillMount() {
-        if (this.props.alertRedirect) {
-            this.props.setAlertRedirect(null);
-            return this.props.router.push('/respond-to/' + this.props.alertRedirect);
-        }
-        this.props.getAlerts();
+        this.props.getAlerts('all');
     }
 
     render() {
         let { alerts } = this.props;
         const description = (
-            'This is a list of alerts created in '+
-            'the last 2 days with unresolved needs or ' +
-            'needs you haven\'t responded to.'
+            'This is a list of all alerts you\'ve been ' +
+            'notified of.'
         );
         return (
             <AlertTable
               alerts={alerts}
               role='provider'
-              title='Active Alerts'
+              title='All Alerts'
               description={description} />
         );
     }

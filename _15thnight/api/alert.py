@@ -1,10 +1,10 @@
 from datetime import datetime
-from flask import Blueprint
+from flask import Blueprint, request
 from flask.ext.login import current_user, login_required
 
 from _15thnight.core import send_out_alert
 from _15thnight.forms import AlertForm
-from _15thnight.models import Alert, Need, Response
+from _15thnight.models import Alert, Need, NeedResolveHistory, Response
 from _15thnight.util import required_access, jsonify, api_error
 
 
@@ -22,9 +22,15 @@ def get_alerts():
     """
     # TODO: pagination
     if current_user.role == 'advocate':
-        alerts = Alert.get_user_alerts(current_user)
+        alerts = Alert.get_advocate_alerts(current_user)
     elif current_user.role == 'provider':
-        alerts = Alert.get_active_alerts_for_provider(current_user)
+        scope = request.args.get('scope')
+        if scope == 'all':
+            alerts = Alert.get_provider_alerts(current_user)
+        elif scope == 'responded':
+            alerts = Alert.get_responded_alerts_for_provider(current_user)
+        else:
+            alerts = Alert.get_active_alerts_for_provider(current_user)
     else:
         alerts = Alert.get_alerts()
     return jsonify(alerts)
@@ -64,10 +70,10 @@ def create_alert():
 
 
 @alert_api.route(
-    '/alert/<int:alert_id>/resolve/<int:need_id>',
+    '/alert/<int:alert_id>/<any("resolve", "unresolve"):mark>/<int:need_id>',
     methods=['POST'])
 @required_access('advocate')
-def resolve_alert_need(alert_id, need_id):
+def resolve_alert_need(alert_id, mark, need_id):
     alert = Alert.get(alert_id)
     if not alert:
         return api_error('Alert not found')
@@ -76,9 +82,11 @@ def resolve_alert_need(alert_id, need_id):
     need = Need.get_by_id_and_alert(need_id, alert)
     if not need:
         return api_error('Need not found')
-    need.resolved = True
-    need.resolved_at = datetime.utcnow()
+    need.resolved = mark == 'resolve'
+    need.resolved_at = datetime.utcnow() if need.resolved else None
     need.save()
+    history = NeedResolveHistory(need=need, resolved=need.resolved)
+    history.save()
     return jsonify(alert.to_advocate_json())
 
 
@@ -97,6 +105,7 @@ def delete_alert(id):
     """
     Delete an alert.
     """
+    return 'Not Implemented', 501 # We do not support a UI for this
     if current_user.role == 'advocate':
         alert = Alert.get_user_alert(current_user, id)
     else:

@@ -12,10 +12,10 @@ class Chrome extends React.Component {
     }
 
     render() {
-        let { current_user } = this.props;
+        let { current_user, routing } = this.props;
         return (
             <div>
-                <Navbar current_user={current_user} />
+                <Navbar current_user={current_user} routing={routing} />
                 <div className="container-fluid">
                     <Flash />
                     { this.props.children }
@@ -27,7 +27,8 @@ class Chrome extends React.Component {
 
 function mapStateToProps(state, ownProps) {
     return {
-        current_user: state.current_user
+        current_user: state.current_user,
+        routing: state.routing
     }
 }
 

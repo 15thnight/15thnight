@@ -6,13 +6,20 @@ export default class AlertTable extends React.Component {
 
     render() {
         let { role, alerts } = this.props;
-        let respondHeaderColumn = (<th>Responses</th>);
+        let headerColumns = [];
         if (role === 'provider') {
-            respondHeaderColumn = (<th>Respond</th>);
+            headerColumns.push(
+                <th key="response-count"># of times you<br/>have responded</th>,
+                <th key="respond">Respond</th>
+            );
+        } else { // advocates, admins
+            headerColumns.push(<th key="responses">Responses</th>)
         }
-        let advocateHeaderColumns;
         if (role === 'advocate') {
-            advocateHeaderColumns = [<th key="resolved">% Resolved</th>, <th key="view"/>];
+            headerColumns.push(
+                <th key="resolved">% Resolved</th>,
+                <th key="view"/>
+            );
         }
         return (
             <div>
@@ -21,14 +28,13 @@ export default class AlertTable extends React.Component {
                 <table className="table">
                     <thead>
                         <tr>
-                            { role === 'admin' && <th>Advocate</th> }
+                            <th>Sent By</th>
                             <th>Sent At</th>
                             <th>Description</th>
                             <th>Gender</th>
                             <th>Age</th>
                             <th>Needs</th>
-                            { respondHeaderColumn }
-                            { advocateHeaderColumns }
+                            { headerColumns }
                         </tr>
                     </thead>
                     <tbody>
@@ -37,46 +43,68 @@ export default class AlertTable extends React.Component {
                                 let name = need.service.name;
                                 return (
                                     <div>
-                                        {need.resolved ? <del>{name}</del> : <span>{name}</span>}
+                                        {
+                                            need.resolved ?
+                                            <del>{name}</del> :
+                                            <span>{name}</span>
+                                        }
+                                        {
+                                            (role === 'provider' &&
+                                            need.provisions.length > 0) &&
+                                            <span> (responded to {need.provisions.length} time{need.provisions.length > 1 && 's'})</span>
+                                        }
                                     </div>
                                 );
                             });
-                            let responseColumn = (<div>TODO</div>);
-                            if (role === 'provider') {
-                                responseColumn = (
-                                    <Link
-                                      to={"/respond-to/" + alert.id}
-                                      className="btn btn-success">
-                                        Respond
-                                    </Link>
-                                );
-                            } else if (role === 'advocate') {
-                                responseColumn = (
-                                    <Link
-                                      to={'/view-responses/' + alert.id}
-                                      className="btn btn-primary">
-                                        View Responses
-                                    </Link>
-                                );
-                            }
-                            let totalResolved = alert.needs.reduce((total, need) => { return need.resolved ? total + 1 : total }, 0);
-                            let advocateColumns;
+                            let columns = [];
                             if (role === 'advocate') {
-                                advocateColumns = [
-                                    <td key="responses">{ alert.responses.length }</td>,
-                                    <td key="resolved">{ Math.floor((totalResolved / alert.needs.length) * 100)}%</td>
-                                ]
+                                let totalResolved = alert.needs.reduce((total, need) => { return need.resolved ? total + 1 : total }, 0);
+                                columns.push(
+                                    <td key="responses">
+                                        { alert.responses.length }
+                                    </td>,
+                                    <td key="resolved">
+                                        { Math.floor((totalResolved / alert.needs.length) * 100)}%
+                                    </td>
+                                )
+                            }
+                            if (role === 'provider') {
+                                columns.push(
+                                    <td key="response-count">
+                                        {alert.responses.length}
+                                    </td>,
+                                    <td key="respond-to">
+                                        <Link
+                                          to={"/respond-to/" + alert.id}
+                                          className="btn btn-success">
+                                            Respond
+                                        </Link>
+                                    </td>
+                                );
+                            } else { // advocates, admins
+                                columns.push(
+                                    <td key="view-responses">
+                                        <Link
+                                          to={'/view-responses/' + alert.id}
+                                          className="btn btn-primary">
+                                            View Responses
+                                        </Link>
+                                    </td>
+                                );
                             }
                             return (
                                 <tr key={alert.id}>
-                                    { role === 'admin' && <td>{ alert.user.email }</td>}
+                                    <td>
+                                        { alert.user.name } <br/>
+                                        { alert.user.organization }<br/>
+                                        { alert.user.email } &middot; { alert.user.phone_number }
+                                    </td>
                                     <td>{ alert.created_at }</td>
                                     <td>{ alert.description }</td>
                                     <td>{ alert.gender }</td>
                                     <td>{ alert.age }</td>
                                     <td>{ needs }</td>
-                                    { advocateColumns }
-                                    <td>{ responseColumn }</td>
+                                    { columns }
                                 </tr>
                             );
                         })}

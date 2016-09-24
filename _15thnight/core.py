@@ -31,14 +31,14 @@ def send_out_alert(alert_form):
         needs_provided = [
             need for need in provider.services if need.id in need_ids
         ]
+        gender = ' ' + alert.gender if alert.gender != 'unspecified' else ''
         needs = ", ".join([need.name for need in needs_provided])
         body = ('New 15th night alert!\n'
-                'Age: %d\n'
-                'Gender: %s\n'
+                '%d y/o%s\n'
                 'Needs: %s\n'
                 'Desc: %s\n'
-                'Respond at %s/respond-to/%s') % (
-                    alert.age, alert.gender, needs,
+                'Respond at %s/r/%s') % (
+                    alert.age, gender, needs,
                     alert_form.description.data, HOST_NAME, str(alert.id)
                 )
         provider_notified = ProviderNotified(

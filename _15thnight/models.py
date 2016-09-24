@@ -159,25 +159,25 @@ class Alert(Model):
             .filter(cls.created_at > time_to_filter_from)\
             .order_by(desc(cls.created_at)) \
             .all()
-        responded_alerts = map(
-            lambda respond: respond.alert_id,
-            Response.query.filter(
-                Response.user_id == user.id
-            )
-        )
         capabilities = set(map(lambda service: service.id, user.services))
         alerts = []
+        def need_mapper(need):
+            """
+            Need is applicable it's not marked as resolved
+            or the provider hasn't responded to it.
+            """
+            if need.resolved or len(NeedProvided.get_by_need_and_provider(need, user)) > 0:
+                return None
+            return need.service.id
         for alert in alerts_past_two_days:
-            service_ids = set(map(lambda need: need.service.id, alert.needs))
-            if (alert.id not in responded_alerts
-                    and len(capabilities.intersection(service_ids)) > 0):
+            service_ids = set(map(need_mapper, alert.needs))
+            if (len(capabilities.intersection(service_ids)) > 0):
                 alerts.append(alert)
-
-        return alerts
+        return [alert.to_provider_json(user) for alert in alerts]
 
     @classmethod
-    def get_user_alerts(cls, user):
-        alerts = cls.query.filter(cls.user == user) \
+    def get_advocate_alerts(cls, advocate):
+        alerts = cls.query.filter(cls.user == advocate) \
             .order_by(desc(Alert.created_at)).all()
         return [alert.to_advocate_json() for alert in alerts]
 
@@ -189,6 +189,24 @@ class Alert(Model):
     @classmethod
     def get_alerts(cls):
         return cls.query.order_by(desc(Alert.created_at)).all()
+
+    @classmethod
+    def get_provider_alerts(cls, provider):
+        alerts = Alert.query \
+            .join(cls.providers_notified) \
+            .filter(ProviderNotified.provider_id==provider.id) \
+            .order_by(desc(cls.created_at)) \
+            .distinct().all()
+        return [alert.to_provider_json(provider) for alert in alerts]
+
+    @classmethod
+    def get_responded_alerts_for_provider(cls, provider):
+        alerts = Alert.query \
+            .join(cls.responses) \
+            .filter(Response.user_id==provider.id) \
+            .order_by(desc(cls.created_at)) \
+            .distinct().all()
+        return [alert.to_provider_json(provider) for alert in alerts]
 
     def provider_has_permission(self, provider):
         """Checks if a provider was notified for this alert"""
@@ -391,6 +409,7 @@ class Need(Model):
 
     def to_advocate_json(self):
         return extend(self.to_json(), dict(
+            resolve_history=self.resolve_history,
             provisions=[
                 provision.to_advocate_json() for provision in self.provisions
             ]
@@ -401,6 +420,21 @@ class Need(Model):
             provisions=NeedProvided.get_by_need_and_provider(self, provider)
         ))
 
+class NeedResolveHistory(Model):
+    __tablename__ = 'need_resolve_history'
+
+    id = Column(Integer, primary_key=True)
+    need_id = Column(ForeignKey('need.id'))
+    need = relationship('Need', backref='resolve_history')
+    resolved = Column(Boolean, default=False, nullable=False)
+    resolved_at = Column(DateTime, default=datetime.utcnow)
+
+    def to_json(self):
+        return dict(
+            id=self.id,
+            resolved=self.resolved,
+            resolved_at=to_local_datetime(self.resolved_at)
+        )
 
 # MtM tables
 user_categories = Table(

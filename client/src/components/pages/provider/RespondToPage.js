@@ -9,7 +9,7 @@ import {
     getAlert, sendResponse, clearFormStatus
 } from 'actions';
 
-import classes from './RespondToPage.css';
+import styles from './RespondToPage.css';
 
 class RespondToPage extends React.Component {
 
@@ -112,17 +112,35 @@ class RespondToPage extends React.Component {
                 }
                 <AlertInfo alert={alert} />
                 <br/>
-                <h4>If you want to help, select which needs you can provide along with some details:</h4>
+                <h4 className={styles.needFormStart}>
+                    Please select the services for which you can
+                    provide assistance.
+                    Provide any pertinent details in the text boxes:
+                </h4>
                 <FormErrors errors={this.state.error['form']} />
                 <form className="form-horizontal" onSubmit={this.handleSubmit.bind(this)}>
-                    {alert.needs.map(need => {
+                    {alert.needs.map((need, key) => {
                         let { service, provisions } = need;
                         return (
-                            <FormGroup label={service.name} key={need.id}>
-                                <div className="form-group">
-                                    <div className="col-sm-offset-1 col-sm-11">
-                                        {
-                                            provisions.length > 0 &&
+                            <FormGroup
+                                label={service.name}
+                                key={need.id}
+                                id={"need" + key}
+                                className={styles.need}>
+                                {
+                                    need.resolved &&
+                                    <div>
+                                        This need has already been pledged by 
+                                        another partner agency. If you are still 
+                                        willing and able to fulfill it as a backup,
+                                        please respond with details in the description 
+                                        box.
+                                    </div>
+                                }
+                                {
+                                    provisions.length > 0 &&
+                                    <div className="form-group">
+                                        <div className="col-sm-offset-1 col-sm-11">
                                             <div>
                                                 <div>You have responded to this need {provisions.length} time{provisions.length > 1 && 's'}</div>
                                                 { provisions.map(provision => {
@@ -134,9 +152,9 @@ class RespondToPage extends React.Component {
                                                     )
                                                 })}
                                             </div>
-                                        }
+                                        </div>
                                     </div>
-                                </div>
+                                }
                                 <div className="form-group">
                                     <div className="col-sm-1">
                                         <Input
@@ -156,7 +174,7 @@ class RespondToPage extends React.Component {
                                         {
                                             this.state.checked.indexOf(need.id) < 0 &&
                                             <div
-                                              className={classes.textareaMask}
+                                              className={styles.textareaMask}
                                               onClick={this.handleMessageClick.bind(this, need)}></div>
                                         }
                                         <FormErrors errors={this.state.error[need.id]} />

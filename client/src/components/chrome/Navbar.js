@@ -50,6 +50,7 @@ export default class Navbar extends React.Component {
 
     render() {
         let { current_user } = this.props;
+        let { pathname } = this.props.routing.locationBeforeTransitions;
         let user_menu = (<li><Link to="/login">Login</Link></li>);
         if (current_user) {
             user_menu = [];
@@ -59,14 +60,32 @@ export default class Navbar extends React.Component {
             }
             switch(current_user.role) {
                 case 'provider':
+                    if (pathname === '/') {
+                        pathname = '/active-alerts'
+                    }
                     user_menu.push(
-                        <li key='active-alerts'><Link to='/active-alerts'>Active Alerts</Link></li>
+                        <li className={pathname === '/active-alerts' && 'active'} key='active-alerts'>
+                            <Link to='/active-alerts'>Active Alerts</Link>
+                        </li>,
+                        <li className={pathname === '/responded-alerts' && 'active'} key='responded-alerts'>
+                            <Link to='/responded-alerts'>Responded Alerts</Link>
+                        </li>,
+                        <li className={pathname === '/all-alerts' && 'active'} key='all-alerts'>
+                            <Link to='/all-alerts'>All Alerts</Link>
+                        </li>
                     );
                     break;
                 case 'advocate':
+                    if (pathname === '/') {
+                        pathname = '/send-alert';
+                    }
                     user_menu.push(
-                        <li key='send-alert'><Link to='/send-alert'>Send an Alert</Link></li>,
-                        <li key='alert-history'><Link to='/alert-history'>Alert History</Link></li>
+                        <li className={pathname === '/send-alert' && 'active'} key='send-alert'>
+                            <Link to='/send-alert'>Send an Alert</Link>
+                        </li>,
+                        <li className={pathname === '/alert-history' && 'active'} key='alert-history'>
+                            <Link to='/alert-history'>Alert History</Link>
+                        </li>
                     );
                     break;
                 case 'admin':

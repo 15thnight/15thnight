@@ -83,9 +83,9 @@ def seed_db():
 
     # Seed an admin, advocate, and a few providers
     User(
-        'Advocate Alice', 'Self', 'advocate@example.com', '1234', '5415551234',
+        'Advocate Alice', 'School District 1', 'advocate@example.com', '1234', '5415551234',
         [], 'advocate').save()
-    User('Provider Bob', 'Space', 'provider@example.com', '1234', '5415551234',
+    User('Provider Bob', 'Provider4Youth', 'provider@example.com', '1234', '5415551234',
          [food, shelter, clothing], 'provider').save()
     User(
         'Food Provider', 'Food4Youth', 'provider+food@example.com', '1234',

@@ -12,6 +12,7 @@ const childRoutes = [
     { path: '/login'                        , component: LoginPage },
     { path: '/forgot-password'              , component: ForgotPasswordPage },
     { path: '/reset-password/:email/:token' , component: ResetPasswordPage },
+    { path: '/r/:alertId'                   , component: RespondToRedirect },
     { path: '/respond-to/:alertId'          , component: RespondToRedirect }
 ]
 

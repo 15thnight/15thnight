@@ -20,7 +20,8 @@ let request = request_factory(document.getElementById('csrf').content);
 
 function dispatchAppError(message) {
     return {
-        type: APP_ERROR
+        type: APP_ERROR,
+        message
     }
 }
 
@@ -289,8 +290,11 @@ export function deleteCategory(id) {
     }
 }
 
-export function getAlerts() {
-    let promise = request.get('/api/v1/alert');
+export function getAlerts(scope='') {
+    if (scope) {
+        scope = '?scope=' + scope;
+    }
+    let promise = request.get('/api/v1/alert' + scope);
     return dispatch => {
         promise.then(
             res => {
@@ -317,7 +321,11 @@ export function getAlert(id) {
                 });
             },
             err => {
-                dispatch(dispatchFormError(err, 'An unknown error occured while getting alerts.'));
+                let error = 'Unknown error occured while loading alert';
+                if (err.response.data && err.response.data.error) {
+                    error = 'Error occured while loading alert: ' + err.response.data.error;
+                }
+                dispatch(dispatchAppError(error));
             }
         )
     }
@@ -344,6 +352,24 @@ export function resolveAlertNeed(alertId, needId) {
     return dispatch => {
         request
             .post('/api/v1/alert/' + alertId + '/resolve/' + needId)
+            .then(
+                res => {
+                    dispatch({
+                        type: GET_ALERT,
+                        alert: res.data
+                    })
+                },
+                err => {
+                    // TODO
+                }
+            )
+    }
+}
+
+export function unresolveAlertNeed(alertId, needId) {
+    return dispatch => {
+        request
+            .post('/api/v1/alert/' + alertId + '/unresolve/' + needId)
             .then(
                 res => {
                     dispatch({

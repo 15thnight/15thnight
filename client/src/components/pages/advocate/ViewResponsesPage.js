@@ -2,7 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 
-import { getAlert, resolveAlertNeed } from 'actions';
+import {
+    getAlert,
+    resolveAlertNeed,
+    unresolveAlertNeed
+} from 'actions';
 import { AlertInfo } from 'alert';
 import { FormGroup } from 'form';
 
@@ -27,7 +31,8 @@ class ViewResponsesPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            alert: null
+            alert: null,
+            showResolveHistory: {}
         }
     }
 
@@ -44,6 +49,17 @@ class ViewResponsesPage extends React.Component {
 
     handleMarkResolvedClick(needId) {
         this.props.resolveAlertNeed(this.props.params.id, needId);
+    }
+
+    handleUnmarkResolvedClick(needId) {
+        this.props.unresolveAlertNeed(this.props.params.id, needId);
+    }
+
+    handleResolveHistoryClick(needId, show, e) {
+        e.preventDefault();
+        let { showResolveHistory } = this.state;
+        showResolveHistory[needId] = show;
+        this.setState({ showResolveHistory });
     }
 
     render() {
@@ -64,12 +80,13 @@ class ViewResponsesPage extends React.Component {
                     </div>
                 </div>
                 <div className="form-horizontal">
-                    {alert.needs.map(need => {
+                    {alert.needs.map((need, key) => {
                         let { service, provisions } = need;
                         return (
                             <FormGroup
                               label={service.name + ':'}
                               key={need.id}
+                              id={"need" + key}
                               className={styles.need}>
                                 <div>
                                     <strong>Status: </strong>
@@ -82,6 +99,13 @@ class ViewResponsesPage extends React.Component {
                                     <div>
                                         <strong>Resolved at: </strong>
                                         { need.resolved_at }
+                                        <br/>
+                                        <span
+                                          className="btn btn-danger"
+                                          onClick={this.handleUnmarkResolvedClick.bind(this, need.id)}
+                                        >
+                                            Unmark as Resolved
+                                        </span>
                                     </div> :
                                     <div>
                                         <span
@@ -91,6 +115,37 @@ class ViewResponsesPage extends React.Component {
                                             Mark as Resolved
                                         </span>
                                     </div>
+                                }
+                                {
+                                    need.resolve_history.length > 1 &&
+                                    (this.state.showResolveHistory[need.id] ?
+                                        <a href="#"
+                                          onClick={ this.handleResolveHistoryClick.bind(this, need.id, false) }
+                                        >
+                                            Hide Resolve History
+                                        </a> :
+                                        <a href="#"
+                                          onClick={ this.handleResolveHistoryClick.bind(this, need.id, true)}
+                                        >
+                                            Show Resolve History
+                                        </a>
+                                    )
+                                }
+                                {
+                                    this.state.showResolveHistory[need.id] &&
+                                    need.resolve_history.reverse().map(history => {
+                                        return (
+                                            <div>
+                                                <span className={styles.resolveHistoryStatus}>
+                                                    { history.resolved ?
+                                                        <span className={styles.resolved}>Resolved</span> :
+                                                        <span className={styles.unresolved}>Unresolved</span>
+                                                    }
+                                                </span>
+                                                <span> at { history.resolved_at }</span>
+                                            </div>
+                                        )
+                                    })
                                 }
                                 <div>
                                     <strong>Responses: </strong>
@@ -134,5 +189,6 @@ function mapStateToProps(state) {
 
 export default connect(mapStateToProps, {
     getAlert,
-    resolveAlertNeed
+    resolveAlertNeed,
+    unresolveAlertNeed
 })(ViewResponsesPage);

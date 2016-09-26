@@ -1,4 +1,5 @@
 import { combineReducers } from 'redux';
+import { routerReducer as routing } from 'react-router-redux';
 
 import {
     LOGIN_USER, LOGOUT_USER, UPDATE_USER,
@@ -141,6 +142,9 @@ function alert(state = {}, action) {
                 if (need.resolved_at) {
                     need.resolved_at = format_datetime(need.resolved_at);
                 }
+                if (need.resolve_history) {
+                    need.resolve_history.map(history => history.resolved_at = format_datetime(history.resolved_at))
+                }
             })
             return {[alert.id]: action.alert};
         case GET_ALERT_ERROR:
@@ -181,6 +185,7 @@ function submitFormSuccess(state = null, action) {
     }
 }
 
+
 const rootReducer = combineReducers({
     current_user,
     users,
@@ -194,7 +199,9 @@ const rootReducer = combineReducers({
     flash,
     alertRedirect,
     submitFormSuccess,
-    submitFormError
+    submitFormError,
+
+    routing
 });
 
 export default rootReducer;

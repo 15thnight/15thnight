@@ -6,3 +6,18 @@
     bottom: 0;
     cursor: pointer;
 }
+
+:local(.needFormStart) {
+    border-top: 1px solid #ccc;
+    padding-top: 18px;
+}
+
+:local(.need) {
+    margin-top: -98px;
+    padding-top: 98px;
+    border-bottom: 1px solid #ccc;
+}
+
+:local(.need:last-child) {
+    border-bottom: none;
+}

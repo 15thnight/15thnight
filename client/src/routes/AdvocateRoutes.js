@@ -8,7 +8,7 @@ import {
 
 const childRoutes = [
     { path: '/'                   , component: AlertFormPage },
-    { path: '/alert-form'         , component: AlertFormPage },
+    { path: '/send-alert'         , component: AlertFormPage },
     { path: '/alert-history'      , component: AdvocateAlertHistoryPage },
     { path: '/view-responses/:id' , component: ViewResponsesPage}
 ]

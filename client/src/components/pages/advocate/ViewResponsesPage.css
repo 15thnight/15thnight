@@ -27,12 +27,19 @@
 :local(.need) {
     border-bottom: 1px solid #aaa;
     padding-bottom: 15px;
+    margin-top: -98px;
+    padding-top: 98px;
 }
 
 :local(.need:last-child) {
     border-bottom: none;
 }
 
+:local(.resolveHistoryStatus) {
+    display: inline-block;
+    width: 100px;
+    text-align: right;
+}
 :local(.provisionLabel) {
     display: inline-block;
     width: 77px;

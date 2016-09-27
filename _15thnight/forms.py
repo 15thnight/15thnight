@@ -140,3 +140,16 @@ class UpdateProfileForm(Form):
         self.services.choices = [
             (service.id, service.name) for service in Service.all()
         ]
+
+
+class ResolveNeedForm(Form):
+    notes = TextField('Notes')
+    message = TextField('Message')
+    provisions = SelectMultipleField('Provisions', choices=[], coerce=int)
+
+    def __init__(self, *args, **kwargs):
+        super(ResolveNeedForm, self).__init__(*args, **kwargs)
+        need = kwargs.get('need')
+        self.provisions.choices = [
+            (provision.id, provision.id) for provision in need.provisions
+        ]

@@ -15,6 +15,8 @@ export const GET_ALERT = 'get_alert';
 export const GET_ALERT_ERROR = 'get_alert_error';
 export const SET_ALERT_REDIRECT = 'set_alert_redirect';
 
+export const GET_NEED = 'get_need';
+
 export const GET_CATEGORY = 'get_category';
 export const GET_CATEGORY_ERROR = 'get_category_error';
 export const GET_CATEGORIES = 'get_categories';

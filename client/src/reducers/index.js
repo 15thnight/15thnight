@@ -6,6 +6,7 @@ import {
     GET_USERS, GET_USER, GET_USER_ERROR,
     SUBMIT_FORM_SUCCESS, SUBMIT_FORM_ERROR, CLEAR_FORM_STATUS,
     GET_ALERTS, GET_ALERT, GET_ALERT_ERROR, SET_ALERT_REDIRECT,
+    GET_NEED,
     GETTING_CATEGORIES, GET_CATEGORIES, GET_CATEGORY, GET_CATEGORY_ERROR,
     GETTING_SERVICES, GET_SERVICES, GET_SERVICE, GET_SERVICE_ERROR,
     CLEAR_FLASH, APP_ERROR
@@ -97,7 +98,7 @@ function category(state = {}, action) {
 function services(state = null, action) {
     switch (action.type) {
         case GET_SERVICES:
-            return action.categories;
+            return action.services;
         case GETTING_SERVICES:
             return null;
         default:
@@ -108,7 +109,7 @@ function services(state = null, action) {
 function service(state = {}, action) {
     switch (action.type) {
         case GET_SERVICE:
-            return {[action.id]: action.category};
+            return {[action.id]: action.service};
         case GET_SERVICE_ERROR:
             return {[action.id]: action.error};
         default:
@@ -163,6 +164,16 @@ function alertRedirect(state = null, action) {
     }
 }
 
+function need(state = {}, action) {
+    switch(action.type) {
+        case GET_NEED:
+            let { need } = action;
+            return {[need.id]: action.need}
+        default:
+            return state;
+    }
+}
+
 function submitFormError(state = null, action) {
     switch (action.type) {
         case SUBMIT_FORM_ERROR:
@@ -196,6 +207,7 @@ const rootReducer = combineReducers({
     service,
     alerts,
     alert,
+    need,
     flash,
     alertRedirect,
     submitFormSuccess,

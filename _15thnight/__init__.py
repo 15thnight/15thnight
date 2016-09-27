@@ -6,7 +6,8 @@ from werkzeug.datastructures import MultiDict
 
 from _15thnight import database, queue
 from _15thnight.api import (
-    account_api, alert_api, category_api, response_api, service_api, user_api
+    account_api, alert_api, category_api, need_api, response_api, service_api,
+    user_api
 )
 from _15thnight.email import mailer
 from _15thnight.forms import csrf_protect
@@ -27,6 +28,7 @@ app.json_encoder = ExtensibleJSONEncoder
 app.register_blueprint(alert_api, url_prefix='/api/v1')
 app.register_blueprint(account_api, url_prefix='/api/v1')
 app.register_blueprint(category_api, url_prefix='/api/v1')
+app.register_blueprint(need_api, url_prefix='/api/v1')
 app.register_blueprint(response_api, url_prefix='/api/v1')
 app.register_blueprint(service_api, url_prefix='/api/v1')
 app.register_blueprint(user_api, url_prefix='/api/v1')

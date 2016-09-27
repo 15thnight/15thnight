@@ -1,0 +1,28 @@
+:local(.provisionResponse) {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+:local(.message) {
+    padding: 13px 26px 0;
+}
+:local(.provision) {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    cursor: pointer;
+}
+:local(.provision:last-child) {
+    border: none;
+}
+:local(.provisionSelected) {
+    background-color: #ffff99;
+}
+:local(.provisionCheckbox) {
+    display: inline-block;
+    padding: 0 15px 0 25px;
+}
+
+:local(.provisionInfo) {
+    display: inline-block;
+    vertical-align: middle;
+}

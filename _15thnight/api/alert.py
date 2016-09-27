@@ -4,7 +4,7 @@ from flask.ext.login import current_user, login_required
 
 from _15thnight.core import send_out_alert
 from _15thnight.forms import AlertForm
-from _15thnight.models import Alert, Need, NeedResolveHistory, Response
+from _15thnight.models import Alert, Need, Response
 from _15thnight.util import required_access, jsonify, api_error
 
 
@@ -67,27 +67,6 @@ def create_alert():
 
     send_out_alert(form)
     return '', 201
-
-
-@alert_api.route(
-    '/alert/<int:alert_id>/<any("resolve", "unresolve"):mark>/<int:need_id>',
-    methods=['POST'])
-@required_access('advocate')
-def resolve_alert_need(alert_id, mark, need_id):
-    alert = Alert.get(alert_id)
-    if not alert:
-        return api_error('Alert not found')
-    if current_user.id != alert.user.id:
-        return api_error('Permission denied')
-    need = Need.get_by_id_and_alert(need_id, alert)
-    if not need:
-        return api_error('Need not found')
-    need.resolved = mark == 'resolve'
-    need.resolved_at = datetime.utcnow() if need.resolved else None
-    need.save()
-    history = NeedResolveHistory(need=need, resolved=need.resolved)
-    history.save()
-    return jsonify(alert.to_advocate_json())
 
 
 @alert_api.route('/alert/<int:id>', methods=['PUT'])

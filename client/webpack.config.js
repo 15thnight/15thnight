@@ -33,6 +33,7 @@ const config = {
             alert: __dirname + '/src/components/alert',
             components: __dirname + '/src/components',
             constants: __dirname + '/src/constants',
+            dispatch: __dirname + '/src/dispatch',
             form: __dirname + '/src/components/form',
             pages: __dirname + '/src/components/pages',
             polyfill: __dirname + '/src/polyfill',

@@ -40,29 +40,6 @@
     width: 100px;
     text-align: right;
 }
-:local(.provisionLabel) {
-    display: inline-block;
-    width: 77px;
-    margin-right: 10px;
-    text-align: right;
-    font-weight: bold;
-}
-
-:local(.provisionField) {
-    display: inline-block;
-}
-
-:local(.provision) {
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-:local(.provision:last-child) {
-    border-bottom: none;
-    margin: 0;
-    padding: 0;
-}
 
 :local(.unresolved) {
     color: red;

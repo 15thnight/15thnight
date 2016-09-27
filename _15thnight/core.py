@@ -97,3 +97,40 @@ def respond_to_alert(provider, needs_provided, alert):
     )
 
     return response
+
+
+def send_out_resolution(need):
+    """
+    Sends out a resolution for a need to providers.
+    """
+    alert = need.alert
+    advocate = alert.user
+    message = ''
+    if need.resolve_message != '':
+        message = '\nMsg: ' + need.resolve_message
+    gender = '' if alert.gender == 'unspecified' else ' ' + alert.gender
+    args = (advocate.name, advocate.organization,
+            need.service.name, alert.age, gender)
+    accepted = ('15th Night help accepted!\n'
+                '%s with %s selected you to provide %s for a '
+                '%d y/o%s%s') % (args + (message,))
+    denied = ('15th Night help not needed\n'
+              '%s with %s does not need your help to provide %s for a '
+              '%d y/o%s') % args
+
+    selected = set()
+    users = set(map(lambda provision: provision.response.user, need.provisions))
+    for provision in need.provisions:
+        if provision.selected:
+            selected.add(provision.response.user_id)
+
+    for provider in users:
+        body = accepted if provider.id in selected else denied
+        queue_send_message.apply_async(
+            kwargs=dict(
+                email=advocate.email,
+                number=advocate.phone_number,
+                subject='15th Night Need Resolution',
+                body=body
+            )
+        )

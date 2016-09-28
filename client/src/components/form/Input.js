@@ -13,7 +13,7 @@ class Input extends React.Component {
     }
 
     handleChange(e) {
-        this.props.onChange(this.props.name, e.target.value);
+        this.props.onChange(this.props.name, e.target.value, e);
     }
 
     handleFocus(e) {
@@ -43,7 +43,7 @@ class Input extends React.Component {
               id={name}
               type={type}
               checked={this.props.checked}
-              className="form-control"
+              className={type !== 'checkbox' && "form-control"}
               value={this.props.value}
               disabled={this.props.disabled}
               onClick={this.handleClick.bind(this)}

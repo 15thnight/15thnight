@@ -362,6 +362,7 @@ class NeedProvided(Model):
     response_id = Column(ForeignKey('responses.id'))
     response = relationship('Response', backref='needs_provided')
     message = Column(Text, nullable=False, default='')
+    selected = Column(Boolean)
 
     @classmethod
     def get_by_need_and_provider(cls, need, provider):
@@ -373,6 +374,7 @@ class NeedProvided(Model):
 
     def to_json(self):
         return dict(
+            id=self.id,
             created_at=to_local_datetime(self.response.created_at),
             message=self.message
         )
@@ -393,6 +395,8 @@ class Need(Model):
     service = relationship('Service')
     resolved = Column(Boolean, default=False, nullable=False)
     resolved_at = Column(DateTime)
+    resolve_notes = Column(Text)
+    resolve_message = Column(Text)
 
     @classmethod
     def get_by_id_and_alert(cls, need_id, alert):
@@ -402,6 +406,7 @@ class Need(Model):
     def to_json(self):
         return dict(
             id=self.id,
+            alert_id=self.alert_id,
             service=self.service,
             resolved=self.resolved,
             resolved_at=to_local_datetime(self.resolved_at)
@@ -409,7 +414,6 @@ class Need(Model):
 
     def to_advocate_json(self):
         return extend(self.to_json(), dict(
-            resolve_history=self.resolve_history,
             provisions=[
                 provision.to_advocate_json() for provision in self.provisions
             ]
@@ -420,21 +424,6 @@ class Need(Model):
             provisions=NeedProvided.get_by_need_and_provider(self, provider)
         ))
 
-class NeedResolveHistory(Model):
-    __tablename__ = 'need_resolve_history'
-
-    id = Column(Integer, primary_key=True)
-    need_id = Column(ForeignKey('need.id'))
-    need = relationship('Need', backref='resolve_history')
-    resolved = Column(Boolean, default=False, nullable=False)
-    resolved_at = Column(DateTime, default=datetime.utcnow)
-
-    def to_json(self):
-        return dict(
-            id=self.id,
-            resolved=self.resolved,
-            resolved_at=to_local_datetime(self.resolved_at)
-        )
 
 # MtM tables
 user_categories = Table(

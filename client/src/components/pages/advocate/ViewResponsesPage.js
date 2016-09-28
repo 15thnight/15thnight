@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router';
 
 
 import {
@@ -7,24 +8,11 @@ import {
     resolveAlertNeed,
     unresolveAlertNeed
 } from 'actions';
-import { AlertInfo } from 'alert';
+import { AlertInfo, Provisions } from 'alert';
 import { FormGroup } from 'form';
 
 import styles from './ViewResponsesPage.css';
 
-
-function ProvisionRow(props) {
-    return (
-        <div>
-            <span className={styles.provisionLabel}>
-                {props.label}
-            </span>
-            <span className={styles.provisionField}>
-                {props.children}
-            </span>
-        </div>
-    )
-}
 
 class ViewResponsesPage extends React.Component {
 
@@ -100,36 +88,15 @@ class ViewResponsesPage extends React.Component {
                                         <strong>Resolved at: </strong>
                                         { need.resolved_at }
                                         <br/>
-                                        <span
-                                          className="btn btn-danger"
-                                          onClick={this.handleUnmarkResolvedClick.bind(this, need.id)}
-                                        >
-                                            Unmark as Resolved
-                                        </span>
                                     </div> :
                                     <div>
-                                        <span
+                                        <Link
                                           className="btn btn-success"
-                                          onClick={this.handleMarkResolvedClick.bind(this, need.id)}
+                                          to={'/resolve-need/' + need.id}
                                         >
                                             Mark as Resolved
-                                        </span>
+                                        </Link>
                                     </div>
-                                }
-                                {
-                                    need.resolve_history.length > 1 &&
-                                    (this.state.showResolveHistory[need.id] ?
-                                        <a href="#"
-                                          onClick={ this.handleResolveHistoryClick.bind(this, need.id, false) }
-                                        >
-                                            Hide Resolve History
-                                        </a> :
-                                        <a href="#"
-                                          onClick={ this.handleResolveHistoryClick.bind(this, need.id, true)}
-                                        >
-                                            Show Resolve History
-                                        </a>
-                                    )
                                 }
                                 {
                                     this.state.showResolveHistory[need.id] &&
@@ -154,24 +121,7 @@ class ViewResponsesPage extends React.Component {
                                         <span>None received yet</span>
                                     }
                                 </div>
-                                {provisions.length > 0 && provisions.map(provision => {
-                                    let { provider } = provision;
-                                    return (
-                                        <div className={styles.provision}>
-                                            <ProvisionRow label={"From:"}>
-                                                { provider.name } <strong>&middot; </strong>
-                                                { provider.phone_number} <strong>&middot; </strong>
-                                                { provider.email }
-                                            </ProvisionRow>
-                                            <ProvisionRow label={"Sent at:"}>
-                                                { provision.created_at }
-                                            </ProvisionRow>
-                                            <ProvisionRow label={"Message:"}>
-                                                { provision.message }
-                                            </ProvisionRow>
-                                        </div>
-                                    )
-                                })}
+                                <Provisions provisions={provisions}/>
                             </FormGroup>
                         );
                     })}

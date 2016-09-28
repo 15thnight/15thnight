@@ -238,9 +238,13 @@ class Alert(Model):
         ))
 
     def to_provider_json(self, provider):
+        service_ids = [service.id for service in provider.services]
         return extend(self.to_json(), dict(
             responses=Response.get_by_user_and_alert(provider, self),
-            needs=[need.to_provider_json(provider) for need in self.needs]
+            needs=[
+                need.to_provider_json(provider) for need in self.needs \
+                    if need.service.id in service_ids
+            ]
         ))
 
     def __repr__(self):

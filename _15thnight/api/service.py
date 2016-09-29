@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask.ext.login import login_required
 
 from _15thnight.forms import ServiceForm
@@ -52,12 +52,14 @@ def update_service(service_id):
     """
     Update an service.
     """
-    form = ServiceForm()
-    if not form.validate_on_submit():
-        return api_error(form.errors)
     service = Service.get(service_id)
     if not service:
         return api_error('Service not found', 404)
+    form = ServiceForm(
+        validate_unique_name=service.name != request.json.get('name')
+    )
+    if not form.validate_on_submit():
+        return api_error(form.errors)
 
     service.name = form.name.data
     service.description = form.description.data

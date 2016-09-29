@@ -40,7 +40,9 @@ class CategoryForm extends React.Component {
             this.setState({ error: nextProps.submitFormError });
             return this.props.clearFormStatus();
         }
-        if (this.props.params.id && nextProps.category[this.props.params.id]) {
+        let { id } = this.props.params;
+        if (id && nextProps.category[id] &&
+                this.props.category[id] !== nextProps.category[id]) {
             let category = nextProps.category[this.props.params.id];
             let { name, description, services } = category;
             services.map((service, key) => service.internalSort = key);

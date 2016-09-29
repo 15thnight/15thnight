@@ -51,7 +51,9 @@ class UserForm extends React.Component {
             this.setState({ error: nextProps.submitFormError });
             return this.props.clearFormStatus();
         }
-        if (this.props.params.id && nextProps.user[this.props.params.id]) {
+        let { id } = this.props.params;
+        if (id && nextProps.user[id] &&
+                this.props.user[id] !== nextProps.user[id]) {
             let editingUser = nextProps.user[this.props.params.id];
             let { name, organization, email, phone_number, role, services } = editingUser;
             services = services.map(service => service.id);

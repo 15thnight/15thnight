@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from flask.ext.login import current_user
 
 from _15thnight.forms import FullUserForm, BaseUserForm
 from _15thnight.models import Service, User

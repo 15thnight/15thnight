@@ -56,7 +56,7 @@ export function createCategory(data) {
     return dispatch => {
         promise.then(
             res => {
-                dispatch(dispatchFormSucces('Successfully created category'));
+                dispatch(dispatchFormSuccess('Successfully created category'));
             },
             err => {
                 dispatch(dispatchFormError(err, 'An unknown error occured while creating category.'));
@@ -70,7 +70,7 @@ export function editCategory(id, data) {
     return dispatch => {
         promise.then(
             res => {
-                dispatch(dispatchFormSucces('Successfully updated category.'))
+                dispatch(dispatchFormSuccess('Successfully updated category.'))
             },
             err => {
                 dispatch(dispatchFormError(err,'An unknown error occured while creating category.'));
@@ -84,7 +84,7 @@ export function deleteCategory(id) {
     return dispatch => {
         promise.then(
             res => {
-                dispatch(dispatchFormSucces('Successfully deleted category.'))
+                dispatch(dispatchFormSuccess('Successfully deleted category.'))
             },
             err => {
                 dispatch(dispatchAppError('An unknown error occured while deleting category.'));

@@ -70,6 +70,9 @@ export default class NavbarLinks extends React.Component {
                         </li>,
                         <li className={pathname === '/all-alerts' && 'active'} key='all-alerts'>
                             <Link to='/all-alerts'>All Alerts</Link>
+                        </li>,
+                        <li className={pathname === '/help' && 'active'} key='help'>
+                            <Link to='/help'>Help</Link>
                         </li>
                     );
                     break;
@@ -83,6 +86,9 @@ export default class NavbarLinks extends React.Component {
                         </li>,
                         <li className={pathname === '/alert-history' && 'active'} key='alert-history'>
                             <Link to='/alert-history'>Alert History</Link>
+                        </li>,
+                        <li className={pathname === '/help' && 'active'} key='help'>
+                            <Link to='/help'>Help</Link>
                         </li>
                     );
                     break;

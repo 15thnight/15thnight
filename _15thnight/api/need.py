@@ -10,7 +10,7 @@ from _15thnight.util import api_error, jsonify, required_access
 need_api = Blueprint('need_api', __name__)
 
 
-@need_api.route('/need/<int:need_id>')
+@need_api.route('/<int:need_id>')
 @required_access('advocate')
 def get_need(need_id):
     need = Need.get(need_id)
@@ -21,7 +21,7 @@ def get_need(need_id):
     return jsonify(need.to_advocate_json())
 
 
-@need_api.route('/need/<int:need_id>/resolve', methods=['POST'])
+@need_api.route('/<int:need_id>/resolve', methods=['POST'])
 @required_access('advocate')
 def resolve_need(need_id):
     need = Need.get(need_id)

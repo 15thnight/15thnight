@@ -39,3 +39,6 @@ DEBUG = True
 
 # Life is in hours
 RESET_TOKEN_LIFE = 24
+
+# Support contact email
+SUPPORT_EMAIL = 'itsupport@example.com'

@@ -7,7 +7,7 @@ import { getCategories, setCategorySort } from 'actions';
 import styles from './ManageCategoriesPage.css';
 
 
-class ManageCategories extends React.Component {
+class ManageCategoriesPage extends React.Component {
 
     constructor(props) {
         super(props);
@@ -59,18 +59,18 @@ class ManageCategories extends React.Component {
                 <div className="text-right">
                     <Link to="/add-category" className="btn btn-success">Add Category</Link>
                 </div>
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th colSpan="2" className="text-center">Sort</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        { categories.map((category, key) => {
-                            return (
+                <div className="table-responsive">
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th colSpan="2" className="text-center">Sort</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            { categories.map((category, key) => (
                                 <tr key={category.id}>
                                     <td className={styles.sortColumn}>
                                         {
@@ -92,10 +92,10 @@ class ManageCategories extends React.Component {
                                     <td>{category.description}</td>
                                     <td><Link to={"/edit-category/" + category.id} className="btn btn-primary">Edit</Link></td>
                                 </tr>
-                            )
-                        }) }
-                </tbody>
-            </table>
+                            ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
         )
     }
@@ -110,4 +110,4 @@ function mapStateToProps(state) {
 export default connect(mapStateToProps, {
     getCategories,
     setCategorySort
-})(ManageCategories);
+})(ManageCategoriesPage);

@@ -51,7 +51,7 @@ class EditProfilePage extends React.Component {
     render() {
         let { user } = this.props;
         return (
-            <div className="text-center row col-sm-offset-3 col-sm-6">
+            <div className="text-center row col-md-offset-3 col-md-6">
                 <h1>Edit Profile</h1>
                 <br/>
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>

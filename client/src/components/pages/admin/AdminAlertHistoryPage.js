@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { getAlerts } from 'actions';
-import { AlertTable } from 'table'
+import { Alerts } from 'alert';
 
 class AdminAlertHistoryPage extends React.Component {
 
@@ -13,10 +13,10 @@ class AdminAlertHistoryPage extends React.Component {
     render() {
         let { alerts } = this.props;
         return (
-            <AlertTable
-                alerts={alerts}
-                role='admin'
-                title='Alert History' />
+            <Alerts
+              alerts={alerts}
+              role='admin'
+              title='Alert History' />
         )
     }
 }

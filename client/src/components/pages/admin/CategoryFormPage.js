@@ -125,7 +125,7 @@ class CategoryForm extends React.Component {
     render() {
         let { services } = this.state;
         return (
-            <div className="text-center row col-sm-offset-3 col-sm-6">
+            <div className="text-center row col-md-offset-3 col-md-6">
                 <h1>{ this.props.params.id ? "Edit" : "Create"} Category</h1>
                 {
                     this.props.params.id &&

@@ -1,5 +1,7 @@
 import React from 'react';
 
+import styles from './FormErrors.css';
+
 
 export default class FormErrors extends React.Component {
     render() {
@@ -8,12 +10,10 @@ export default class FormErrors extends React.Component {
             return null;
         }
         return (
-            <div>
-                {errors.map((error, key) => {
-                    return (
-                        <div key={key} className="error">{error}</div>
-                    );
-                })}
+            <div className={styles.formErrors}>
+                {errors.map((error, key) =>a (
+                    <div key={key} className="error">{error}</div>
+                ))}
             </div>
         );
     }

@@ -6,9 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ## [Unreleased]
+### Added
+- [Precss](https://github.com/jonathantneal/precss) for stylesheets
+
 ### Changed
 - HOST_NAME is now SERVER_NAME in the config
 
 ### Fixed
 - Reset Password Link in emails
 - Admins can view alert responses
+- Mobile dropdown menu
+- Mobile formatting of wide tables, forms and pages

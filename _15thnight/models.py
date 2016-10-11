@@ -176,6 +176,10 @@ class Alert(Model):
         return [alert.to_provider_json(user) for alert in alerts]
 
     @classmethod
+    def get_admin_alerts(cls):
+        return [alert.to_advocate_json() for alert in cls.get_alerts()]
+
+    @classmethod
     def get_advocate_alerts(cls, advocate):
         alerts = cls.query.filter(cls.user == advocate) \
             .order_by(desc(Alert.created_at)).all()

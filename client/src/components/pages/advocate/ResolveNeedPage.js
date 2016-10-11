@@ -77,7 +77,7 @@ class ResolveNeedPage extends React.Component {
         return (
             <form
               onSubmit={this.handleSubmit.bind(this)}
-              className="text-center col-sm-offset-3 col-sm-6">
+              className="text-center col-md-offset-3 col-md-6">
                 <div className="text-left">
                     <Link
                       to={'/view-responses/' + need.alert_id}

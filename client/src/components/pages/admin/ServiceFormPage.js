@@ -74,7 +74,7 @@ class ServiceForm extends React.Component {
         }
         let categories = this.props.categories.map(category => [category.id, category.name])
         return (
-            <div className="text-center row col-sm-offset-3 col-sm-6">
+            <div className="text-center row col-md-offset-3 col-md-6">
                 <h1>{ this.props.params.id ? "Edit" : "Create"} Service</h1>
                 { this.props.params.id &&
                     <p className="text-right">

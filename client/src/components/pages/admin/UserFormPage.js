@@ -105,7 +105,7 @@ class UserForm extends React.Component {
     render() {
         if (this.state.deleting) {
             return (
-                <div className="text-center row col-sm-offset-3 col-sm-6">
+                <div className="text-center row col-md-offset-3 col-md-6">
                     <h1>Delete User</h1>
                     <div>Are you sure you wish to delete this user?</div>
                     <br/>
@@ -182,7 +182,7 @@ class UserForm extends React.Component {
             );
         }
         return (
-            <div className="text-center row col-sm-offset-3 col-sm-6">
+            <div className="text-center row col-md-offset-3 col-md-6">
                 <h1>{ this.props.params.id ? "Edit User" : "Register User"}</h1>
                 {deleteButton}
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>

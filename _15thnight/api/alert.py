@@ -1,10 +1,9 @@
-from datetime import datetime
-from flask import Blueprint, request
+from flask import Blueprint, current_app, request
 from flask.ext.login import current_user, login_required
 
 from _15thnight.core import send_out_alert
 from _15thnight.forms import AlertForm
-from _15thnight.models import Alert, Need, Response
+from _15thnight.models import Alert
 from _15thnight.util import required_access, jsonify, api_error
 
 
@@ -45,12 +44,12 @@ def get_alert(alert_id):
     if current_user.role == 'provider':
         if not alert.provider_has_permission(current_user):
             return api_error('Permission denied')
-        data = alert.to_provider_json(current_user)
+        data = alert.to_provider_dict(current_user)
     elif current_user.role == 'advocate':
         if alert.user.id != current_user.id:
             return api_error('Permission denied')
         data = alert.to_advocate_json()
-    else: # is an admin
+    else:  # is an admin
         data = alert.to_advocate_json()
     return jsonify(data)
 
@@ -65,7 +64,9 @@ def create_alert():
     if not form.validate_on_submit():
         return api_error(form.errors)
 
-    send_out_alert(form)
+    host_name = current_app.config.get("HOST_NAME", "")
+
+    send_out_alert(form, host_name)
     return '', 201
 
 
@@ -84,7 +85,7 @@ def delete_alert(id):
     """
     Delete an alert.
     """
-    return 'Not Implemented', 501 # We do not support a UI for this
+    return 'Not Implemented', 501  # We do not support a UI for this
     if current_user.role == 'advocate':
         alert = Alert.get_user_alert(current_user, id)
     else:

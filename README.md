@@ -40,13 +40,13 @@ Another option is to import all the default settings and only overwrite certain 
 
     from configdist import *
 
-    DATABASE_URL = 'mysql://db_user:db_pass@db_host/db_name'
+    DATABASE_URI = 'mysql://db_user:db_pass@db_host/db_name'
     # SERVER_NAME must NOT have a protocol prefix (no http/https)
     SERVER_NAME = 'localhost:5000'
 
 # Database
 
-The `DATABASE_URL` string in the config file determines the engine and settings for the database connection. The default is a SQLite connection string that creates a `test.db` file. **NOTE:** migrations are not possible with SQLite
+The `DATABASE_URI` string in the config file determines the engine and settings for the database connection. The default is a SQLite connection string that creates a `test.db` file. **NOTE:** migrations are not possible with SQLite
 
 ## Database Type
 

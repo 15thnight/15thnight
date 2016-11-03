@@ -17,15 +17,15 @@ from sqlalchemy.dialects.postgresql import ENUM
 import sqlalchemy as sa
 
 try:
-    from config import DATABASE_URL
+    from config import DATABASE_URI
 except:
-    from configdist import DATABASE_URL
+    from configdist import DATABASE_URI
 
 
 def upgrade():
     role_column = sa.Column(
         'role', sa.Enum('admin', 'advocate', 'provider'), nullable=True)
-    if DATABASE_URL[:8] == 'postgres':
+    if DATABASE_URI[:8] == 'postgres':
         role_enum = ENUM(
             'admin', 'advocate', 'provider', name='pgenum', create_type=False)
         role_enum.create(op.get_bind(), checkfirst=False)

@@ -1,7 +1,9 @@
-from datetime import datetime, timedelta
-from flask import Blueprint, request, render_template, url_for
+from datetime import datetime
+from flask import (
+    Blueprint, current_app, render_template, request, url_for
+)
 from flask.ext.login import (
-    login_user, logout_user, login_required, current_user
+    current_user, login_required, login_user, logout_user
 )
 from flask_mail import Message
 
@@ -13,15 +15,8 @@ from _15thnight.models import Service, User
 from _15thnight.queue import queue_send_email
 from _15thnight.util import jsonify, api_error
 
-try:
-    from config import RESET_TOKEN_LIFE
-except:
-    from config import RESET_TOKEN_LIFE
-
 
 account_api = Blueprint('account_api', __name__)
-
-reset_token_life = timedelta(hours=RESET_TOKEN_LIFE)
 
 
 @account_api.route('/current_user', methods=['GET'])
@@ -65,6 +60,7 @@ def forgot_password():
     """
     Send a password reset email.
     """
+    reset_token_life = current_app.config.get("RESET_TOKEN_LIFE")
     form = ForgotPasswordForm(request.json_multidict)
     if not form.validate_on_submit():
         return api_error(form.errors)
@@ -93,6 +89,7 @@ def reset_password():
     Reset a user's password with valid token.
     Will send a password reset notification email to user.
     """
+    reset_token_life = current_app.config.get("RESET_TOKEN_LIFE")
     form = ResetPasswordForm(request.json_multidict)
     if not form.validate_on_submit():
         return api_error(form.errors)

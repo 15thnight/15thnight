@@ -2,7 +2,7 @@
 from flask.ext.script import Manager
 
 from _15thnight import app
-from _15thnight.database import Model, engine
+from _15thnight.database import Model, init_db
 from _15thnight.models import Category, Service, User
 
 
@@ -24,7 +24,13 @@ def create_user(name, org, email, number, password, role):
 
 @manager.command
 def create_db():
-    Model.metadata.create_all(bind=engine)
+    try:
+        from config import DATABASE_URI
+    except:
+        from configdist import DATABASE_URI
+
+    session = init_db(DATABASE_URI)
+    Model.metadata.create_all(bind=session.get_bind())
 
 
 @manager.command

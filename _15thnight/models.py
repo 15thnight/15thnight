@@ -10,7 +10,7 @@ from sqlalchemy.orm import backref, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from _15thnight.database import Model
-from _15thnight.util import extend, to_local_datetime
+from _15thnight.util import to_local_datetime
 
 
 class User(Model):
@@ -120,7 +120,7 @@ class User(Model):
         """Return user based on email."""
         return cls.query.filter(cls.email == email).first()
 
-    def to_json(self):
+    def to_dict(self):
         return dict(
             id=self.id,
             name=self.name,
@@ -173,7 +173,7 @@ class Alert(Model):
             service_ids = set(map(need_mapper, alert.needs))
             if (len(capabilities.intersection(service_ids)) > 0):
                 alerts.append(alert)
-        return [alert.to_provider_json(user) for alert in alerts]
+        return [alert.to_provider_dict(user) for alert in alerts]
 
     @classmethod
     def get_admin_alerts(cls):
@@ -183,7 +183,7 @@ class Alert(Model):
     def get_advocate_alerts(cls, advocate):
         alerts = cls.query.filter(cls.user == advocate) \
             .order_by(desc(Alert.created_at)).all()
-        return [alert.to_advocate_json() for alert in alerts]
+        return [alert.to_advocate_dict() for alert in alerts]
 
     @classmethod
     def get_user_alert(cls, user, alert_id):
@@ -201,7 +201,7 @@ class Alert(Model):
             .filter(ProviderNotified.provider_id==provider.id) \
             .order_by(desc(cls.created_at)) \
             .distinct().all()
-        return [alert.to_provider_json(provider) for alert in alerts]
+        return [alert.to_provider_dict(provider) for alert in alerts]
 
     @classmethod
     def get_responded_alerts_for_provider(cls, provider):
@@ -210,7 +210,7 @@ class Alert(Model):
             .filter(Response.user_id==provider.id) \
             .order_by(desc(cls.created_at)) \
             .distinct().all()
-        return [alert.to_provider_json(provider) for alert in alerts]
+        return [alert.to_provider_dict(provider) for alert in alerts]
 
     def provider_has_permission(self, provider):
         """Checks if a provider was notified for this alert"""
@@ -224,7 +224,7 @@ class Alert(Model):
             return response
         return False
 
-    def to_json(self):
+    def to_dict(self):
         return dict(
             id=self.id,
             user=self.user,
@@ -235,21 +235,25 @@ class Alert(Model):
             needs=[need for need in self.needs]
         )
 
-    def to_advocate_json(self):
-        return extend(self.to_json(), dict(
+    def to_advocate_dict(self):
+        as_dict = self.to_dict()
+        extend = dict(
             responses=self.responses,
-            needs=[need.to_advocate_json() for need in self.needs]
-        ))
+            needs=[need.to_advocate_dict() for need in self.needs]
+        )
+        return as_dict.update(extend)
 
-    def to_provider_json(self, provider):
+    def to_provider_dict(self, provider):
         service_ids = [service.id for service in provider.services]
-        return extend(self.to_json(), dict(
+        as_dict = self.to_dict()
+        extend = dict(
             responses=Response.get_by_user_and_alert(provider, self),
             needs=[
-                need.to_provider_json(provider) for need in self.needs \
+                need.to_provider_dict(provider) for need in self.needs \
                     if need.service.id in service_ids
             ]
-        ))
+        )
+        return as_dict.update(extend)
 
     def __repr__(self):
         return '<Alert(%d) %s %d %s %s>' % (
@@ -290,7 +294,7 @@ class Category(Model):
     def get_by_name(cls, name):
         return cls.query.filter(cls.name == name).first()
 
-    def to_json(self):
+    def to_dict(self):
         return dict(
             id=self.id,
             name=self.name,
@@ -322,7 +326,7 @@ class Service(Model):
     def get_by_name(cls, name):
         return cls.query.filter(cls.name == name).first()
 
-    def to_json(self):
+    def to_dict(self):
         return dict(
             id=self.id,
             name=self.name,
@@ -352,7 +356,7 @@ class Response(Model):
         return cls.query.filter(
             (cls.user == user) & (cls.alert == alert)).all()
 
-    def to_json(self):
+    def to_dict(self):
         return dict(
             user=self.user,
             created_at=to_local_datetime(self.created_at),
@@ -380,17 +384,19 @@ class NeedProvided(Model):
             .filter(Response.user == provider) \
             .all()
 
-    def to_json(self):
+    def to_dict(self):
         return dict(
             id=self.id,
             created_at=to_local_datetime(self.response.created_at),
             message=self.message
         )
 
-    def to_advocate_json(self):
-        return extend(self.to_json(), dict(
+    def to_advocate_dict(self):
+        as_dict = self.to_dict()
+        extend = dict(
             provider=self.response.user
-        ))
+        )
+        return as_dict.update(extend)
 
 
 class Need(Model):
@@ -411,7 +417,7 @@ class Need(Model):
         return cls.query.filter(
             (cls.alert == alert) & (cls.id == need_id)).first()
 
-    def to_json(self):
+    def to_dict(self):
         return dict(
             id=self.id,
             alert_id=self.alert_id,
@@ -420,17 +426,21 @@ class Need(Model):
             resolved_at=to_local_datetime(self.resolved_at)
         )
 
-    def to_advocate_json(self):
-        return extend(self.to_json(), dict(
+    def to_advocate_dict(self):
+        as_dict = self.to_dict()
+        extend = dict(
             provisions=[
-                provision.to_advocate_json() for provision in self.provisions
+                provision.to_advocate_dict() for provision in self.provisions
             ]
-        ))
+        )
+        return as_dict.update(extend)
 
-    def to_provider_json(self, provider):
-        return extend(self.to_json(), dict(
+    def to_provider_dict(self, provider):
+        as_dict = self.to_dict()
+        extend = dict(
             provisions=NeedProvided.get_by_need_and_provider(self, provider)
-        ))
+        )
+        return as_dict.update(extend)
 
 
 # MtM tables

@@ -4,44 +4,72 @@ from flask import Flask, json, redirect, render_template, request
 from flask.ext.login import LoginManager, current_user, logout_user
 from werkzeug.datastructures import MultiDict
 
-from _15thnight import database, queue
-from _15thnight.api import (
-    account_api, alert_api, category_api, need_api, response_api, service_api,
-    user_api
-)
 from _15thnight.email import mailer
 from _15thnight.forms import csrf_protect
 from _15thnight.models import User
 from _15thnight.util import ExtensibleJSONEncoder
 
 
-app = Flask(__name__)
-
-try:
-    app.config.from_object('config')
-except:
-    app.config.from_object('configdist')
-
-app.secret_key = app.config['SECRET_KEY']
-app.json_encoder = ExtensibleJSONEncoder
-
-app.register_blueprint(alert_api, url_prefix='/api/v1')
-app.register_blueprint(account_api, url_prefix='/api/v1')
-app.register_blueprint(category_api, url_prefix='/api/v1')
-app.register_blueprint(need_api, url_prefix='/api/v1')
-app.register_blueprint(response_api, url_prefix='/api/v1')
-app.register_blueprint(service_api, url_prefix='/api/v1')
-app.register_blueprint(user_api, url_prefix='/api/v1')
-
-queue.init_app(app)
-
 login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
 
-csrf_protect.init_app(app)
 
-mailer.init_app(app)
+def create_app(cfg=dict()):
+    """
+    Setup an app with blueprints, extensions, and other necessary additions.
+
+    cfg_dict: dict
+        dictionary to update app.config with, useful for testing.
+    """
+    # The app
+    app = Flask(__name__)
+
+    # Load configdist for default values
+    app.config.from_object('configdist')
+    try:
+        # Attempt to update values with config.py
+        # API docs [0] show that from_object behaves like a dict update
+        # [0]: http://flask.pocoo.org/docs/0.11/api/#configuration
+        app.config.from_object('config')
+    except:
+        # Else keep the configdist defaults
+        pass
+
+    # Additional configuration options (used by testing)
+    from _15thnight.database import init_db
+
+    # Oerride configuration options for testing here
+    app.config.update(cfg)
+
+    # must use app.db_session or current_app.db_session because of this
+    app.db_session = init_db(app.config.get("DATABASE_URI"))
+    # app.secret_key is used by Flask-WTF
+    app.secret_key = app.config['SECRET_KEY']
+    app.json_encoder = ExtensibleJSONEncoder
+
+    # Flask Extension Initializations
+    with app.app_context():
+        from _15thnight import queue
+        queue.init_app(app)
+        login_manager.init_app(app)
+        login_manager.login_view = 'login'
+        csrf_protect.init_app(app)
+        mailer.init_app(app)
+
+    # Blueprints
+    from _15thnight.api import (
+        account_api, alert_api, category_api, need_api, response_api,
+        service_api, user_api
+    )
+    app.register_blueprint(alert_api, url_prefix='/api/v1')
+    app.register_blueprint(account_api, url_prefix='/api/v1')
+    app.register_blueprint(category_api, url_prefix='/api/v1')
+    app.register_blueprint(need_api, url_prefix='/api/v1')
+    app.register_blueprint(response_api, url_prefix='/api/v1')
+    app.register_blueprint(service_api, url_prefix='/api/v1')
+    app.register_blueprint(user_api, url_prefix='/api/v1')
+    return app
+
+app = create_app()
 
 
 @login_manager.user_loader
@@ -53,7 +81,7 @@ def load_user(id):
 @app.teardown_appcontext
 def shutdown_session(response):
     """Database management."""
-    database.db_session.remove()
+    app.db_session.remove()
 
 
 @app.before_request
@@ -86,9 +114,3 @@ def index(path=None):
 def logout():
     logout_user()
     return redirect('/')
-
-
-@app.route('/health')
-def healthcheck():
-    """Low overhead health check."""
-    return 'ok', 200

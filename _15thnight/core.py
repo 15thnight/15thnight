@@ -1,3 +1,4 @@
+from flask import url_for
 from flask.ext.login import current_user
 
 from _15thnight.queue import queue_send_message
@@ -24,10 +25,10 @@ def send_out_alert(alert_form):
     providers = User.providers_with_services(need_ids)
     for provider in providers:
         needs_provided = [
-            need for need in provider.services if need.id in need_ids
+            need_ for need_ in provider.services if need_.id in need_ids
         ]
         gender = ' ' + alert.gender if alert.gender != 'unspecified' else ''
-        needs = ", ".join([need.name for need in needs_provided])
+        needs = ", ".join([need_.name for need_ in needs_provided])
         body = ('New 15th night alert!\n'
                 '%d y/o%s\n'
                 'Needs: %s\n'
@@ -40,7 +41,7 @@ def send_out_alert(alert_form):
         provider_notified = ProviderNotified(
             provider=provider,
             alert=alert,
-            needs=Need.get_by_ids([need.id for need in needs_provided])
+            needs=Need.get_by_ids([need_.id for need_ in needs_provided])
         )
         # TODO: test
         provider_notified.save()
@@ -115,7 +116,8 @@ def send_out_resolution(need):
               '%d y/o%s') % args
 
     selected = set()
-    users = set(map(lambda provision: provision.response.user, need.provisions))
+    users = set(
+        map(lambda provision: provision.response.user, need.provisions))
     for provision in need.provisions:
         if provision.selected:
             selected.add(provision.response.user_id)

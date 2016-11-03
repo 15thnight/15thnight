@@ -1,18 +1,11 @@
 # Database config
-DATABASE_URL = "sqlite:///test.db"
+DATABASE_URI = "sqlite:///test.db"
 
 # TWILIO credentials start
 TWILIO_ACCOUNT_SID = ""
 TWILIO_ACCOUNT_AUTH_TOKEN = ""
 TWILIO_FROM_NUMBER = ""
 # TWILIO credentials end
-
-# AWS Deprecated config
-AWS_REGION = ""
-AWS_ACCESS_KEY_ID = ""
-AWS_SECRET_ACCESS_KEY = ""
-EMAIL_SENDER = ""
-# End AWS Deprecated config
 
 # Mail Configuration
 MAIL_SERVER = 'localhost'
@@ -34,7 +27,7 @@ SECRET_KEY = 'This is not secret you must change it'
 PREFERRED_URL_SCHEME = "http"
 SERVER_NAME = 'localhost:5000'
 
-CELERY_BROKER = "sqla+%s" % DATABASE_URL
+CELERY_BROKER = "sqla+%s" % DATABASE_URI
 DEBUG = True
 
 # Life is in hours

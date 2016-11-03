@@ -5,21 +5,17 @@ from functools import wraps
 
 
 class ExtensibleJSONEncoder(JSONEncoder):
-    """A JSON encoder that returns the to_json method if present"""
+    """A JSON encoder that returns the to_dict method if present"""
     def default(self, obj):
-        if hasattr(obj, 'to_json'):
-            return obj.to_json()
+        if hasattr(obj, 'to_dict'):
+            return obj.to_dict()
         return super(ExtensibleJSONEncoder, self).default(obj)
 
-def extend(dict1, dict2):
-    dict1.update(dict2)
-    return dict1
 
-def jsonify(*args, **kwargs):
+def json_dump(*args, **kwargs):
     """Returns a json response"""
     data = None
     indent = not request.is_xhr
-    status = kwargs.pop('_status_code', 200)
     if args:
         data = args[0] if len(args) == 1 else args
     if kwargs:
@@ -29,9 +25,14 @@ def jsonify(*args, **kwargs):
             data.append(dict(**kwargs))
         else:
             data = dict(**kwargs)
+    return dumps(data, indent=indent)
+
+
+def jsonify(*args, **kwargs):
+    status = kwargs.pop('_status_code', 200)
+    jsn = json_dump(args, kwargs)
     return current_app.response_class(
-        dumps(data, indent=indent), status=status, mimetype='application/json'
-    )
+        jsn, status=status, mimetype='application/json')
 
 
 def api_error(message='Bad Request', code=400):

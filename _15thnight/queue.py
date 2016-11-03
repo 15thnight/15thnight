@@ -1,20 +1,13 @@
 from celery import Celery
+from flask import current_app
 from flask_mail import Message
 
 from _15thnight.email import mailer
 from _15thnight.twilio_client import send_sms
 
 
-try:
-    from config import CELERY_BROKER
-except:
-    from configdist import CELERY_BROKER
-
-
-celery = Celery('15thnight', broker=CELERY_BROKER)
-
-
 def init_app(app):
+    celery = Celery('15thnight', broker=app.config.get("CELERY_BROKER", ""))
     TaskBase = celery.Task
 
     class ContextTask(TaskBase):
@@ -25,6 +18,10 @@ def init_app(app):
                 return TaskBase.__call__(self, *args, **kwargs)
 
     celery.Task = ContextTask
+    return celery
+
+
+celery = init_app(current_app)
 
 
 @celery.task

@@ -26,3 +26,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Mobile dropdown menu
 - Mobile formatting of wide tables, forms and pages
 - Support IE
+- Structural changes, including a create_app method. Requires use of
+current_app in some places.

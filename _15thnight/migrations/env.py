@@ -9,10 +9,12 @@ from logging.config import fileConfig
 from _15thnight import models
 from _15thnight.database import Model
 
+# Tests will never use migration (at least in the forseable future)
+# therefor this method of checking for the DATABASE_URI is ok here
 try:
-    from config import DATABASE_URL
+    from config import DATABASE_URI
 except:
-    from configdist import DATABASE_URL
+    from configdist import DATABASE_URI
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -79,7 +81,7 @@ def run_migrations_online():
 
     """
     alembic_config = config.get_section(config.config_ini_section)
-    alembic_config['sqlalchemy.url'] = DATABASE_URL
+    alembic_config['sqlalchemy.url'] = DATABASE_URI
     engine = engine_from_config(alembic_config, poolclass=pool.NullPool)
 
     connection = engine.connect()

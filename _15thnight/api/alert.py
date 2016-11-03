@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Blueprint, request
+from flask import Blueprint, current_app, request
 from flask.ext.login import current_user, login_required
 
 from _15thnight.core import send_out_alert, send_out_alert_closed
@@ -46,7 +46,7 @@ def get_alert(alert_id):
     if current_user.role == 'provider':
         if not alert.provider_has_permission(current_user):
             return api_error('Permission denied')
-        data = alert.to_provider_json(current_user)
+        data = alert.to_provider_dict(current_user)
     elif current_user.role == 'advocate':
         if alert.user.id != current_user.id:
             return api_error('Permission denied')
@@ -66,7 +66,9 @@ def create_alert():
     if not form.validate_on_submit():
         return api_error(form.errors)
 
-    send_out_alert(form)
+    host_name = current_app.config.get("HOST_NAME", "")
+
+    send_out_alert(form, host_name)
     return '', 201
 
 

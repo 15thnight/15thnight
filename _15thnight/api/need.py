@@ -19,7 +19,7 @@ def get_need(need_id):
         return api_error('Need not found')
     if not current_user.is_admin and current_user.id != need.alert.user_id:
         return api_error('Permission denied')
-    return jsonify(need.to_advocate_json())
+    return jsonify(need.to_advocate_dict())
 
 
 @need_api.route('/<int:need_id>/resolve', methods=['POST'])

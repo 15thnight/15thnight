@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from flask import Blueprint, current_app, request
 from flask.ext.login import (
-    login_user, logout_user, login_required, current_user
+    current_user, login_required, login_user, logout_user
 )
 
 from _15thnight.core import (

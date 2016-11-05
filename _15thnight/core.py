@@ -5,11 +5,6 @@ from _15thnight.models import (
     Alert, Need, NeedProvided, ProviderNotified, Service, Response, User
 )
 
-try:
-    from config import HOST_NAME
-except:
-    from configdist import HOST_NAME
-
 
 def send_out_alert(alert_form):
     """
@@ -39,7 +34,8 @@ def send_out_alert(alert_form):
                 'Desc: %s\n'
                 'Respond at %s/r/%s') % (
                     alert.age, gender, needs,
-                    alert_form.description.data, HOST_NAME, str(alert.id)
+                    alert_form.description.data, url_for(
+                        '/', _external=True), str(alert.id)
                 )
         provider_notified = ProviderNotified(
             provider=provider,

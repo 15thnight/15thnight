@@ -36,11 +36,13 @@ To customize the entire default configuration, you can simply copy the distribut
 
 ### Import Settings and Overwrite Individually
 
-Another option is to import all the default settings and only overwrite certain settings. Here is an example of a minimal config.py file that imports default values and sets the database to a MySQL connection:
+Another option is to import all the default settings and only overwrite certain settings. Here is an example of a minimal config.py file that imports default values and sets the database to a MySQL connection and sets the address:
 
     from configdist import *
 
     DATABASE_URL = 'mysql://db_user:db_pass@db_host/db_name'
+    # SERVER_NAME must NOT have a protocol prefix (no http/https)
+    SERVER_NAME = 'localhost:5000'
 
 # Database
 

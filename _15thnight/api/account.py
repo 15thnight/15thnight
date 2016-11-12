@@ -62,9 +62,11 @@ def forgot_password():
     form = ForgotPasswordForm(request.json_multidict)
     if not form.validate_on_submit():
         return api_error(form.errors)
+
     user = User.get_by_email(form.email.data)
     if user:
         send_password_reset(user)
+
     return '', 200
 
 

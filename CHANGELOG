@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [Precss](https://github.com/jonathantneal/precss) for stylesheets
 - Help page form for providers
 - Help page with basic info for advocates
+- Send resolution messages once all needs have been resolved
 
 ### Changed
 - HOST_NAME is now SERVER_NAME in the config

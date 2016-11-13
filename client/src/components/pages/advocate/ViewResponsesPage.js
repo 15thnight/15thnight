@@ -52,6 +52,7 @@ class ViewResponsesPage extends React.Component {
 
     render() {
         let { alert } = this.state;
+        let { current_user } = this.props;
         if (!alert) {
             return (<h1 className="text-center">Loading Alert...</h1>);
         }
@@ -89,14 +90,15 @@ class ViewResponsesPage extends React.Component {
                                         { need.resolved_at }
                                         <br/>
                                     </div> :
-                                    <div>
-                                        <Link
-                                          className="btn btn-success"
-                                          to={'/resolve-need/' + need.id}
-                                        >
-                                            Mark as Resolved
-                                        </Link>
-                                    </div>
+                                    current_user.role === 'advocate' &&
+                                        <div>
+                                            <Link
+                                              className="btn btn-success"
+                                              to={'/resolve-need/' + need.id}
+                                            >
+                                                Mark as Resolved
+                                            </Link>
+                                        </div>
                                 }
                                 {
                                     this.state.showResolveHistory[need.id] &&
@@ -133,6 +135,7 @@ class ViewResponsesPage extends React.Component {
 
 function mapStateToProps(state) {
     return {
+        current_user: state.current_user,
         alert: state.alert
     }
 }

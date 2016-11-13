@@ -51,7 +51,7 @@ def get_alert(alert_id):
             return api_error('Permission denied')
         data = alert.to_advocate_json()
     else: # is an admin
-        data = alert.to_json()
+        data = alert.to_advocate_json()
     return jsonify(data)
 
 

@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
-from flask import Blueprint, request, session, render_template, url_for
+from flask import Blueprint, request, render_template, url_for
 from flask.ext.login import (
     login_user, logout_user, login_required, current_user
 )
 from flask_mail import Message
-from werkzeug.datastructures import MultiDict
 
 from _15thnight.forms import (
     LoginForm, ChangePasswordForm, UpdateProfileForm, ResetPasswordForm,
@@ -72,11 +71,12 @@ def forgot_password():
     user = User.get_by_email(form.email.data)
     if user:
         if (not user.reset_token or
-            user.reset_created_at < datetime.utcnow() - reset_token_life):
+                user.reset_created_at < datetime.utcnow() - reset_token_life):
             user.generate_reset_token()
         user.save()
-        link = '%sreset-password/%s/%s' % (url_for('index', _external=True),
-            user.email, user.reset_token)
+        link = '%sreset-password/%s/%s' % (
+            url_for('index', _external=True), user.email, user.reset_token
+        )
         message = Message(
             subject='15th Night Password Reset Link',
             body=render_template('email/reset_instructions.txt', link=link),
@@ -107,7 +107,6 @@ def reset_password():
     user.reset_token = None
     user.reset_created_at = None
     user.save()
-    current_time = datetime.utcnow()
     data = dict(
         time=datetime.utcnow().strftime('%m/%d/%y %I:%M%p'),
         ip=request.remote_addr
@@ -121,7 +120,6 @@ def reset_password():
     queue_send_email.apply_async(kwargs=dict(message=message))
     login_user(user)
     return jsonify(user)
-
 
 
 @account_api.route('/change-password', methods=['POST'])

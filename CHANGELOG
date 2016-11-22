@@ -11,3 +11,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - Reset Password Link in emails
+- Admins can view alert responses

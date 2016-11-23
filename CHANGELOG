@@ -17,3 +17,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Admins can view alert responses
 - Mobile dropdown menu
 - Mobile formatting of wide tables, forms and pages
+- Support IE

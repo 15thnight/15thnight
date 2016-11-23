@@ -32,7 +32,6 @@ const config = {
     resolve: {
         alias: {
             lib: __dirname + '/node_modules',
-
             actions: __dirname + '/src/actions',
             alert: __dirname + '/src/components/alert',
             components: __dirname + '/src/components',

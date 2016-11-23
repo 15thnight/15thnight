@@ -1,23 +1,42 @@
-:local(.textareaMask) {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    cursor: pointer;
-}
+:local(.respondToPage) {
 
-:local(.needFormStart) {
-    border-top: 1px solid #ccc;
-    padding-top: 18px;
-}
+    h2 {
+        font-size: 24px;
+        text-transform: uppercase;
+        color: #303030;
+        font-weight: 600;
+        margin-bottom: 30px;
+    }
 
-:local(.need) {
-    margin-top: -98px;
-    padding-top: 98px;
-    border-bottom: 1px solid #ccc;
-}
+    h4 {
+        font-size: 19px;
+        line-height: 1.375em;
+        color: #303030;
+        font-weight: 400;
+        margin-bottom: 30px;
+    }
 
-:local(.need:last-child) {
-    border-bottom: none;
+    .textareaMask {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        cursor: pointer;
+    }
+
+    .needFormStart {
+        border-top: 1px solid #ccc;
+        padding-top: 18px;
+    }
+
+    .need {
+        margin-top: -98px;
+        padding-top: 98px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .need:last-child {
+        border-bottom: none;
+    }
 }

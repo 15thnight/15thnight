@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { AlertTable } from 'table';
 import { getAlerts } from 'actions';
+import { Alerts } from 'alert';
 
 class AdvocateAlertHistoryPage extends React.Component {
 
@@ -13,7 +13,7 @@ class AdvocateAlertHistoryPage extends React.Component {
     render() {
         let { alerts } = this.props;
         return (
-            <AlertTable 
+            <Alerts
               alerts={alerts}
               role='advocate'
               title='Previously Sent Alerts'

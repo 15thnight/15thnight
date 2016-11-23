@@ -9,7 +9,8 @@ import {
     GET_NEED,
     GETTING_CATEGORIES, GET_CATEGORIES, GET_CATEGORY, GET_CATEGORY_ERROR,
     GETTING_SERVICES, GET_SERVICES, GET_SERVICE, GET_SERVICE_ERROR,
-    CLEAR_FLASH, APP_ERROR
+    CLEAR_FLASH, APP_ERROR,
+    TOGGLE_PAGE_CONTAINER, CLEAR_PAGE_SCROLL
 } from 'constants';
 import { moment_tz, format_datetime } from 'util';
 
@@ -43,6 +44,19 @@ function user(state = {}, action) {
             return {[action.id]: action.user};
         case GET_USER_ERROR:
             return {[action.id]: action.error};
+        default:
+            return state;
+    }
+}
+
+function pageContainer(state = { hidden: false, scroll: null }, action) {
+    switch(action.type) {
+        case TOGGLE_PAGE_CONTAINER:
+            let { hidden } = action;
+            let scroll = (typeof action.scroll === 'number') ? action.scroll : state.scroll;
+            return { hidden, scroll };
+        case CLEAR_PAGE_SCROLL:
+            return { hidden: false, scroll: null };
         default:
             return state;
     }
@@ -209,6 +223,7 @@ const rootReducer = combineReducers({
     alert,
     need,
     flash,
+    pageContainer,
     alertRedirect,
     submitFormSuccess,
     submitFormError,

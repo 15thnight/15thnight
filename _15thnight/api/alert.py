@@ -32,7 +32,7 @@ def get_alerts():
         else:
             alerts = Alert.get_active_alerts_for_provider(current_user)
     else:
-        alerts = Alert.get_alerts()
+        alerts = Alert.get_admin_alerts()
     return jsonify(alerts)
 
 

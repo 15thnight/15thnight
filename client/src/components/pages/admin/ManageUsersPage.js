@@ -18,42 +18,44 @@ class ManageUsers extends React.Component {
                 <div className="text-right">
                     <Link to="/add-user" className="btn btn-success">Register User</Link>
                 </div>
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Organization</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Created At</th>
-                            <th>Role</th>
-                            <th>Provider Capabilities</th>
-                            <th>Edit</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        { users.map((user, key) => {
-                            let services = user.role === 'provider' ?
-                                user.services.map(service => { return service.name}).join(', ') :
-                                'N/A';
-                            if (user.role === 'provider' && user.services.length == 0) {
-                                services = 'None Selected';
-                            }
-                            return (
-                                <tr key={key}>
-                                    <td>{ user.name }</td>
-                                    <td>{ user.organization }</td>
-                                    <td>{ user.email }</td>
-                                    <td>{ user.phone_number }</td>
-                                    <td>{ user.created_at }</td>
-                                    <td>{ user.role }</td>
-                                    <td>{ services }</td>
-                                    <td><Link to={"/edit-user/" + user.id} className="btn btn-primary">Edit</Link></td>
-                                </tr>
-                            )
-                        }) }
-                </tbody>
-            </table>
+                <div className="table-responsive">
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Organization</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Created At</th>
+                                <th>Role</th>
+                                <th>Provider Capabilities</th>
+                                <th>Edit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            { users.map((user, key) => {
+                                let services = user.role === 'provider' ?
+                                    user.services.map(service => { return service.name}).join(', ') :
+                                    'N/A';
+                                if (user.role === 'provider' && user.services.length == 0) {
+                                    services = 'None Selected';
+                                }
+                                return (
+                                    <tr key={key}>
+                                        <td>{ user.name }</td>
+                                        <td>{ user.organization }</td>
+                                        <td>{ user.email }</td>
+                                        <td>{ user.phone_number }</td>
+                                        <td>{ user.created_at }</td>
+                                        <td>{ user.role }</td>
+                                        <td>{ services }</td>
+                                        <td><Link to={"/edit-user/" + user.id} className="btn btn-primary">Edit</Link></td>
+                                    </tr>
+                                )
+                            }) }
+                    </tbody>
+                </table>
+            </div>
         </div>
         )
     }

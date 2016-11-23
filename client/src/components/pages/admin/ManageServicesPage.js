@@ -19,28 +19,30 @@ class ManageServices extends React.Component {
                 <div className="text-right">
                     <Link to="/add-service" className="btn btn-success">Add Services</Link>
                 </div>
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        { services.map(service => {
-                            return (
-                                <tr key={service.id}>
-                                    <td>{service.name}</td>
-                                    <td>{service.description}</td>
-                                    <td>{service.category.name}</td>
-                                    <td><Link to={"/edit-service/" + service.id} className="btn btn-primary">Edit</Link></td>
-                                </tr>
-                            )
-                        }) }
-                </tbody>
-            </table>
+                <div className="table-responsive">
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            { services.map(service => {
+                                return (
+                                    <tr key={service.id}>
+                                        <td>{service.name}</td>
+                                        <td>{service.description}</td>
+                                        <td>{service.category.name}</td>
+                                        <td><Link to={"/edit-service/" + service.id} className="btn btn-primary">Edit</Link></td>
+                                    </tr>
+                                )
+                            }) }
+                    </tbody>
+                </table>
+            </div>
         </div>
         )
     }

@@ -1,0 +1,10 @@
+:local(.chrome) {
+    &.hide-page {
+        .container-fluid {
+            display: none;
+        }
+    }
+    .container-fluid {
+        padding-top: 83px;
+    }
+}

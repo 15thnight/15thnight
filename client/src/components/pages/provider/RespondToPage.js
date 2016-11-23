@@ -104,7 +104,7 @@ class RespondToPage extends React.Component {
         }
         let { alert } = this.state;
         return (
-           <div className="text-center col-sm-offset-3 col-sm-6">
+           <div className={"text-center col-md-offset-3 col-md-6 " + styles.respondToPage}>
                 <h2>Alert</h2>
                 {
                     alert.responses.length > 0 &&
@@ -112,7 +112,7 @@ class RespondToPage extends React.Component {
                 }
                 <AlertInfo alert={alert} />
                 <br/>
-                <h4 className={styles.needFormStart}>
+                <h4 className="needFormStart">
                     Please select the services for which you can
                     provide assistance.
                     Provide any pertinent details in the text boxes:
@@ -126,21 +126,21 @@ class RespondToPage extends React.Component {
                                 label={service.name}
                                 key={need.id}
                                 id={"need" + key}
-                                className={styles.need}>
+                                className="need">
                                 {
                                     need.resolved &&
                                     <div>
-                                        This need has already been pledged by 
-                                        another partner agency. If you are still 
+                                        This need has already been pledged by
+                                        another partner agency. If you are still
                                         willing and able to fulfill it as a backup,
-                                        please respond with details in the description 
+                                        please respond with details in the description
                                         box.
                                     </div>
                                 }
                                 {
                                     provisions.length > 0 &&
                                     <div className="form-group">
-                                        <div className="col-sm-offset-1 col-sm-11">
+                                        <div className="col-xs-offset-1 col-xs-11">
                                             <div>
                                                 <div>You have responded to this need {provisions.length} time{provisions.length > 1 && 's'}</div>
                                                 { provisions.map(provision => {
@@ -156,13 +156,13 @@ class RespondToPage extends React.Component {
                                     </div>
                                 }
                                 <div className="form-group">
-                                    <div className="col-sm-1">
+                                    <div className="col-xs-1">
                                         <Input
                                           type="checkbox"
                                           onChange={this.handleCheckboxChange.bind(this, need)}
                                           checked={this.state.checked.indexOf(need.id) >= 0} />
                                     </div>
-                                    <div className="col-sm-11">
+                                    <div className="col-xs-11">
                                         <Input
                                           type="textarea"
                                           name={need.id}
@@ -174,7 +174,7 @@ class RespondToPage extends React.Component {
                                         {
                                             this.state.checked.indexOf(need.id) < 0 &&
                                             <div
-                                              className={styles.textareaMask}
+                                              className="textareaMask"
                                               onClick={this.handleMessageClick.bind(this, need)}></div>
                                         }
                                         <FormErrors errors={this.state.error[need.id]} />

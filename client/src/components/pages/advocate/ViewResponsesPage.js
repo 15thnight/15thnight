@@ -59,7 +59,7 @@ class ViewResponsesPage extends React.Component {
         let totalResolved = alert.needs.reduce((total, need) => { return need.resolved ? total + 1 : total }, 0);
         let percentResolved = (totalResolved / alert.needs.length) * 100;
         return (
-            <div className="text-center col-sm-offset-3 col-sm-6">
+            <div className="text-center col-md-offset-3 col-md-6">
                 <h1>Alert Responses</h1>
                 <AlertInfo alert={alert} />
                 <div className={styles.resolveProgress}>

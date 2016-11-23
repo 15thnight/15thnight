@@ -15,8 +15,6 @@ import configureRoutes from './ConfigureRoutes';
 import Chrome from 'components/chrome';
 import configureStore from 'store/Store';
 
-import 'style/bootstrap.theme'
-
 const store = configureStore();
 
 const routes = configureRoutes(store)

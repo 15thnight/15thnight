@@ -47,20 +47,19 @@ class CategoryField extends React.Component {
                     return (
                         <div key={category.id} className={styles.categoryField}>
                             <h4 className={styles.categoryHeader}>{category.name}</h4>
-                            {category.services.map(service => {
-                                return (
-                                    <div key={service.id} className={"checkbox " + styles.categoryCheckbox}>
-                                        <label>
-                                            <input
-                                              type="checkbox"
-                                              value={service.id}
-                                              checked={value.indexOf(service.id) >= 0}
-                                              onChange={this.handleCheckboxChange.bind(this)}/>
-                                            {service.name}
-                                        </label>
-                                    </div>
-                                );
-                            })}
+                            {category.services.map(service => (
+                                <div key={service.id} className="checkbox">
+                                    <label>
+                                        <input
+                                          type="checkbox"
+                                          value={service.id}
+                                          checked={value.indexOf(service.id) >= 0}
+                                          onChange={() => this.handleCheckboxChange()}
+                                        />
+                                        {service.name}
+                                    </label>
+                                </div>
+                            ))}
                         </div>
                     );
                 })}

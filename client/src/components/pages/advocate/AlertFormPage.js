@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { CategoryField, InputField } from 'form';
+import { CategoryField, FormErrors, InputField } from 'form';
 
 import {
     sendAlert, clearFormStatus
@@ -19,7 +19,6 @@ class AlertForm extends React.Component {
             description: '',
             gender: 'male',
             age: '',
-            categories: [],
             needs: [],
             error: {}
         }
@@ -38,8 +37,8 @@ class AlertForm extends React.Component {
         }
     }
 
-    handleCategoryChange(categories) {
-        this.setState({ categories: categories });
+    handleCategoryChange(needs) {
+        this.setState({ needs: needs });
     }
 
     handleInputChange(name, value) {
@@ -49,13 +48,8 @@ class AlertForm extends React.Component {
     handleFormSubmit(e) {
         e.preventDefault();
         this.setState({ error: {} });
-        let data = {
-            description: this.state.description,
-            age: this.state.age,
-            gender: this.state.gender,
-            needs: this.state.categories
-        }
-        this.props.sendAlert(data);
+        let { description, age, gender, needs } = this.state;
+        this.props.sendAlert({ description, age, gender, needs });
     }
 
     handleTogglePassword() {
@@ -69,13 +63,17 @@ class AlertForm extends React.Component {
             ['unspecified', 'Unspecified']
         ];
         return (
-            <div className="text-center row col-sm-offset-3 col-sm-6">
+            <div className="text-center row col-md-offset-3 col-md-6">
                 <h1>Send an Alert</h1>
                 { this.props.id &&
                     <div className="text-right">
                         <div className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Category</div>
                     </div> }
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
+                    <button className="btn btn-success" type="submit">
+                        Send Alert
+                    </button>
+                    <br/>
                     <InputField
                       label="Age"
                       name="age"
@@ -90,10 +88,6 @@ class AlertForm extends React.Component {
                       values={genders}
                       errors={this.state.error.gender}
                       onChange={this.handleInputChange.bind(this)} />
-                    <CategoryField
-                      label="Needs:"
-                      value={this.state.categories}
-                      onCategoryChange={this.handleCategoryChange.bind(this)} />
                     <InputField
                       type="textarea"
                       label="Description"
@@ -101,6 +95,12 @@ class AlertForm extends React.Component {
                       value={this.state.description}
                       errors={this.state.error.description}
                       onChange={this.handleInputChange.bind(this)} />
+                    <FormErrors errors={this.state.error.needs} />
+                    <CategoryField
+                      label="Needs:"
+                      value={this.state.needs}
+                      onCategoryChange={this.handleCategoryChange.bind(this)} />
+                    <FormErrors errors={this.state.error.needs} />
                     <button className="btn btn-success" type="submit">
                         Send Alert
                     </button>

@@ -17,14 +17,18 @@ const config = {
                 }
             },
             {
-                test: /\.scss$/,
-                loaders: ["style", "css", "sass"]
+                test: /\.css$/,
+                loaders: [
+                    'style-loader',
+                    'css-loader?importLoaders=1',
+                    'postcss-loader'
+                ]
             },
             { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' },
-            { test: /\.css$/, loader: "style-loader!css-loader" },
             { test: /\.json$/, loader: "json-loader" }
         ]
     },
+    postcss: require('./postcss.config.js'),
     resolve: {
         alias: {
             lib: __dirname + '/node_modules',

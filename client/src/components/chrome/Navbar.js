@@ -1,134 +1,50 @@
 import React from 'react';
 import { Link } from 'react-router';
 
-import styles from './Navbar.css';
+import NavbarLinks from './NavbarLinks';
+import UserBar from './UserBar';
 
+import styles from './Navbar.css';
 
 export default class Navbar extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            accountDropdownOpen: false,
-            manageDropdownOpen: false
+    componentWillReceiveProps(nextProps) {
+        let { pathname } = this.props.routing.locationBeforeTransitions;
+        if (pathname !== nextProps.routing.locationBeforeTransitions.pathname) {
+            this.props.togglePageContainer(false);
+            this.props.toggleNavbar(false);
         }
     }
 
-    componentDidMount() {
-        document.body.addEventListener('click', this.handleBodyClick.bind(this));
-    }
-
-    componentWillUnmount() {
-        document.body.removeEventListener('click', this.handleBodyClick.bind(this));
-    }
-
-
-    handleBodyClick(e) {
-        if (!this.state.accountDropdownOpen && !this.state.manageDropdownOpen) {
-            return;
+    handleNavbarToggle(e) {
+        let navbarOpen = !this.props.navbarOpen;
+        this.props.toggleNavbar(navbarOpen);
+        if (navbarOpen) {
+            let scroll = (window.pageYOffset || document.scrollTop) - (document.clientTop || 0);
+            this.props.togglePageContainer(true, scroll || 0);
+        } else {
+            this.props.togglePageContainer(false);
         }
-        let element = e.target;
-        while (element.tagName !== 'HTML') {
-            if (element.className === 'dropdown-toggle') {
-                return
-            }
-            element = element.parentNode;
-        }
-        this.setState({ accountDropdownOpen: false, manageDropdownOpen: false });
-    }
 
-    handleDropdownToggleClick(menu, e) {
-        e.preventDefault();
-        let state = { accountDropdownOpen: false, manageDropdownOpen: false };
-        if (menu === 'account') {
-            state.accountDropdownOpen = !this.state.accountDropdownOpen;
-        } else if (menu === 'manage') {
-            state.manageDropdownOpen = !this.state.manageDropdownOpen;
-        }
-        this.setState(state);
     }
 
     render() {
         let { current_user } = this.props;
         let { pathname } = this.props.routing.locationBeforeTransitions;
-        let user_menu = (<li><Link to="/login">Login</Link></li>);
-        if (current_user) {
-            user_menu = [];
-            let accountDropdownClass = 'dropdown';
-            if (this.state.accountDropdownOpen) {
-                accountDropdownClass += ' open';
-            }
-            switch(current_user.role) {
-                case 'provider':
-                    if (pathname === '/') {
-                        pathname = '/active-alerts'
-                    }
-                    user_menu.push(
-                        <li className={pathname === '/active-alerts' && 'active'} key='active-alerts'>
-                            <Link to='/active-alerts'>Active Alerts</Link>
-                        </li>,
-                        <li className={pathname === '/responded-alerts' && 'active'} key='responded-alerts'>
-                            <Link to='/responded-alerts'>Responded Alerts</Link>
-                        </li>,
-                        <li className={pathname === '/all-alerts' && 'active'} key='all-alerts'>
-                            <Link to='/all-alerts'>All Alerts</Link>
-                        </li>
-                    );
-                    break;
-                case 'advocate':
-                    if (pathname === '/') {
-                        pathname = '/send-alert';
-                    }
-                    user_menu.push(
-                        <li className={pathname === '/send-alert' && 'active'} key='send-alert'>
-                            <Link to='/send-alert'>Send an Alert</Link>
-                        </li>,
-                        <li className={pathname === '/alert-history' && 'active'} key='alert-history'>
-                            <Link to='/alert-history'>Alert History</Link>
-                        </li>
-                    );
-                    break;
-                case 'admin':
-                    let manageDropdownClass = 'dropdown';
-                    if (this.state.manageDropdownOpen) {
-                        manageDropdownClass += ' open';
-                    }
-                    user_menu.push(
-                        <li key='alert-history'><Link to='/alert-history'>Alert History</Link></li>,
-                        <li key='manage-dropdown' className={manageDropdownClass}>
-                            <a href="#" className="dropdown-toggle" onClick={this.handleDropdownToggleClick.bind(this, 'manage')}>
-                                Manage
-                                <span className="caret"></span>
-                            </a>
-                            <ul className="dropdown-menu">
-                                <li><Link to="/manage-users">Users</Link></li>
-                                <li><Link to="/manage-categories">Categories</Link></li>
-                                <li><Link to="/manage-services">Services</Link></li>
-                            </ul>
-                        </li>
-                    );
-                    break;
-            }
-            user_menu.push(
-                <li key='account-dropdown' className={accountDropdownClass}>
-                    <a href="#" className="dropdown-toggle" onClick={this.handleDropdownToggleClick.bind(this, 'account')}>
-                        Account
-                        <span className="caret"></span>
-                    </a>
-                    <ul className="dropdown-menu">
-                        <li><Link to="/edit-profile">Edit Profile</Link></li>
-                        <li><Link to="/change-password">Change Password</Link></li>
-                        <li role="separator" className="divider"></li>
-                        <li><a href="/logout">Logout</a></li>
-                    </ul>
-                </li>
-            );
+        let navbarCollapseClass = 'collapse navbar-collapse';
+        if (this.props.navbarOpen) {
+            navbarCollapseClass += ' in';
         }
+        let navbarClass = "navbar navbar-default navbar-fixed-top " + styles.navbar;
         return(
-            <nav className="navbar navbar-default navbar-fixed-top">
+            <nav className={"navbar navbar-default navbar-fixed-top " + styles.navbar}>
                 <div className="container">
                     <div className="navbar-header">
-                        <button type="button" className="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                        <button
+                          type="button"
+                          className="navbar-toggle"
+                          onClick={() => this.handleNavbarToggle()}
+                        >
                             <span className="icon-bar"></span>
                             <span className="icon-bar"></span>
                             <span className="icon-bar"></span>
@@ -137,19 +53,15 @@ export default class Navbar extends React.Component {
                             <b>15</b><sup>th</sup> <b>Night</b>
                         </Link>
                     </div>
-                    <div className="collapse navbar-collapse" id="navbar">
-                        <ul className="nav navbar-nav navbar-right">
-                            { user_menu }
-                        </ul>
+                    <div className={navbarCollapseClass}>
+                        <NavbarLinks
+                          current_user={current_user}
+                          pathname={pathname}
+                        />
                     </div>
                 </div>
-                {
-                    current_user &&
-                    <div className={styles.userBar}>
-                        <div className={styles.userBarContainer + ' container'}>
-                            Logged in as <strong>{ current_user.email }</strong>
-                        </div>
-                    </div>
+                {current_user &&
+                    <UserBar current_user={current_user} />
                 }
             </nav>
         );

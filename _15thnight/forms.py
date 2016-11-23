@@ -124,6 +124,9 @@ class AlertForm(Form):
             (service.id, service.name) for service in Service.all()
         ]
 
+    def validate_needs(self, field):
+        if len(field.data) == 0:
+            raise ValidationError('You must specify at least one need.')
 
 class ResponseForm(Form):
     message = TextAreaField('Message', validators=[DataRequired()])

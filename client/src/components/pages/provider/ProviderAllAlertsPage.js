@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { getAlerts, setAlertRedirect } from 'actions';
-import { AlertTable } from 'table';
+import { Alerts } from 'alert';
 
 class ProviderActiveAlertsPage extends React.Component {
 
@@ -18,7 +18,7 @@ class ProviderActiveAlertsPage extends React.Component {
             'notified of.'
         );
         return (
-            <AlertTable
+            <Alerts
               alerts={alerts}
               role='provider'
               title='All Alerts'

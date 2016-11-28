@@ -1,5 +1,0 @@
-Provider Name: {{ provider.name }}
-Provider Organization: {{ provider.organization }}
-
-Message:
-{{ message }}

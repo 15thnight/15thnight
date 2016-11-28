@@ -1,7 +1,6 @@
 /* Routes for advocate users */
 import {
     AdvocateAlertHistoryPage,
-    AdvocateHelpPage,
     AlertFormPage,
     ResolveNeedPage,
     ViewResponsesPage
@@ -13,8 +12,7 @@ const childRoutes = [
     { path: '/send-alert'         , component: AlertFormPage },
     { path: '/alert-history'      , component: AdvocateAlertHistoryPage },
     { path: '/resolve-need/:id'   , component: ResolveNeedPage },
-    { path: '/view-responses/:id' , component: ViewResponsesPage },
-    { path: '/help'               , component: AdvocateHelpPage }
+    { path: '/view-responses/:id' , component: ViewResponsesPage}
 ]
 
 export default { childRoutes }

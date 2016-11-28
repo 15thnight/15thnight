@@ -25,13 +25,13 @@ except:
 app.secret_key = app.config['SECRET_KEY']
 app.json_encoder = ExtensibleJSONEncoder
 
-app.register_blueprint(alert_api, url_prefix='/api/v1/alert')
-app.register_blueprint(account_api, url_prefix='/api/v1/account')
-app.register_blueprint(category_api, url_prefix='/api/v1/category')
-app.register_blueprint(need_api, url_prefix='/api/v1/need')
-app.register_blueprint(response_api, url_prefix='/api/v1/response')
-app.register_blueprint(service_api, url_prefix='/api/v1/service')
-app.register_blueprint(user_api, url_prefix='/api/v1/user')
+app.register_blueprint(alert_api, url_prefix='/api/v1')
+app.register_blueprint(account_api, url_prefix='/api/v1')
+app.register_blueprint(category_api, url_prefix='/api/v1')
+app.register_blueprint(need_api, url_prefix='/api/v1')
+app.register_blueprint(response_api, url_prefix='/api/v1')
+app.register_blueprint(service_api, url_prefix='/api/v1')
+app.register_blueprint(user_api, url_prefix='/api/v1')
 
 queue.init_app(app)
 

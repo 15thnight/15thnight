@@ -1,8 +1,6 @@
-from flask import current_app, render_template, url_for
 from flask.ext.login import current_user
-from flask_mail import Message
 
-from _15thnight.queue import queue_send_message, queue_send_email
+from _15thnight.queue import queue_send_message
 from _15thnight.models import (
     Alert, Need, NeedProvided, ProviderNotified, Service, Response, User
 )
@@ -132,56 +130,3 @@ def send_out_resolution(need):
                 body=body
             )
         )
-
-
-def send_password_reset(user):
-    """
-    Send password reset link to user.
-    """
-    if (not user.reset_token or
-            user.reset_created_at < datetime.utcnow() - reset_token_life):
-        user.generate_reset_token()
-    user.save()
-    link = '%sreset-password/%s/%s' % (
-        url_for('index', _external=True), user.email, user.reset_token
-    )
-    message = Message(
-        subject='15th Night Password Reset Link',
-        body=render_template('email/reset_instructions.txt', link=link),
-        html=render_template('email/reset_instructions.html', link=link),
-        recipients=[user.email]
-    )
-    queue_send_email.apply_async(kwargs=dict(message=message))
-
-
-def send_confirm_password_reset(user):
-    """
-    Send confirmation of password reset.
-    """
-    data = dict(
-        time=datetime.utcnow().strftime('%m/%d/%y %I:%M%p'),
-        ip=request.remote_addr
-    )
-    message = Message(
-        subject='15th Night Password was Reset',
-        body=render_template('email/reset_notice.txt', **data),
-        html=render_template('email/reset_notice.html', **data),
-        recipients=[user.email]
-    )
-    queue_send_email.apply_async(kwargs=dict(message=message))
-
-
-def send_help_message(user, message):
-    """
-    Send a help message.
-    """
-    sender = (user.name or '', user.email)
-    message = Message(
-        sender=sender,
-        reply_to=sender,
-        subject="15th Night RAN Website Support Request",
-        body=render_template('email/support_request.txt',
-            provider=user, message=message),
-        recipients=[current_app.config.get('SUPPORT_EMAIL'. '')]
-    )
-    queue_send_email.apply_async(kwargs=dict(message=message))

@@ -8,8 +8,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - [Precss](https://github.com/jonathantneal/precss) for stylesheets
-- Help page form for providers
-- Help page with basic info for advocates
 
 ### Changed
 - HOST_NAME is now SERVER_NAME in the config

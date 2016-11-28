@@ -8,7 +8,7 @@ from _15thnight.util import required_access, jsonify, api_error
 response_api = Blueprint('response_api', __name__)
 
 
-@response_api.route('/', methods=['GET'])
+@response_api.route('/response', methods=['GET'])
 @required_access('provider')
 def get_responses():
     """
@@ -17,7 +17,7 @@ def get_responses():
     return jsonify(Response.get_by_user(current_user))
 
 
-@response_api.route('/', methods=['POST'])
+@response_api.route('/response', methods=['POST'])
 @required_access('provider')
 def create_response():
     """
@@ -40,7 +40,7 @@ def create_response():
     return '', 201
 
 
-@response_api.route('/<uuid>', methods=['PUT'])
+@response_api.route('/response/<uuid>', methods=['PUT'])
 @required_access('provider', 'admin')
 def update_response():
     """
@@ -49,7 +49,7 @@ def update_response():
     return 'Not Implemented', 501
 
 
-@response_api.route('/<uuid>', methods=['DELETE'])
+@response_api.route('/response/<uuid>', methods=['DELETE'])
 @required_access('provider', 'admin')
 def delete_response(uuid):
     """

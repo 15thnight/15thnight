@@ -11,7 +11,7 @@ import { request } from 'util';
 
 
 export function getCurrentUser(data) {
-    let promise = request.get('/api/v1/account/current_user?'+ new Date().getTime());
+    let promise = request.get('/api/v1/current_user?'+ new Date().getTime());
     return dispatch => {
         promise.then(
             res => {
@@ -26,7 +26,7 @@ export function getCurrentUser(data) {
 
 
 export function loginUser(data) {
-    let promise = request.post('/api/v1/account/login', data);
+    let promise = request.post('/api/v1/login', data);
     return dispatch => {
         promise.then(
             res => {
@@ -39,7 +39,7 @@ export function loginUser(data) {
 }
 
 export function logoutUser() {
-    let promise = request.post('/api/v1/account/logout');
+    let promise = request.post('/api/v1/logout');
     return dispatch => {
         promise.then(
             res => {
@@ -53,7 +53,7 @@ export function logoutUser() {
     }
 }
 export function changePassword(data) {
-    let promise = request.post('/api/v1/account/change-password', data);
+    let promise = request.post('/api/v1/change-password', data);
     return dispatch => {
         promise.then(
             res => {
@@ -67,7 +67,7 @@ export function changePassword(data) {
 }
 
 export function updateProfile(data) {
-    let promise = request.post('/api/v1/account/update-profile', data);
+    let promise = request.post('/api/v1/update-profile', data);
     return dispatch => {
         promise.then(
             res => {
@@ -82,7 +82,7 @@ export function updateProfile(data) {
 }
 
 export function forgotPassword(data) {
-    let promise = request.post('/api/v1/account/forgot-password', data);
+    let promise = request.post('/api/v1/forgot-password', data);
     return dispatch => {
         promise.then(
             res => {
@@ -96,7 +96,7 @@ export function forgotPassword(data) {
 }
 
 export function resetPassword(data) {
-    let promise = request.post('/api/v1/account/reset-password', data);
+    let promise = request.post('/api/v1/reset-password', data);
     return dispatch => {
         promise.then(
             res => {
@@ -105,20 +105,6 @@ export function resetPassword(data) {
             },
             err => {
                 dispatch(dispatchFormError(err, 'An unknown error occured while resetting password.'));
-            }
-        )
-    }
-}
-
-export function sendHelpMessage(message) {
-    let promise = request.post('/api/v1/account/help', { message });
-    return dispatch => {
-        promise.then(
-            res => {
-                dispatch(dispatchFormSuccess('Message sent successfully'));
-            },
-            err => {
-                dispatch(dispatchAppError('Failed to send message'));
             }
         )
     }

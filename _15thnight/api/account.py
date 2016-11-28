@@ -1,23 +1,22 @@
 from datetime import datetime, timedelta
-from flask import Blueprint, request
+from flask import Blueprint, request, render_template, url_for
 from flask.ext.login import (
     login_user, logout_user, login_required, current_user
 )
+from flask_mail import Message
 
-from _15thnight.core import (
-    send_password_reset, send_help_message, send_confirm_password_reset
-)
 from _15thnight.forms import (
     LoginForm, ChangePasswordForm, UpdateProfileForm, ResetPasswordForm,
     ForgotPasswordForm, csrf_protect
 )
 from _15thnight.models import Service, User
-from _15thnight.util import api_error, jsonify, required_access
+from _15thnight.queue import queue_send_email
+from _15thnight.util import jsonify, api_error
 
 try:
     from config import RESET_TOKEN_LIFE
 except:
-    from configdist import RESET_TOKEN_LIFE
+    from config import RESET_TOKEN_LIFE
 
 
 account_api = Blueprint('account_api', __name__)
@@ -71,7 +70,20 @@ def forgot_password():
         return api_error(form.errors)
     user = User.get_by_email(form.email.data)
     if user:
-        send_password_reset(user)
+        if (not user.reset_token or
+                user.reset_created_at < datetime.utcnow() - reset_token_life):
+            user.generate_reset_token()
+        user.save()
+        link = '%sreset-password/%s/%s' % (
+            url_for('index', _external=True), user.email, user.reset_token
+        )
+        message = Message(
+            subject='15th Night Password Reset Link',
+            body=render_template('email/reset_instructions.txt', link=link),
+            html=render_template('email/reset_instructions.html', link=link),
+            recipients=[user.email]
+        )
+        queue_send_email.apply_async(kwargs=dict(message=message))
     return '', 200
 
 
@@ -95,7 +107,17 @@ def reset_password():
     user.reset_token = None
     user.reset_created_at = None
     user.save()
-    send_confirm_password_reset(user)
+    data = dict(
+        time=datetime.utcnow().strftime('%m/%d/%y %I:%M%p'),
+        ip=request.remote_addr
+    )
+    message = Message(
+        subject='15th Night Password was Reset',
+        body=render_template('email/reset_notice.txt', **data),
+        html=render_template('email/reset_notice.html', **data),
+        recipients=[user.email]
+    )
+    queue_send_email.apply_async(kwargs=dict(message=message))
     login_user(user)
     return jsonify(user)
 
@@ -133,15 +155,3 @@ def update_profile():
         current_user.services = Service.get_by_ids(form.services.data)
     current_user.save()
     return jsonify(current_user)
-
-
-@account_api.route('/help', methods=['POST'])
-@required_access('provider')
-def help_message():
-    """
-    Send a help message on behalf of the provider.
-    """
-    if 'message' not in request.json:
-        return api_error('Message not specified.')
-    send_help_message(current_user, request.json['message'])
-    return '', 200

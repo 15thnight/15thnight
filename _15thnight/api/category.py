@@ -8,7 +8,7 @@ from _15thnight.util import required_access, jsonify, api_error
 category_api = Blueprint('category_api', __name__)
 
 
-@category_api.route('/', methods=['GET'])
+@category_api.route('/category', methods=['GET'])
 @login_required
 def get_categories():
     """
@@ -18,7 +18,7 @@ def get_categories():
     return jsonify(Category.all())
 
 
-@category_api.route('/<int:category_id>', methods=['GET'])
+@category_api.route('/category/<int:category_id>', methods=['GET'])
 @required_access('admin')
 def get_category(category_id):
     """
@@ -27,7 +27,7 @@ def get_category(category_id):
     return jsonify(Category.get(category_id))
 
 
-@category_api.route('/', methods=['POST'])
+@category_api.route('/category', methods=['POST'])
 @required_access('admin')
 def create_category():
     """
@@ -45,7 +45,7 @@ def create_category():
     return '', 201
 
 
-@category_api.route('/<int:category_id>', methods=['PUT'])
+@category_api.route('/category/<int:category_id>', methods=['PUT'])
 @required_access('admin')
 def update_category(category_id):
     """
@@ -73,7 +73,7 @@ def update_category(category_id):
     category.save()
     return '', 200
 
-@category_api.route('/sort_order', methods=['PUT'])
+@category_api.route('/category/sort_order', methods=['PUT'])
 @required_access('admin')
 def set_category_sort():
     """
@@ -89,7 +89,7 @@ def set_category_sort():
     return jsonify(Category.all())
 
 
-@category_api.route('/<int:category_id>', methods=['DELETE'])
+@category_api.route('/category/<int:category_id>', methods=['DELETE'])
 @required_access('admin')
 def delete_category(category_id):
     """

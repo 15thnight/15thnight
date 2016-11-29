@@ -11,7 +11,7 @@ from _15thnight.util import required_access, jsonify, api_error
 alert_api = Blueprint('alert_api', __name__)
 
 
-@alert_api.route('/alert', methods=['GET'])
+@alert_api.route('/', methods=['GET'])
 @login_required
 def get_alerts():
     """
@@ -36,7 +36,7 @@ def get_alerts():
     return jsonify(alerts)
 
 
-@alert_api.route('/alert/<int:alert_id>', methods=['GET'])
+@alert_api.route('/<int:alert_id>', methods=['GET'])
 @login_required
 def get_alert(alert_id):
     alert = Alert.get(alert_id)
@@ -55,7 +55,7 @@ def get_alert(alert_id):
     return jsonify(data)
 
 
-@alert_api.route('/alert', methods=['POST'])
+@alert_api.route('/', methods=['POST'])
 @required_access('advocate')
 def create_alert():
     """
@@ -69,7 +69,7 @@ def create_alert():
     return '', 201
 
 
-@alert_api.route('/alert/<int:id>', methods=['PUT'])
+@alert_api.route('/<int:id>', methods=['PUT'])
 @required_access('advocate')
 def update_alert(id):
     """
@@ -78,7 +78,7 @@ def update_alert(id):
     return 'Not Implemented', 501
 
 
-@alert_api.route('/alert/<int:id>', methods=['DELETE'])
+@alert_api.route('/<int:id>', methods=['DELETE'])
 @required_access('advocate', 'admin')
 def delete_alert(id):
     """

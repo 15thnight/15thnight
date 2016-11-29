@@ -8,7 +8,7 @@ from _15thnight.util import required_access, jsonify, api_error
 service_api = Blueprint('service_api', __name__)
 
 
-@service_api.route('/service', methods=['GET'])
+@service_api.route('/', methods=['GET'])
 @login_required
 def get_services():
     """
@@ -18,7 +18,7 @@ def get_services():
     return jsonify(Service.all())
 
 
-@service_api.route('/service/<int:service_id>', methods=['GET'])
+@service_api.route('/<int:service_id>', methods=['GET'])
 @required_access('admin')
 def get_service(service_id):
     """
@@ -27,7 +27,7 @@ def get_service(service_id):
     return jsonify(Service.get(service_id))
 
 
-@service_api.route('/service', methods=['POST'])
+@service_api.route('/', methods=['POST'])
 @required_access('admin')
 def create_service():
     """
@@ -46,7 +46,7 @@ def create_service():
     return '', 201
 
 
-@service_api.route('/service/<int:service_id>', methods=['PUT'])
+@service_api.route('/<int:service_id>', methods=['PUT'])
 @required_access('admin')
 def update_service(service_id):
     """
@@ -69,7 +69,7 @@ def update_service(service_id):
     return '', 200
 
 
-@service_api.route('/service/<int:service_id>', methods=['DELETE'])
+@service_api.route('/<int:service_id>', methods=['DELETE'])
 @required_access('admin')
 def delete_service(service_id):
     """

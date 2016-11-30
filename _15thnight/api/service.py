@@ -8,7 +8,7 @@ from _15thnight.util import required_access, jsonify, api_error
 service_api = Blueprint('service_api', __name__)
 
 
-@service_api.route('/', methods=['GET'])
+@service_api.route('', methods=['GET'])
 @login_required
 def get_services():
     """
@@ -27,7 +27,7 @@ def get_service(service_id):
     return jsonify(Service.get(service_id))
 
 
-@service_api.route('/', methods=['POST'])
+@service_api.route('', methods=['POST'])
 @required_access('admin')
 def create_service():
     """

@@ -8,7 +8,7 @@ from _15thnight.util import required_access, jsonify, api_error
 user_api = Blueprint('user_api', __name__)
 
 
-@user_api.route('/', methods=['GET'])
+@user_api.route('', methods=['GET'])
 @required_access('admin')
 def get_users():
     """
@@ -26,7 +26,7 @@ def get_user(user_id):
     return jsonify(User.get(user_id))
 
 
-@user_api.route('/', methods=['POST'])
+@user_api.route('', methods=['POST'])
 @required_access('admin')
 def create_user():
     """

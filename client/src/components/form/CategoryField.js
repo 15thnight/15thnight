@@ -54,7 +54,7 @@ class CategoryField extends React.Component {
                                           type="checkbox"
                                           value={service.id}
                                           checked={value.indexOf(service.id) >= 0}
-                                          onChange={() => this.handleCheckboxChange()}
+                                          onChange={(e) => this.handleCheckboxChange(e)}
                                         />
                                         {service.name}
                                     </label>

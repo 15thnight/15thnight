@@ -8,7 +8,7 @@ from _15thnight.util import required_access, jsonify, api_error
 category_api = Blueprint('category_api', __name__)
 
 
-@category_api.route('/', methods=['GET'])
+@category_api.route('', methods=['GET'])
 @login_required
 def get_categories():
     """
@@ -27,7 +27,7 @@ def get_category(category_id):
     return jsonify(Category.get(category_id))
 
 
-@category_api.route('/', methods=['POST'])
+@category_api.route('', methods=['POST'])
 @required_access('admin')
 def create_category():
     """

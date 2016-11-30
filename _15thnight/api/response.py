@@ -8,7 +8,7 @@ from _15thnight.util import required_access, jsonify, api_error
 response_api = Blueprint('response_api', __name__)
 
 
-@response_api.route('/', methods=['GET'])
+@response_api.route('', methods=['GET'])
 @required_access('provider')
 def get_responses():
     """
@@ -17,7 +17,7 @@ def get_responses():
     return jsonify(Response.get_by_user(current_user))
 
 
-@response_api.route('/', methods=['POST'])
+@response_api.route('', methods=['POST'])
 @required_access('provider')
 def create_response():
     """

@@ -11,7 +11,7 @@ from _15thnight.util import required_access, jsonify, api_error
 alert_api = Blueprint('alert_api', __name__)
 
 
-@alert_api.route('/', methods=['GET'])
+@alert_api.route('', methods=['GET'])
 @login_required
 def get_alerts():
     """
@@ -55,7 +55,7 @@ def get_alert(alert_id):
     return jsonify(data)
 
 
-@alert_api.route('/', methods=['POST'])
+@alert_api.route('', methods=['POST'])
 @required_access('advocate')
 def create_alert():
     """

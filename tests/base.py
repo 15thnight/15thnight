@@ -1,20 +1,22 @@
 from flask_testing import LiveServerTestCase, TestCase
 
 from _15thnight import create_app as ran_create_app
+from _15thnight.database import Model
+
+
+class Config(object):
+    TESTING = True
+    DEBUG = True
+    DATABASE_URI = "sqlite:///tmp.sql"
+    CELERY_BROKER = "sqla+sqlite:///tmp.sql"
 
 
 class RANTestBase(TestCase):
     """Test cases for core.py methods."""
 
     def create_app(self, more_cfg=dict()):
-        cfg = dict({
-            "TESTING": True,
-            "DEBUG": True,
-            "DATABASE_URI": "sqlite:///tmp.sql",
-            "BROKER_URI": "sqla+sqlite:///tmp.sql"
-        })
-        cfg.update(more_cfg)
-        app = ran_create_app(cfg)
+        app = ran_create_app(Config)
+        Model.metadata.create_all(bind=app.db_session.get_bind())
         return app
 
 
@@ -24,11 +26,3 @@ class RANLiveServerTestBase(RANTestBase, LiveServerTestCase):
 
     Will be heavily utilized by Selenium tests.
     """
-
-    def create_app(self):
-        cfg_opts = dict({
-            "LIVESERVER_PORT": 8081,
-            "LIVESERVER_TIMEOUT": 120,
-        })
-        app = super(RANLiveServerTestBase, self).create_app(cfg_opts)
-        return app

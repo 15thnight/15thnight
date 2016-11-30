@@ -10,7 +10,7 @@ from _15thnight.models import User
 from _15thnight.util import ExtensibleJSONEncoder
 
 
-def create_app(cfg=dict()):
+def create_app(cfg=object):
     """
     Setup an app with blueprints, extensions, and other necessary additions.
 

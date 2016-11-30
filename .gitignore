@@ -120,6 +120,7 @@ fabric.properties
 venv/
 env/
 test.db
+*.sql
 config.py
 *.wsgi
 

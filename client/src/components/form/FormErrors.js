@@ -11,7 +11,7 @@ export default class FormErrors extends React.Component {
         }
         return (
             <div className={styles.formErrors}>
-                {errors.map((error, key) =>a (
+                {errors.map((error, key) => (
                     <div key={key} className="error">{error}</div>
                 ))}
             </div>

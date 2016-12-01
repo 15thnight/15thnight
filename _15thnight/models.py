@@ -2,9 +2,10 @@
 import uuid
 from datetime import datetime, timedelta
 
+from flask import url_for
 from sqlalchemy import (
     Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc,
-    Boolean, PrimaryKeyConstraint
+    Boolean
 )
 from sqlalchemy.orm import backref, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -20,7 +21,6 @@ class User(Model):
     Required parameters:
         - email, password, phone_number
     """
-
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -161,18 +161,22 @@ class Alert(Model):
             .all()
         capabilities = set(map(lambda service: service.id, user.services))
         alerts = []
+
         def need_mapper(need):
             """
             Need is applicable it's not marked as resolved
             or the provider hasn't responded to it.
             """
-            if need.resolved or len(NeedProvided.get_by_need_and_provider(need, user)) > 0:
+            need_count = len(NeedProvided.get_by_need_and_provider(need, user))
+            if need.resolved or need_count > 0:
                 return None
             return need.service.id
+
         for alert in alerts_past_two_days:
             service_ids = set(map(need_mapper, alert.needs))
             if (len(capabilities.intersection(service_ids)) > 0):
                 alerts.append(alert)
+
         return [alert.to_provider_json(user) for alert in alerts]
 
     @classmethod
@@ -198,7 +202,7 @@ class Alert(Model):
     def get_provider_alerts(cls, provider):
         alerts = Alert.query \
             .join(cls.providers_notified) \
-            .filter(ProviderNotified.provider_id==provider.id) \
+            .filter(ProviderNotified.provider_id == provider.id) \
             .order_by(desc(cls.created_at)) \
             .distinct().all()
         return [alert.to_provider_json(provider) for alert in alerts]
@@ -207,15 +211,15 @@ class Alert(Model):
     def get_responded_alerts_for_provider(cls, provider):
         alerts = Alert.query \
             .join(cls.responses) \
-            .filter(Response.user_id==provider.id) \
+            .filter(Response.user_id == provider.id) \
             .order_by(desc(cls.created_at)) \
             .distinct().all()
         return [alert.to_provider_json(provider) for alert in alerts]
 
     def provider_has_permission(self, provider):
         """Checks if a provider was notified for this alert"""
-        provider_ids = map(lambda notified: notified.provider_id,
-            self.providers_notified)
+        provider_ids = map(
+            lambda notified: notified.provider_id, self.providers_notified)
         return provider.id in provider_ids
 
     def get_user_response(self, user):
@@ -246,15 +250,43 @@ class Alert(Model):
         return extend(self.to_json(), dict(
             responses=Response.get_by_user_and_alert(provider, self),
             needs=[
-                need.to_provider_json(provider) for need in self.needs \
-                    if need.service.id in service_ids
+                need.to_provider_json(provider) for need in self.needs
+                if need.service.id in service_ids
             ]
         ))
+
+    @property
+    def is_closed(self):
+        """Check if all needs have been met."""
+        for need in self.needs:
+            if not need.resolved:
+                return False
+        return True
+
+    def get_gender(self):
+        """
+        Return a formatted string with the gender if male/female.
+        Blank string if unspecified.
+        """
+        gender = '' if self.gender == 'unspecified' else self.gender
+        gender_string = " %s" % gender
+        return gender_string
+
+    @property
+    def url(self):
+        """Return this alert object's respond URL."""
+        url = "%sr/%s" % (url_for('index', _external=True), self.id)
+        return url
+
+    def need_count(self):
+        """Return the number of needs for this alert."""
+        return len(self.needs)
 
     def __repr__(self):
         return '<Alert(%d) %s %d %s %s>' % (
             self.id, self.created_at, self.age, self.gender, self.description
         )
+
 
 class ProviderNotified(Model):
     """Record of provider being sent an alert"""
@@ -270,7 +302,6 @@ class ProviderNotified(Model):
         secondary='provider_notified_needs',
         backref='providers_notified')
     created_at = Column(DateTime, default=datetime.utcnow)
-
 
 
 class Category(Model):
@@ -442,6 +473,8 @@ user_categories = Table(
 
 provider_notified_needs = Table(
     'provider_notified_needs', Model.metadata,
-    Column('provider_notified_id', Integer, ForeignKey('provider_notified.id'), nullable=False),
+    Column(
+        'provider_notified_id', Integer,
+        ForeignKey('provider_notified.id'), nullable=False),
     Column('need_id', Integer, ForeignKey('need.id'), nullable=False)
 )

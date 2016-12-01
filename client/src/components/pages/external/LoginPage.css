@@ -1,0 +1,6 @@
+:local(.loginPage) {
+
+    .logo img {
+        max-width: 100%;
+    }
+}

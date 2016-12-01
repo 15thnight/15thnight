@@ -9,6 +9,8 @@ import {
     UserFormPage
 } from 'pages/admin';
 
+// TODO: refactor pages into structure based on API, not roles
+import { ViewResponsesPage } from 'pages/advocate';
 
 const childRoutes = [
     { path: '/'                  , component: AdminAlertHistoryPage },
@@ -25,7 +27,9 @@ const childRoutes = [
 
     { path: '/edit-user/:id'     , component: UserFormPage },
     { path: '/edit-category/:id' , component: CategoryFormPage },
-    { path: '/edit-service/:id'  , component: ServiceFormPage }
+    { path: '/edit-service/:id'  , component: ServiceFormPage },
+
+    { path: '/view-responses/:id' , component: ViewResponsesPage}
 ]
 
 export default { childRoutes }

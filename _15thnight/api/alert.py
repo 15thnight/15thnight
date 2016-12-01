@@ -1,17 +1,16 @@
-from datetime import datetime
 from flask import Blueprint, request
 from flask.ext.login import current_user, login_required
 
 from _15thnight.core import send_out_alert
 from _15thnight.forms import AlertForm
-from _15thnight.models import Alert, Need, Response
+from _15thnight.models import Alert
 from _15thnight.util import required_access, jsonify, api_error
 
 
 alert_api = Blueprint('alert_api', __name__)
 
 
-@alert_api.route('/alert', methods=['GET'])
+@alert_api.route('', methods=['GET'])
 @login_required
 def get_alerts():
     """
@@ -32,11 +31,11 @@ def get_alerts():
         else:
             alerts = Alert.get_active_alerts_for_provider(current_user)
     else:
-        alerts = Alert.get_alerts()
+        alerts = Alert.get_admin_alerts()
     return jsonify(alerts)
 
 
-@alert_api.route('/alert/<int:alert_id>', methods=['GET'])
+@alert_api.route('/<int:alert_id>', methods=['GET'])
 @login_required
 def get_alert(alert_id):
     alert = Alert.get(alert_id)
@@ -50,12 +49,12 @@ def get_alert(alert_id):
         if alert.user.id != current_user.id:
             return api_error('Permission denied')
         data = alert.to_advocate_json()
-    else: # is an admin
-        data = alert.to_json()
+    else:  # is an admin
+        data = alert.to_advocate_json()
     return jsonify(data)
 
 
-@alert_api.route('/alert', methods=['POST'])
+@alert_api.route('', methods=['POST'])
 @required_access('advocate')
 def create_alert():
     """
@@ -69,7 +68,7 @@ def create_alert():
     return '', 201
 
 
-@alert_api.route('/alert/<int:id>', methods=['PUT'])
+@alert_api.route('/<int:id>', methods=['PUT'])
 @required_access('advocate')
 def update_alert(id):
     """
@@ -78,13 +77,13 @@ def update_alert(id):
     return 'Not Implemented', 501
 
 
-@alert_api.route('/alert/<int:id>', methods=['DELETE'])
+@alert_api.route('/<int:id>', methods=['DELETE'])
 @required_access('advocate', 'admin')
 def delete_alert(id):
     """
     Delete an alert.
     """
-    return 'Not Implemented', 501 # We do not support a UI for this
+    return 'Not Implemented', 501  # We do not support a UI for this
     if current_user.role == 'advocate':
         alert = Alert.get_user_alert(current_user, id)
     else:

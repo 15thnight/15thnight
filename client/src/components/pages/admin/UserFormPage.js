@@ -51,7 +51,9 @@ class UserForm extends React.Component {
             this.setState({ error: nextProps.submitFormError });
             return this.props.clearFormStatus();
         }
-        if (this.props.params.id && nextProps.user[this.props.params.id]) {
+        let { id } = this.props.params;
+        if (id && nextProps.user[id] &&
+                this.props.user[id] !== nextProps.user[id]) {
             let editingUser = nextProps.user[this.props.params.id];
             let { name, organization, email, phone_number, role, services } = editingUser;
             services = services.map(service => service.id);
@@ -103,7 +105,7 @@ class UserForm extends React.Component {
     render() {
         if (this.state.deleting) {
             return (
-                <div className="text-center row col-sm-offset-3 col-sm-6">
+                <div className="text-center row col-md-offset-3 col-md-6">
                     <h1>Delete User</h1>
                     <div>Are you sure you wish to delete this user?</div>
                     <br/>
@@ -180,7 +182,7 @@ class UserForm extends React.Component {
             );
         }
         return (
-            <div className="text-center row col-sm-offset-3 col-sm-6">
+            <div className="text-center row col-md-offset-3 col-md-6">
                 <h1>{ this.props.params.id ? "Edit User" : "Register User"}</h1>
                 {deleteButton}
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>

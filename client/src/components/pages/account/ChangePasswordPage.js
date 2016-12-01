@@ -55,7 +55,7 @@ class ChangePassowrdPage extends React.Component {
 
     render() {
         return (
-            <div className="text-center row col-sm-offset-3 col-sm-6">
+            <div className="text-center row col-md-offset-3 col-md-6">
                 <h1>Change Password</h1>
                 <br/>
                 <FormErrors errors={this.state.error.form} />

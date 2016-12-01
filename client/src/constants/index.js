@@ -33,3 +33,5 @@ export const DELETE_USER_SUCCESS = 'delete_user_success';
 
 export const CLEAR_FLASH = 'clear_flash';
 export const APP_ERROR = 'app_error';
+export const CLEAR_PAGE_SCROLL = 'clear_page_scroll';
+export const TOGGLE_PAGE_CONTAINER = 'toggle_page_container';

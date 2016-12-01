@@ -31,10 +31,14 @@ MAIL_USE_SSL = False
 TWILIO_TEST_NUMBER = ""
 
 SECRET_KEY = 'This is not secret you must change it'
-HOST_NAME = 'http://localhost:5000'
+PREFERRED_URL_SCHEME = "http"
+SERVER_NAME = 'localhost:5000'
 
 CELERY_BROKER = "sqla+%s" % DATABASE_URL
 DEBUG = True
 
 # Life is in hours
 RESET_TOKEN_LIFE = 24
+
+# Support contact email
+SUPPORT_EMAIL = 'itsupport@example.com'

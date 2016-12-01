@@ -6,6 +6,8 @@ import { Link, withRouter } from 'react-router';
 import { loginUser } from 'actions';
 import { InputField, FormErrors } from 'form';
 
+import styles from './LoginPage.css';
+
 class LoginPage extends React.Component {
 
     constructor(props) {
@@ -36,7 +38,7 @@ class LoginPage extends React.Component {
 
     render() {
         return (
-            <div className="col-md-6 col-md-offset-3 text-center">
+            <div className={"col-md-6 col-md-offset-3 text-center " + styles.loginPage}>
                 <h1>Please Sign In{ this.props.alertRedirect && " to Respond to the Alert"}</h1>
                 <br/>
                 <FormErrors errors={this.state.error.form} />
@@ -60,7 +62,7 @@ class LoginPage extends React.Component {
                     <div className="text-center">
                         <button className="btn btn-success" type="submit">Sign In</button>
                     </div>
-                    <div className="text-center">
+                    <div className="text-center logo">
                         <img src="/static/new_logo.jpeg" alt="15th NIGHT" />
                     </div>
                 </form>

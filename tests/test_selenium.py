@@ -6,7 +6,16 @@ from base import RANLiveServerTestBase
 class SimpleTestCase(RANLiveServerTestBase):
 
     def setUp(self):
-        self.browser = webdriver.Firefox()
+        """Check config for which browser to use for testing."""
+        browser_str = self.app.config.get("TEST_BROWSER", "Firefox").lower()
+        if browser_str == 'ie':
+            browser_str.upper()
+        elif browser_str == 'phantomjs':
+            browser_str = 'PhantomJS'
+        else:
+            # Chrome/Firefox
+            browser_str = browser_str[0].upper() + browser_str[1:]
+        self.browser = getattr(webdriver, browser_str)()
 
     def tearDown(self):
         self.browser.quit()

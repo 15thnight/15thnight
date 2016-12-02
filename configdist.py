@@ -19,6 +19,11 @@ SECRET_KEY = 'This is not secret you must change it'
 # Life is in hours
 RESET_TOKEN_LIFE = 24
 
+# Browser to run front end tests with
+# Available browsers are:
+# - Chrome, Firefox, IE, Opera, or PhantomJS
+TEST_BROWSER = "Firefox"
+
 # Third Party Tool/Library Configuration options #
 # TWILIO credentials start
 TWILIO_ACCOUNT_SID = ""

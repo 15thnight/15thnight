@@ -7,8 +7,8 @@ from _15thnight.database import Model
 class Config(object):
     TESTING = True
     DEBUG = True
-    DATABASE_URI = "sqlite:///tmp.sql"
-    CELERY_BROKER = "sqla+sqlite:///tmp.sql"
+    DATABASE_URI = "sqlite://"
+    CELERY_BROKER = "sqla+sqlite://"
 
 
 class RANTestBase(TestCase):

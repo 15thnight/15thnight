@@ -1,6 +1,6 @@
 from selenium import webdriver
 
-from base import RANLiveServerTestBase
+from tests.base import RANLiveServerTestBase
 
 
 class SimpleTestCase(RANLiveServerTestBase):

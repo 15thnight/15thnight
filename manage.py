@@ -125,5 +125,23 @@ def twillio_test(number=None):
         send_sms(phone_number, "Are we operational?")
 
 
+@manager.command
+def selenium_tests():
+    import pytest
+    pytest.main(args=["./tests/selenium"])
+
+
+@manager.command
+def unit_tests():
+    import pytest
+    pytest.main(args=["./tests/unit"])
+
+
+@manager.command
+def tests():
+    import pytest
+    pytest.main(args=["./tests"])
+
+
 if __name__ == '__main__':
     manager.run()

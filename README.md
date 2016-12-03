@@ -163,3 +163,22 @@ Create a WSGI file for Apache/nginx:
 Create the apache config (this config assumes you have a _15thnight user added to a _15thnight group that has access to the project directory):
 
     $ sed "s?PROJECT_PATH?$(pwd)?g" 15thnight.apache.template
+
+
+# Testing
+
+## Graphical Tests
+
+15th Night's RAN uses [Selenium](http://seleniumhq.org) for frontend/browser testing. In order for frontend tests to run, you *must* properly configure your browser and the RAN.
+- For Firefox, setup [geckodriver](https://github.com/mozilla/geckodriver) and for other browsers see [these docs](http://www.seleniumhq.org/about/platforms.jsp#browsers).
+- Change TEST_BROWSER in your config to use the browser you wish to use for testing
+- Finally, run:
+```
+PYTHONPATH="." pytest tests/selenium
+```
+
+## Non-Graphical Tests
+    PYTHONPATH="." pytest tests/unit
+
+## All Together
+    PYTHONPATH="." pytest tests/

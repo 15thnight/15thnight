@@ -62,7 +62,7 @@ def seed_services():
     clothing = Category.get_by_name("Clothing")
     if not clothing:
         clothing = Category()
-        clothing.name = "Clothing",
+        clothing.name = "Clothing"
         clothing.description = "Shirts, shoes, and all things."
         clothing.save()
     clothing_young = Service.get_by_name("0-5 clothing")

@@ -37,6 +37,7 @@ const config = {
         alias: {
             lib: __dirname + '/node_modules',
             actions: __dirname + '/src/actions',
+            api: __dirname + '/src/api',
             alert: __dirname + '/src/components/alert',
             components: __dirname + '/src/components',
             constants: __dirname + '/src/constants',

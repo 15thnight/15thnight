@@ -1,4 +1,4 @@
-import { createAction } from 'util';
+import { createAction } from 'react-requests';
 
 
 /* App Actions */

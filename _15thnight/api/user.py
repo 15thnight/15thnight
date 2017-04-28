@@ -1,9 +1,11 @@
-from flask import Blueprint, request
-from flask.ext.login import current_user
+from flask import Blueprint, jsonify, request as r
+from flask_login import current_user
 
-from _15thnight.forms import FullUserForm, BaseUserForm
+from _15thnight.marshal import marshal_user
 from _15thnight.models import Service, User
-from _15thnight.util import required_access, jsonify, api_error
+from _15thnight.schema import create_user_schema, update_user_schema
+from _15thnight.util import api_error, app_error, required_access, validate
+
 
 user_api = Blueprint('user_api', __name__)
 
@@ -14,7 +16,7 @@ def get_users():
     """
     Get a list of all users.
     """
-    return jsonify(User.all())
+    return jsonify(map(marshal_user, User.all()))
 
 
 @user_api.route('/<int:user_id>', methods=['GET'])
@@ -23,76 +25,64 @@ def get_user(user_id):
     """
     Gets a user by id.
     """
-    return jsonify(User.get(user_id))
+    return jsonify(marshal_user(User.get(user_id)))
 
 
 @user_api.route('', methods=['POST'])
 @required_access('admin')
+@validate(create_user_schema)
 def create_user():
     """
     Create an user account.
     """
-    form = FullUserForm()
-    if not form.validate_on_submit():
-        return api_error(form.errors)
-    services = []
-    if form.role.data == 'provider':
-        services = Service.get_by_ids(form.services.data)
+    if User.get_by_email(r.json['email']):
+        return api_error(email=['email address already in use'], code=409)
     user = User(
-        name=form.name.data,
-        organization=form.organization.data,
-        email=form.email.data,
-        password=form.password.data,
-        phone_number=form.phone_number.data,
-        role=form.role.data,
-        services=services
-    )
-    user.save()
-    return jsonify(user)
+        name=r.json['name'],
+        organization=r.json['organization'],
+        email=r.json['email'],
+        password=r.json['password'],
+        phone_number=r.json['phone_number'],
+        role=r.json['role'],
+        services=Service.get_by_ids(r.json['services'])
+    ).save()
+    return jsonify(marshal_user(user))
 
 
 @user_api.route('/<int:user_id>', methods=['PUT'])
 @required_access('admin')
+@validate(update_user_schema)
 def update_user(user_id):
     """
     Update an user account.
     """
     user = User.get(user_id)
     if not user:
-        return api_error('User not found', 404)
-    form_kwargs = dict(
-        validate_unique_email=user.email != request.json.get('email')
+        return app_error('User not found', 404)
+    if r.json['role'] == 'provider':
+        user.services = Service.get_by_ids(r.json['services'])
+    if 'password' in r.json:
+        user.set_password(r.json['password'])
+    user.update(
+        email=r.json['email'],
+        name=r.json['name'],
+        organization=r.json['organization'],
+        phone_number=r.json['phone_number'],
+        role=r.json['role']
     )
-    if 'password' in request.json:
-        form = FullUserForm(**form_kwargs)
-    else:
-        form = BaseUserForm(**form_kwargs)
-    if not form.validate_on_submit():
-        return api_error(form.errors)
-    services = []
-    if form.role.data == 'provider':
-        user.services = Service.get_by_ids(form.services.data)
-    user.email = form.email.data
-    if 'password' in request.json:
-        user.set_password(form.password.data)
-    user.name = form.name.data
-    user.organization = form.organization.data
-    user.phone_number = form.phone_number.data
-    user.role = form.role.data
-    user.save()
-    return jsonify(user)
+    return jsonify(marshal_user(user))
 
 
-@user_api.route('/<int:id>', methods=['DELETE'])
+@user_api.route('/<int:user_id>', methods=['DELETE'])
 @required_access('admin')
-def delete_user(id):
+def delete_user(user_id):
     """
     Delete an user.
     """
-    user = User.get(id)
+    user = User.get(user_id)
     if not user:
-        return api_error('User not found', 404)
+        return app_error('User not found')
     if user.id == current_user.id:
-        return api_error('Cannot delete self', 404)
+        return app_error('Cannot delete own account')
     user.delete()
     return '', 202

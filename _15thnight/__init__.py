@@ -1,7 +1,7 @@
 """15th Night Flask App."""
 
 from flask import Flask, json, redirect, render_template, request
-from flask.ext.login import LoginManager, current_user, logout_user
+from flask_login import LoginManager, current_user, logout_user
 from werkzeug.datastructures import MultiDict
 
 from _15thnight import database, queue
@@ -10,9 +10,9 @@ from _15thnight.api import (
     user_api
 )
 from _15thnight.email import mailer
-from _15thnight.forms import csrf_protect
+from _15thnight.marshal import marshal_current_user
 from _15thnight.models import User
-from _15thnight.util import ExtensibleJSONEncoder
+from _15thnight.util import csrf_protect
 
 
 app = Flask(__name__)
@@ -23,7 +23,6 @@ except:
     app.config.from_object('configdist')
 
 app.secret_key = app.config['SECRET_KEY']
-app.json_encoder = ExtensibleJSONEncoder
 
 app.register_blueprint(alert_api, url_prefix='/api/v1/alert')
 app.register_blueprint(account_api, url_prefix='/api/v1/account')
@@ -76,9 +75,7 @@ def after_request(response):
 @app.route('/<path:path>')
 def index(path=None):
     """Serve the index"""
-    state = json.dumps(dict(
-        current_user=current_user if current_user.is_authenticated else None
-    ))
+    state = json.dumps(dict(current_user=marshal_current_user(current_user)))
     return render_template('index.html', state=state)
 
 

@@ -13,19 +13,23 @@ const config = {
                 exclude: /node_modules/,
                 loader: 'babel',
                 query: {
-                    presets: ['react', 'es2015']
+                    presets: ['react', 'es2015'],
+                    plugins: ['transform-class-properties']
                 }
             },
             {
                 test: /\.css$/,
                 loaders: [
                     'style-loader',
-                    'css-loader?importLoaders=1',
+                    'css-loader?importLoaders=0',
                     'postcss-loader'
                 ]
             },
             { test: /\.(png|woff|woff2|eot|ttf|svg)$/, loader: 'url-loader?limit=100000' },
-            { test: /\.json$/, loader: "json-loader" }
+            {
+                test: /\.json$/,
+                loader: 'json-loader'
+            }
         ]
     },
     postcss: require('./postcss.config.js'),

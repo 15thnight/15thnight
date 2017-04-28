@@ -1,19 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
+import Immutable from 'seamless-immutable';
 
-import { getCategories, setCategorySort } from 'actions';
+import { getCategories, setCategorySort } from 'api';
 
 import styles from './ManageCategoriesPage.css';
 
 
 class ManageCategoriesPage extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            categories: null
-        }
+    state = {
+        categories: null
     }
 
     componentWillMount() {
@@ -21,38 +18,39 @@ class ManageCategoriesPage extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        let { categories } = nextProps;
-        categories.map((category, key) => {
-            category.internalSort = key;
-        });
-        this.setState({ categories: nextProps.categories });
-    }
-
-    handleSort(sorted_category, direction) {
-        let { categories } = this.state;
-        let swapSort = direction === 'up' ? sorted_category.internalSort - 1 : sorted_category.internalSort + 1;
-        categories.map((category, key) => {
-            if (category.internalSort === swapSort) {
-                direction === 'up' ? category.internalSort += 1 : category.internalSort -= 1;
-            }
-        });
-        sorted_category.internalSort = swapSort;
-        categories.sort((a, b) => a.internalSort < b.internalSort ? -1 : 1)
+        const categories = Immutable(nextProps.categories.slice()
+            .map((c, internalSort) => c.merge({ internalSort })));
         this.setState({ categories });
-        this.setSortOrder();
     }
 
-    setSortOrder() {
-        const categories = this.state.categories.map(category => {
-            return {
-            id: category.id,
-            sort_order: category.internalSort
-        }});
+    handleSort = (sortToSwap, direction) => {
+        const isUp = direction === 'up';
+        const swapSort = sortToSwap + (isUp ?  -1 : 1);
+        const categories = Immutable([].concat(this.state.categories.map(category => {
+            const { internalSort } = category;
+            if (internalSort === swapSort) {
+                return category.merge({
+                    internalSort: internalSort + (isUp ? 1 : -1)
+                });
+            } else if (internalSort === sortToSwap) {
+                return category.merge({ internalSort: swapSort });
+            }
+            return category;
+        })).sort((a, b) => a.internalSort - b.internalSort));
+        this.setState({ categories }, this.setSortOrder);
+    }
+
+    setSortOrder = () => {
+        const categories = this.state.categories
+            .map(({ id, internalSort: sort_order }) => ({ id, sort_order }));
         this.props.setCategorySort({ categories });
     }
 
     render() {
-        let categories = this.state.categories || [];
+        const { categories } = this.state;
+        if (!categories) {
+            return (<div><h1 className="text-center">Loading Categories</h1></div>);
+        }
         return (
             <div className="tab-pane" id="manage-users">
                 <h1 className="text-center">Manage Categories</h1>
@@ -70,27 +68,25 @@ class ManageCategoriesPage extends React.Component {
                             </tr>
                         </thead>
                         <tbody>
-                            { categories.map((category, key) => (
-                                <tr key={category.id}>
+                            {categories.map(({ id, internalSort, name, description }, key) => (
+                                <tr key={id}>
                                     <td className={styles.sortColumn}>
-                                        {
-                                            key !== 0 &&
-                                            <button className="btn btn-primary" onClick={this.handleSort.bind(this, category, 'up')}>
+                                        {key !== 0 &&
+                                            <button className="btn btn-primary" onClick={() => this.handleSort(internalSort, 'up')}>
                                                 <span className="glyphicon glyphicon-chevron-up"></span>
                                             </button>
                                         }
                                     </td>
                                     <td className={styles.sortColumn}>
-                                        {
-                                            key !== categories.length - 1 &&
-                                            <button className="btn btn-primary"  onClick={this.handleSort.bind(this, category, 'down')}>
+                                        {key !== categories.length - 1 &&
+                                            <button className="btn btn-primary"  onClick={() => this.handleSort(internalSort, 'down')}>
                                                 <span className="glyphicon glyphicon-chevron-down"></span>
                                             </button>
                                         }
                                     </td>
-                                    <td>{category.name}</td>
-                                    <td>{category.description}</td>
-                                    <td><Link to={"/edit-category/" + category.id} className="btn btn-primary">Edit</Link></td>
+                                    <td>{name}</td>
+                                    <td>{description}</td>
+                                    <td><Link to={`/edit-category/${id}`} className="btn btn-primary">Edit</Link></td>
                                 </tr>
                             ))}
                     </tbody>
@@ -101,11 +97,7 @@ class ManageCategoriesPage extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        categories: state.categories
-    }
-}
+const mapStateToProps = ({ categories }) => ({ categories });
 
 export default connect(mapStateToProps, {
     getCategories,

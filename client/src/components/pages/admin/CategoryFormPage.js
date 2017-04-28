@@ -5,9 +5,12 @@ import { withRouter } from 'react-router';
 
 import { InputField, FormGroup } from 'form';
 import {
-    createCategory, editCategory, getCategory, deleteCategory,
-    clearFormStatus
-} from 'actions';
+    createCategory,
+    editCategory,
+    getCategory,
+    deleteCategory,
+} from 'api';
+import { checkRequest } from 'util';
 
 import styles from './CategoryFormPage.css';
 
@@ -15,44 +18,38 @@ class CategoryForm extends React.Component {
 
     constructor(props) {
         super(props);
-        this.defaultState = {
+        this.state = {
             name: '',
             description: '',
             services: [],
             error: {}
         }
-
-        this.state = this.defaultState;
     }
 
     componentWillMount() {
-        if (this.props.params.id) {
-            this.props.getCategory(this.props.params.id);
+        if (this.props.id) {
+            this.props.getCategory(this.props.id);
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.props.router.push('/manage-categories');
-            return this.props.clearFormStatus();
+    componentWillReceiveProps({ request, category }) {
+        if (checkRequest(this.props.request, request,
+                (this.props.id ? editCategory : createCategory).symbol,
+                () => this.props.router.push('/manage-categories'),
+                error => this.setState({ error }))) {
+            return;
         }
-        if (nextProps.submitFormError) {
-            this.setState({ error: nextProps.submitFormError });
-            return this.props.clearFormStatus();
-        }
-        let { id } = this.props.params;
-        if (id && nextProps.category[id] &&
-                this.props.category[id] !== nextProps.category[id]) {
-            let category = nextProps.category[this.props.params.id];
-            let { name, description, services } = category;
-            services.map((service, key) => service.internalSort = key);
+        if (category && this.props.category !== category) {
+            const { name, description } = category;
+            const services = category.services.slice();
+            services.forEach((service, key) => service.internalSort = key);
             this.setState({ name, description, services });
         }
     }
 
     handleDeleteClick() {
         if (confirm('Are you sure you wish to delete this category?')) {
-            this.props.deleteCategory(this.props.params.id);
+            this.props.deleteCategory(this.props.id);
         }
     }
 
@@ -71,7 +68,7 @@ class CategoryForm extends React.Component {
             }
         })
         let data = { name, description, services }
-        this.props.params.id ? this.props.editCategory(this.props.params.id, data) : this.props.createCategory(data);
+        this.props.id ? this.props.editCategory(this.props.id, data) : this.props.createCategory(data);
     }
 
     handleSort(sorted_service, direction) {
@@ -123,12 +120,12 @@ class CategoryForm extends React.Component {
     }
 
     render() {
-        let { services } = this.state;
+        const { services } = this.state;
         return (
             <div className="text-center row col-md-offset-3 col-md-6">
-                <h1>{ this.props.params.id ? "Edit" : "Create"} Category</h1>
+                <h1>{ this.props.id ? "Edit" : "Create"} Category</h1>
                 {
-                    this.props.params.id &&
+                    this.props.id &&
                     <p className="text-right">
                         <span className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Category</span>
                     </p>
@@ -147,12 +144,11 @@ class CategoryForm extends React.Component {
                       value={this.state.description}
                       errors={this.state.error.description}
                       onChange={this.handleInputChange.bind(this)} />
-                    {
-                        services.length > 0 &&
+                    {services.length > 0 &&
                         this.renderServices()
                     }
                     <button className="btn btn-success" type="submit">
-                        { this.props.params.id ? "Submit" : "Create" } Category
+                        { this.props.id ? "Submit" : "Create" } Category
                     </button>
                 </form>
             </div>
@@ -160,18 +156,12 @@ class CategoryForm extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        submitFormError: state.submitFormError,
-        submitFormSuccess: state.submitFormSuccess,
-        category: state.category
-    }
-}
+const mapStateToProps = ({ category, request }, { params: { id }}) =>
+    ({ category: category[id], request, id });
 
 export default connect(mapStateToProps, {
     createCategory,
     editCategory,
     deleteCategory,
-    clearFormStatus,
     getCategory
 })(withRouter(CategoryForm));

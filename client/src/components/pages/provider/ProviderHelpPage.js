@@ -1,57 +1,50 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
-import {
-    sendHelpMessage,
-    clearFormStatus
-} from 'actions';
+import { sendHelpMessage } from 'api';
 import { InputField } from 'form';
+import { checkRequest } from 'util';
 
 
 class ProviderHelpPage extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            message: ''
-        }
+    state = {
+        message: '',
+        error: {}
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.setState({ message: '' });
-            return this.props.clearFormStatus();
-        }
-        if (nextProps.submitFormError) {
-            this.setState({ error: nextProps.submitFormError });
-            return this.props.clearFormStatus();
-        }
+    componentWillReceiveProps({ request }) {
+        checkRequest(this.props.request, request, sendHelpMessage,
+            () => this.props.router.push('/'),
+            error => this.setState({ error })
+        );
     }
 
-    handleSubmit(e) {
+    handleSubmit = e => {
         e.preventDefault();
-        this.props.sendHelpMessage(this.state.message);
+        const { message } = this.state;
+        this.props.sendHelpMessage({ message });
 
     }
 
-    onChange(name, message) {
+    onChange = (name, message) => {
         this.setState({ message });
     }
 
     render() {
-        let { message, error } = this.state;
+        const { message, error } = this.state;
         return (
             <div className="col-md-6 col-md-offset-3 text-center">
                 <h1>Contact Help</h1>
                 <p>Your message will be sent to OSLC support.</p>
-                <form className="form-horizontal" onSubmit={(e) => this.handleSubmit(e)}>
+                <form className="form-horizontal" onSubmit={this.handleSubmit}>
                     <InputField
                       label="Enter your message"
                       type="textarea"
                       name="message"
-                      errors={error}
-                      value={this.state.message}
-                      onChange={this.onChange.bind(this)} />
+                      errors={error.message}
+                      value={message}
+                      onChange={this.onChange} />
                     <br/>
                     <button className="btn btn-success">Send Message</button>
                 </form>
@@ -60,14 +53,8 @@ class ProviderHelpPage extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        submitFormSuccess: state.submitFormSuccess,
-        submitFormError: state.submitFormError
-    }
-}
+const mapStateToProps = ({ request }) => ({ request });
 
 export default connect(mapStateToProps, {
-    sendHelpMessage,
-    clearFormStatus
-})(ProviderHelpPage);
+    sendHelpMessage
+})(withRouter(ProviderHelpPage));

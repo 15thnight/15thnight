@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router';
 
-import { loginUser } from 'actions';
+import { loginUser } from 'api';
 import { InputField, FormErrors } from 'form';
 
 import styles from './LoginPage.css';

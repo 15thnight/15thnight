@@ -9,82 +9,68 @@ import {
     StaticField,
     FormGroup
 } from 'form';
-
+import { checkRequest } from 'util';
 import {
-    createUser, editUser, getUser, deleteUser,
-    clearFormStatus
-} from 'actions';
+    createUser,
+    editUser,
+    getUser,
+    deleteUser,
+} from 'api';
+
+const ROLE_VALUES = [
+    ['advocate', 'Advocate'],
+    ['provider', 'Provider'],
+    ['admin',    'Admin']
+];
 
 class UserForm extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.defaultState = {
-            name: '',
-            organization: '',
-            email: '',
-            password: '',
-            confirm: '',
-            phone_number: '',
-            role: 'advocate',
-            services: [],
-            editingPassword: false,
-            editingUser: {},
-            error: {}
-        }
-
-        this.state = this.defaultState;
+    state = {
+        name: '',
+        organization: '',
+        email: '',
+        password: '',
+        confirm: '',
+        phone_number: '',
+        role: 'advocate',
+        services: [],
+        editingPassword: false,
+        error: {}
     }
 
     componentWillMount() {
-        if (this.props.params.id) {
-            this.props.getUser(this.props.params.id);
+        if (this.props.id) {
+            this.props.getUser(this.props.id);
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.props.router.push('/manage-users');
-            return this.props.clearFormStatus();
-        }
-        if (nextProps.submitFormError) {
-            this.setState({ error: nextProps.submitFormError });
-            return this.props.clearFormStatus();
-        }
-        let { id } = this.props.params;
-        if (id && nextProps.user[id] &&
-                this.props.user[id] !== nextProps.user[id]) {
-            let editingUser = nextProps.user[this.props.params.id];
-            let { name, organization, email, phone_number, role, services } = editingUser;
-            services = services.map(service => service.id);
-            this.setState({ name, organization, email, phone_number, role, services, editingUser });
+    componentWillReceiveProps({ request, user }) {
+        checkRequest(this.props.request, request, [editUser, createUser],
+            () => this.props.router.push('/manage-users'),
+            error => this.setState({ error })
+        );
+        if (this.props.user !== user && user) {
+            const { name, organization, email, phone_number, role } = user;
+            const services = user.services.map(({ id }) => id);
+            this.setState({ name, organization, email, phone_number, role, services });
         }
     }
 
-    handleDeletePreviewClick() {
-        this.setState({ deleting: true });
-    }
+    handleDeletePreviewClick = () => this.setState({ deleting: true });
 
-    handleDeleteClick() {
-        this.props.deleteUser(this.props.params.id);
-    }
+    handleDeleteClick = () => this.props.deleteUser(this.props.id);
 
-    handleCategoryChange(services) {
-        this.setState({ services });
-    }
+    handleCategoryChange = services => this.setState({ services });
 
-    handleInputChange(name, value) {
-        this.setState({ [name]: value });
-    }
+    handleInputChange = (name, value) => this.setState({ [name]: value });
 
-    handleFormSubmit(e) {
+    handleFormSubmit = e => {
         e.preventDefault();
         this.setState({ error: {} });
-        let submitPassword = !this.props.params.id || this.state.editingPassword;
-        let { name, organization, email, phone_number, role, services, password, confirm } = this.state;
-        let data = { name, organization, email, phone_number, role, services }
+        const { id } = this.props;
+        const submitPassword = !id || this.state.editingPassword;
+        const { name, organization, email, phone_number, role, services, password, confirm } = this.state;
         if (submitPassword && password !== confirm) {
-            let error = ['Passwords do not match.'];
+            const error = ['Passwords do not match.'];
             return this.setState({
                 error: {
                     password: error,
@@ -92,15 +78,15 @@ class UserForm extends React.Component {
                 }
             });
         }
+        const data = { name, organization, email, phone_number, role, services }
         if (submitPassword) {
             data.password = password;
         }
-        this.props.params.id ? this.props.editUser(this.props.params.id, data) : this.props.createUser(data);
+        id ? this.props.editUser(data, id) : this.props.createUser(data);
     }
 
-    handleTogglePassword() {
+    handleTogglePassword = () =>
         this.setState({ editingPassword: !this.state.editingPassword });
-    }
 
     render() {
         if (this.state.deleting) {
@@ -136,8 +122,9 @@ class UserForm extends React.Component {
                 </div>
             )
         }
-        let capabilityStyle = {display: this.state.role === 'provider' ? 'block' : 'none'}
-        const passwordForm = !this.props.params.id || (this.props.params.id && this.state.editingPassword) ? (
+        const capabilityStyle = {display: this.state.role === 'provider' ? 'block' : 'none'}
+        const { id } = this.props;
+        const passwordForm = !id || (id && this.state.editingPassword) ? (
             <div>
                 <InputField
                   type="password"
@@ -155,7 +142,7 @@ class UserForm extends React.Component {
                   onChange={this.handleInputChange.bind(this)} />
             </div>
         ) : null;
-        const isEditingPassword = this.props.params.id ? (
+        const isEditingPassword = id ? (
             <FormGroup>
                 <div
                   className="btn btn-primary"
@@ -164,13 +151,8 @@ class UserForm extends React.Component {
                 </div>
             </FormGroup>
         ) : null;
-        const roles = [
-            ['advocate', 'Advocate'],
-            ['provider', 'Provider'],
-            ['admin',    'Admin']
-        ];
         let deleteButton = null;
-        if (this.props.params.id && parseInt(this.props.params.id) !== this.props.current_user.id) {
+        if (id && parseInt(id) !== this.props.current_user.id) {
             deleteButton = (
                 <div className="form-group text-right">
                     <div
@@ -183,7 +165,7 @@ class UserForm extends React.Component {
         }
         return (
             <div className="text-center row col-md-offset-3 col-md-6">
-                <h1>{ this.props.params.id ? "Edit User" : "Register User"}</h1>
+                <h1>{ id ? "Edit User" : "Register User"}</h1>
                 {deleteButton}
                 <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
                     <InputField
@@ -215,7 +197,7 @@ class UserForm extends React.Component {
                     <InputField
                       label="Role"
                       type="select"
-                      values={roles}
+                      values={ROLE_VALUES}
                       value={this.state.role}
                       name="role"
                       errors={this.state.error.role}
@@ -223,11 +205,11 @@ class UserForm extends React.Component {
                     <div style={capabilityStyle}>
                         <CategoryField
                           label="Provider Capabilities:"
-                          value={this.state.services}
+                          values={this.state.services}
                           onCategoryChange={this.handleCategoryChange.bind(this)} />
                     </div>
                     <button className="btn btn-success" type="submit">
-                        { this.props.params.id ? "Submit User" : "Register User" }
+                        { id ? "Submit User" : "Register User" }
                     </button>
                 </form>
             </div>
@@ -235,19 +217,13 @@ class UserForm extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        submitFormError: state.submitFormError,
-        submitFormSuccess: state.submitFormSuccess,
-        current_user: state.current_user,
-        user: state.user
-    }
-}
+
+const mapStateToProps = ({ request, current_user, user }, { params: { id } }) =>
+    ({ request, current_user, id, user: user[id] });
 
 export default connect(mapStateToProps, {
     createUser,
     editUser,
-    clearFormStatus,
     getUser,
     deleteUser
 })(withRouter(UserForm));

@@ -3,46 +3,37 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { InputField, FormErrors } from 'form';
-import { changePassword, clearFormStatus } from 'actions';
+import { changePassword } from 'api';
+import { checkRequest } from 'util';
 
-const { stringify, parse } = JSON;
+const DEFAULT_STATE = {
+    current: '',
+    new_password: '',
+    confirm: '',
+    error: {}
+}
 
 class ChangePassowrdPage extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.defaultState = {
-            current: '',
-            new_password: '',
-            confirm: '',
-            error: {}
-        }
-        this.state = parse(stringify(this.defaultState));
+    state = Object.assign({}, DEFAULT_STATE);
+
+    componentWillReceiveProps({ request }) {
+        checkRequest(this.props.request, request, changePassword,
+            () => this.props.router.push('/'),
+            error => this.setState({ error })
+        );
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.setState(this.defaultState);
-            return this.props.clearFormStatus();
-        }
-        if (nextProps.submitFormError) {
-            this.setState({
-                error: nextProps.submitFormError
-            });
-            return this.clearFormStatus();
-        }
-    }
-
-    handleInputChange(name, value) {
+    handleInputChange = (name, value) => {
         this.setState({ [name]: value });
     }
 
-    handleFormSubmit(e) {
+    handleFormSubmit = e => {
         e.preventDefault();
         this.setState({ errors: {} });
-        let { current, new_password, confirm } = this.state;
+        const { current, new_password, confirm } = this.state;
         if (new_password !== confirm) {
-            let error = ['Passwords do not match.'];
+            const error = ['Passwords do not match.'];
             return this.setState({
                 error: {
                     new_password: error,
@@ -59,28 +50,28 @@ class ChangePassowrdPage extends React.Component {
                 <h1>Change Password</h1>
                 <br/>
                 <FormErrors errors={this.state.error.form} />
-                <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
+                <form className="form-horizontal" onSubmit={this.handleFormSubmit}>
                     <InputField
                       type="password"
                       label="Current Password"
                       name="current"
                       value={this.state.current}
                       errors={this.state.error.current}
-                      onChange={this.handleInputChange.bind(this)} />
+                      onChange={this.handleInputChange} />
                     <InputField
                       type="password"
                       label="New Password"
                       name="new_password"
                       value={this.state.new_password}
                       errors={this.state.error.new_password}
-                      onChange={this.handleInputChange.bind(this)} />
+                      onChange={this.handleInputChange} />
                     <InputField
                       type="password"
                       label="Confirm New Password"
                       name="confirm"
                       value={this.state.confirm}
                       errors={this.state.error.confirm}
-                      onChange={this.handleInputChange.bind(this)} />
+                      onChange={this.handleInputChange} />
                     <button className="btn btn-success" type="submit">
                         Submit
                     </button>
@@ -90,12 +81,7 @@ class ChangePassowrdPage extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        submitFormSuccess: state.submitFormSuccess,
-        submitFormError: state.submitFormError
-    }
-}
+const mapStateToProps = ({ request }) => ({ request });
 
 export default connect(mapStateToProps, {
     changePassword

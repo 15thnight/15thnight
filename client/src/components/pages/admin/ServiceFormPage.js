@@ -5,23 +5,20 @@ import { withRouter } from 'react-router';
 
 import { InputField } from 'form';
 import {
-    createService, editService, getService, deleteService,
+    createService,
+    editService,
+    getService,
+    deleteService,
     getCategories,
-    clearFormStatus
-} from 'actions';
+} from 'api';
 
 class ServiceForm extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.defaultState = {
-            name: '',
-            description: '',
-            category: '',
-            error: {}
-        }
-
-        this.state = this.defaultState;
+    state = {
+        name: '',
+        description: '',
+        category: '',
+        error: {}
     }
 
     componentWillMount() {
@@ -31,21 +28,17 @@ class ServiceForm extends React.Component {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.props.router.push('/manage-services');
-            return this.props.clearFormStatus();
-        }
-        if (nextProps.submitFormError) {
-            this.setState({ error: nextProps.submitFormError });
-            return this.props.clearFormStatus();
-        }
-        let { id } = this.props.params;
-        if (id && nextProps.service[id] &&
-                this.props.service[id] !== nextProps.service[id]) {
-            let service = nextProps.service[this.props.params.id];
-            let { name, description, category } = service;
-            category = category.id;
+    componentWillReceiveProps({ request, service, params: { id } }) {
+        checkRequest(this.props.request, request, [createService, editService],
+            () => this.props.router.push('/manage-services'),
+            error => this.setState({ error })
+        );
+        checkRequest(this.props.request, request, deleteService,
+            () => this.props.router.push('/manage-services')
+        );
+
+        if(this.props.service !== service) {
+            const { name, description, category: { id: category } } = service;
             this.setState({ name, description, category });
         }
     }
@@ -56,16 +49,15 @@ class ServiceForm extends React.Component {
         }
     }
 
-    handleInputChange(name, value) {
-        this.setState({ [name]: value });
-    }
+    handleInputChange = (name, value) => this.setState({ [name]: value });
 
-    handleFormSubmit(e) {
+    handleFormSubmit = e => {
         e.preventDefault();
         this.setState({ error: {} });
         let { name, description, category } = this.state;
         let data = { name, description, category };
-        this.props.params.id ? this.props.editService(this.props.params.id, data) : this.props.createService(data);
+        const { id } = this.props.params;
+        id ? this.props.editService(id, data) : this.props.createService(data);
     }
 
     render() {
@@ -111,20 +103,13 @@ class ServiceForm extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        submitFormError: state.submitFormError,
-        submitFormSuccess: state.submitFormSuccess,
-        service: state.service,
-        categories: state.categories
-    }
-}
+const mapStateToProps = ({ request, service, categories }, { params: { id }}) =>
+    ({ request, categories, service: service[id] });
 
 export default connect(mapStateToProps, {
     createService,
     editService,
     deleteService,
-    clearFormStatus,
     getService,
     getCategories
 })(withRouter(ServiceForm));

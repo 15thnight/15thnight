@@ -4,72 +4,57 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 import { CategoryField, FormErrors, InputField } from 'form';
+import { sendAlert } from 'api';
+import { checkRequest } from 'util';
 
-import {
-    sendAlert, clearFormStatus
-} from 'actions';
+const GENDER_VALUES = [
+    ['male',        'Male'],
+    ['female',      'Female'],
+    ['unspecified', 'Unspecified']
+];
 
-const { parse, stringify } = JSON;
+const DEFAULT_STATE = {
+    description: '',
+    gender: 'male',
+    age: '',
+    needs: [],
+    error: {}
+}
 
 class AlertForm extends React.Component {
+    state = Object.assign({}, DEFAULT_STATE);
 
-    constructor(props) {
-        super(props);
-        this.defaultState = {
-            description: '',
-            gender: 'male',
-            age: '',
-            needs: [],
-            error: {}
-        }
-
-        this.state = parse(stringify(this.defaultState));
+    componentWillReceiveProps({ request }) {
+        checkRequest(this.props.request, request, sendAlert,
+            () => this.setState(DEFAULT_STATE),
+            error => this.setState({ error })
+        )
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.setState(parse(stringify(this.defaultState)));
-            return this.props.clearFormStatus();
-        }
-        if (nextProps.submitFormError) {
-            this.setState({ error: nextProps.submitFormError });
-            return this.props.clearFormStatus();
-        }
-    }
+    handleCategoryChange = needs => this.setState({ needs });
 
-    handleCategoryChange(needs) {
-        this.setState({ needs: needs });
-    }
+    handleInputChange = (name, value) => this.setState({ [name]: value });
 
-    handleInputChange(name, value) {
-        this.setState({ [name]: value });
-    }
-
-    handleFormSubmit(e) {
+    handleFormSubmit = e => {
         e.preventDefault();
         this.setState({ error: {} });
-        let { description, age, gender, needs } = this.state;
+        const { description, age, gender, needs } = this.state;
         this.props.sendAlert({ description, age, gender, needs });
     }
 
-    handleTogglePassword() {
+    handleTogglePassword = () =>
         this.setState({ editingPassword: !this.state.editingPassword });
-    }
+
 
     render() {
-        const genders = [
-            ['male',        'Male'],
-            ['female',      'Female'],
-            ['unspecified', 'Unspecified']
-        ];
         return (
             <div className="text-center row col-md-offset-3 col-md-6">
                 <h1>Send an Alert</h1>
                 { this.props.id &&
                     <div className="text-right">
-                        <div className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Category</div>
+                        <div className="btn btn-danger" onClick={this.handleDeleteClick}>Delete Category</div>
                     </div> }
-                <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
+                <form className="form-horizontal" onSubmit={this.handleFormSubmit}>
                     <button className="btn btn-success" type="submit">
                         Send Alert
                     </button>
@@ -79,27 +64,27 @@ class AlertForm extends React.Component {
                       name="age"
                       value={this.state.age}
                       errors={this.state.error.age}
-                      onChange={this.handleInputChange.bind(this)} />
+                      onChange={this.handleInputChange} />
                     <InputField
                       type="select"
                       label="Gender"
                       name="gender"
                       value={this.state.gender}
-                      values={genders}
+                      values={GENDER_VALUES}
                       errors={this.state.error.gender}
-                      onChange={this.handleInputChange.bind(this)} />
+                      onChange={this.handleInputChange} />
                     <InputField
                       type="textarea"
                       label="Description"
                       name="description"
                       value={this.state.description}
                       errors={this.state.error.description}
-                      onChange={this.handleInputChange.bind(this)} />
+                      onChange={this.handleInputChange} />
                     <FormErrors errors={this.state.error.needs} />
                     <CategoryField
                       label="Needs:"
-                      value={this.state.needs}
-                      onCategoryChange={this.handleCategoryChange.bind(this)} />
+                      values={this.state.needs}
+                      onCategoryChange={this.handleCategoryChange} />
                     <FormErrors errors={this.state.error.needs} />
                     <button className="btn btn-success" type="submit">
                         Send Alert
@@ -110,14 +95,9 @@ class AlertForm extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        submitFormSuccess: state.submitFormSuccess,
-        submitFormError: state.submitFormError
-    }
-}
+
+const mapStateToProps = ({ request }) => ({ request });
 
 export default connect(mapStateToProps, {
-   clearFormStatus,
    sendAlert
 })(withRouter(AlertForm));

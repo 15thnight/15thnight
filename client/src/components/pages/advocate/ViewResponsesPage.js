@@ -6,10 +6,9 @@ import { Link, withRouter } from 'react-router';
 import {
     getAlert,
     resolveAlertNeed,
-    unresolveAlertNeed,
     resolveAllNeeds,
-    clearFormStatus
-} from 'actions';
+    unresolveAlertNeed
+} from 'api';
 import { AlertInfo, Provisions } from 'alert';
 import { FormGroup, Input } from 'form';
 
@@ -191,6 +190,5 @@ export default connect(mapStateToProps, {
     getAlert,
     resolveAlertNeed,
     unresolveAlertNeed,
-    resolveAllNeeds,
-    clearFormStatus
+    resolveAllNeeds
 })(withRouter(ViewResponsesPage));

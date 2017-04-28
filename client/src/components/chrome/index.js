@@ -1,11 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import {
-    getCurrentUser,
-    togglePageContainer,
-    clearPageScroll
-} from 'actions';
+import { togglePageContainer, clearPageScroll } from 'actions';
+import { getCurrentUser } from 'api';
+
 import Navbar from './Navbar.js';
 import Flash from './Flash';
 
@@ -13,18 +11,15 @@ import styles from './index.css';
 
 class Chrome extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            navbarOpen: false
-        }
+    state = {
+        navbarOpen: false
     }
 
     componentWillMount() {
         let { body } = document;
         body.parentElement.style.height = body.style.height = '100%';
         this.props.getCurrentUser();
-        window.addEventListener('resize', this.handleWindowResize.bind(this));
+        window.addEventListener('resize', this.handleWindowResize);
     }
 
     componentWillUnmount() {
@@ -32,7 +27,7 @@ class Chrome extends React.Component {
     }
 
     componentDidUpdate() {
-        let { pageContainer } = this.props;
+        const { pageContainer } = this.props;
         if (!pageContainer.hidden && pageContainer.scroll) {
             window.scrollTo(0, pageContainer.scroll);
             this.props.clearPageScroll();
@@ -40,7 +35,7 @@ class Chrome extends React.Component {
         window.removeEventListener('resize', this.handleWindowResize);
     }
 
-    handleWindowResize() {
+    handleWindowResize = () => {
         if (window.innerWidth >= 768 && this.props.pageContainer.hidden) {
             if (this.props.pageContainer.scroll) {
                 window.scrollTo(0, this.props.pageContainer.scroll);

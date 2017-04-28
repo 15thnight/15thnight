@@ -2,81 +2,64 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router';
 
-import { getNeed, resolveNeed, clearFormStatus } from 'actions';
+import { getNeed, resolveNeed } from 'api';
 import { Provision } from 'alert';
 import { FormErrors, Input } from 'form';
+import { checkRequest } from 'util';
 
 import styles from './ResolveNeedPage.css';
 
 class ResolveNeedPage extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            provisionChecked: [],
-            message: '',
-            notes: '',
-            errors: {},
-            need: null
-        }
+    state = {
+        provisionChecked: [],
+        message: '',
+        notes: '',
+        errors: {}
     }
 
     componentWillMount() {
         this.props.getNeed(this.props.params.id);
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.props.router.push('/view-responses/' + this.state.need.alert_id);
-            return this.props.clearFormStatus();
-        }
-
-        if (nextProps.submitFormError) {
-            this.setState({ error: nextProps.submitFormError });
-            return this.props.clearFormStatus();
-        }
-
-        let need = nextProps.need[this.props.params.id];
-        if (need && this.props.need[this.props.params.id] !== need) {
-            this.setState({ need })
-        }
+    componentWillReceiveProps({ request, need }) {
+        checkRequest(this.props.request, request, resolveNeed,
+            () => this.props.router.push(`/view-responses/${this.props.need.alert_id}`),
+            error => this.setState({ error })
+        );
     }
 
-    handleCheckboxChange(id) {
-        let {provisionChecked} = this.state;
-        if (provisionChecked.indexOf(id) < 0) {
-            provisionChecked.push(id);
-        } else {
-            provisionChecked = provisionChecked.filter(provision => provision !== id);
-        }
-        this.setState({provisionChecked: provisionChecked.slice(0)});
+    handleCheckboxChange = id => {
+        const provisionChecked = this.state.provisionChecked.includes(id) ?
+            this.state.provisionChecked.slice().concat(id) :
+            this.state.provisionChecked.filter(provision => provision !== id);
+        this.setState({ provisionChecked });
     }
 
-    handleInputChange(name, value) {
-        this.setState({[name]: value});
-    }
+    handleInputChange = (name, value) => this.setState({ [name]: value });
 
-    handleSubmit(e) {
-        let errors = {};
-        let { notes, message, provisionChecked, need } = this.state;
-        this.setState({ errors });
+    handleSubmit = e => {
+        const { id, provisions } = this.props.need;
+        const { notes, message, provisionChecked } = this.state;
+        this.setState({ errors: {} });
         e.preventDefault();
-        if (need.provisions.length > 0 && provisionChecked.length === 0 && notes === '') {
-            errors.provisions = errors.notes = ['You must select providers to notify or specify a note to resolve this need.'];
-            return this.setState({ errors });
+        if (provisions.length > 0 && provisionChecked.length === 0 && notes === '') {
+            const error = ['You must select providers to notify or specify a note to resolve this need.'];
+            return this.setState({
+                provisions: error,
+                notes: error
+            })
         }
-        let data = { notes, message, provisions: provisionChecked }
-        this.props.resolveNeed(need.id, data);
+        this.props.resolveNeed(id, { notes, message, provisions: provisionChecked });
     }
 
     render() {
-        if (!this.state.need) {
+        const { need } = this.props;
+        if (!need) {
             return (<h1 className="text-center">Loading need...</h1>);
         }
-        let { need } = this.state;
         return (
             <form
-              onSubmit={this.handleSubmit.bind(this)}
+              onSubmit={this.handleSubmit}
               className="text-center col-md-offset-3 col-md-6">
                 <div className="text-left">
                     <Link
@@ -87,11 +70,11 @@ class ResolveNeedPage extends React.Component {
                 </div>
                 <h1>Resolve Need</h1>
                 <h3>Need: { need.service.name }</h3>
-                { need.provisions.length > 0 &&
+                {need.provisions.length > 0 &&
                     <div className={styles.provisionResponse}>
                         <div className={styles.message}>
                             <div>
-                               Enter an optional message that will be sent to 
+                               Enter an optional message that will be sent to
                                the Providers you've selected to meet this need.
                             </div>
                             <br/>
@@ -99,12 +82,12 @@ class ResolveNeedPage extends React.Component {
                               type="textarea"
                               name="message"
                               value={this.state.message}
-                              onChange={this.handleInputChange.bind(this)}/>
+                              onChange={this.handleInputChange}/>
                         </div>
                         <br/>
                         <div>
-                            Select which Provider(s) will meet the youth's need. 
-                            Check a box to select a Provider. 
+                            Select which Provider(s) will meet the youth's need.
+                            Check a box to select a Provider.
                             Choose as many Providers as necessary to satisfy the youth's need:
                         </div>
                         <br/>
@@ -143,18 +126,18 @@ class ResolveNeedPage extends React.Component {
                 <div>
                     <div>
                         <span>Enter any notes about the resolution of this need</span>
-                        {
-                            need.provisions.length > 0 &&
+                        {need.provisions.length > 0 &&
                             <span> (required if no providers are selected)</span>
                         }
                         <span>:</span>
                     </div>
                     <br/>
                     <Input
-                        type="textarea"
-                        name="notes"
-                        value={this.state.notes}
-                        onChange={this.handleInputChange.bind(this)}/>
+                      type="textarea"
+                      name="notes"
+                      value={this.state.notes}
+                      onChange={this.handleInputChange}
+                    />
                 </div>
                 <FormErrors errors={this.state.errors.notes} />
                 <br/>
@@ -166,16 +149,10 @@ class ResolveNeedPage extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
-    return {
-        need: state.need,
-        submitFormSuccess: state.submitFormSuccess,
-        submitFormError: state.submitFormError
-    }
-}
+const mapStateToProps = ({ request, need }, { params: { id }}) =>
+    ({ request, need: need[id] });
 
 export default connect(mapStateToProps, {
-    clearFormStatus,
     getNeed,
     resolveNeed
 })(withRouter(ResolveNeedPage));

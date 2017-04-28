@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
 
-import { getUsers } from 'actions';
+import { getUsers } from 'api';
 
 class ManageUsers extends React.Component {
 

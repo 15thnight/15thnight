@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { getAlerts } from 'actions';
+import { getAlerts } from 'api';
 import { Alerts } from 'alert';
 
 class AdminAlertHistoryPage extends React.Component {

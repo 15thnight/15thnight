@@ -2,7 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { getAlerts, setAlertRedirect } from 'actions';
+import { setAlertRedirect } from 'actions';
+import { getAlerts } from 'api';
 import { Alerts } from 'alert';
 
 class ProviderActiveAlertsPage extends React.Component {

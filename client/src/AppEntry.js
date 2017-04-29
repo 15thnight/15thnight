@@ -12,18 +12,16 @@ import 'polyfill/Array.indexOf';
 import 'polyfill/Array.map';
 import 'polyfill/Array.reduce';
 
-import configureRoutes from './ConfigureRoutes';
+import configureRoutes from './routes';
 import Chrome from 'components/chrome';
 import configureStore from 'store/Store';
 
 const store = configureStore();
 
-const routes = configureRoutes(store)
-
 const history = syncHistoryWithStore(browserHistory, store);
 
 render(
     <Provider store={store}>
-        <Router history={history} routes={routes} />
+        <Router history={history} routes={configureRoutes(store)} />
     </Provider>
 , document.getElementById('entry'));

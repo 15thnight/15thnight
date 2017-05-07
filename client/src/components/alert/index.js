@@ -1,3 +1,4 @@
-export { default as AlertInfo } from './AlertInfo';
-export { default as Alerts } from './Alerts';
-export * from './Provisions'
+export AlertInfo from './AlertInfo';
+export Alerts from './Alerts';
+export Pledge from './Pledge';
+export PledgeInfo from './PledgeInfo';

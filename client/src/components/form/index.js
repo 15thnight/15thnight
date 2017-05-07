@@ -1,6 +1,10 @@
-export { default as CategoryField } from './CategoryField.js';
-export { default as FormGroup } from './FormGroup';
-export { default as FormErrors } from './FormErrors';
-export { default as Input } from './Input';
-export { default as InputField } from './InputField';
-export { default as StaticField } from './StaticField';
+export CategoryField from './CategoryField';
+export DeleteConfirmForm from './DeleteConfirmForm';
+export Form from './Form';
+export FormGroup from './FormGroup';
+export FormErrors from './FormErrors';
+export Input from './Input';
+export InputField from './InputField';
+export Loading from './Loading';
+export Sortable from './Sortable';
+export StaticField from './StaticField';

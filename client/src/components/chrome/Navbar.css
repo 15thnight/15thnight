@@ -1,7 +1,7 @@
 :local(.navbar) {
     margin-bottom: 0;
     background-color: #22313F;
-    z-index: 9999;
+    z-index: 2000;
     border: 0;
     letter-spacing: 0.5px;
     border-radius: 0;

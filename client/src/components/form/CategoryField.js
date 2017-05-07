@@ -3,11 +3,11 @@ import { connect } from 'react-redux';
 
 import { getCategories } from 'api';
 import FormGroup from './FormGroup';
-import styles from './CategoryField.css';
+import classes from './CategoryField.css';
 
 
-class CategoryField extends React.Component {
-
+@connect(({ categories }) => ({ categories }), { getCategories })
+export default class CategoryField extends React.Component {
     componentWillMount() {
         this.props.getCategories();
     }
@@ -27,8 +27,8 @@ class CategoryField extends React.Component {
         return (
             <FormGroup label={label}>
                 {categories.filter(c => c.services.length !== 0).map(({ id, name, services}) => (
-                    <div key={id} className={styles.categoryField}>
-                        <h4 className={styles.categoryHeader}>{name}</h4>
+                    <div key={id} className={classes.categoryField}>
+                        <h4 className={classes.categoryHeader}>{name}</h4>
                         {services.map(({ id, name }) => (
                             <div key={id} className="checkbox">
                                 <label>
@@ -48,9 +48,3 @@ class CategoryField extends React.Component {
         );
     }
 }
-
-const mapStateToProps = ({ categories }) => ({ categories });
-
-export default connect(mapStateToProps, {
-    getCategories
-})(CategoryField);

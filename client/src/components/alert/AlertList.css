@@ -1,8 +1,16 @@
 :local(.alert) {
     border-bottom: 1px solid #ccc;
-    padding-bottom: 20px;
+    padding: 20px 0;
 
     .form-group {
         margin-bottom: 0px;
+
+        label {
+            text-align: right;
+        }
+
+        > div {
+            padding-left: 0;
+        }
     }
 }

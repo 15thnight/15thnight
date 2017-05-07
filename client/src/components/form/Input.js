@@ -3,65 +3,66 @@ import React from 'react';
 import FormErrors from './FormErrors';
 import FormGroup from './FormGroup';
 
-class Input extends React.Component {
-    constructor(props) {
-        super(props);
-        this.defaultProps = {
-            type: 'text',
-            disabled: false
-        }
+import classes from './Input.css';
+
+const formatPhone = p =>
+    [p[0],p[1],p[2],'-',p[3],p[4],p[5],'-',p[6],p[7],p[8],p[9]].join('').replace(/-+$/,'');
+
+export default class Input extends React.Component {
+    static defaultProps = {
+        type: 'text',
+        disabled: false
     }
 
-    handleChange(e) {
-        this.props.onChange(this.props.name, e.target.value, e);
+    handleChange = e => {
+        let value = e.target.value;
+        if (this.props.type === 'phone') {
+            value = value.replace(/\D/g, '').substr(0, 10)
+        }
+        this.props.onChange && this.props.onChange(this.props.name, value, e);
     }
 
-    handleFocus(e) {
-        if (this.props.onFocus) {
-            this.props.onFocus(e);
-        }
-    }
+    handleFocus = e => this.props.onFocus && this.props.onFocus(e);
 
-    handleClick(e) {
-        if (this.props.onClick) {
-            this.props.onClick(e);
-        }
-    }
+    handleClick = e => this.props.onClick && this.props.onClick(e);
 
     componentDidMount() {
-        let { type, values, value, name } = this.props;
-        if (type === 'select' && values.indexOf(value) < 0) {
-            this.props.onChange(name, values[0][0])
+        const { type, options, value, name } = this.props;
+        if (type === 'select' && !options.find(o => o.value === value)) {
+            this.props.onChange(name, options[0].value)
         }
     }
 
     render() {
-        let { type, name } = this.props;
+        const { type, name, checked, value, options, disabled, placeholder } = this.props;
         let input = (
             <input
               ref="input"
               id={name}
-              type={type}
-              checked={this.props.checked}
+              type={type.replace('phone', 'text')}
+              checked={!!checked}
               className={type !== 'checkbox' && "form-control"}
-              value={this.props.value}
-              disabled={this.props.disabled}
-              onClick={this.handleClick.bind(this)}
-              onChange={this.handleChange.bind(this)}
-              onFocus={this.handleFocus.bind(this)} />
+              value={type === 'phone' ? formatPhone(value) : value}
+              disabled={disabled}
+              placeholder={placeholder}
+              onClick={this.handleClick}
+              onChange={this.handleChange}
+              onFocus={this.handleFocus}
+            />
         );
         if (type === 'textarea') {
             input = (
                 <textarea
                   ref="input"
                   id={name}
-                  placeholder={this.props.placeholder}
+                  placeholder={placeholder}
                   className="form-control"
-                  value={this.props.value}
-                  disabled={this.props.disabled}
-                  onClick={this.handleClick.bind(this)}
-                  onChange={this.handleChange.bind(this)}
-                  onFocus={this.handleFocus.bind(this)}></textarea>
+                  value={value}
+                  disabled={disabled}
+                  onClick={this.handleClick}
+                  onChange={this.handleChange}
+                  onFocus={this.handleFocus}
+                />
             );
         } else if (type === 'select') {
             input = (
@@ -69,22 +70,23 @@ class Input extends React.Component {
                   ref="input"
                   id={name}
                   className="form-control"
-                  value={this.props.value}
-                  onClick={this.handleClick.bind(this)}
-                  onChange={this.handleChange.bind(this)}
-                  onFocus={this.handleFocus.bind(this)}>
-                    {this.props.values.map((value, key) => {
-                        return (<option key={key} value={value[0]}>{value[1]}</option>);
-                    })}
+                  value={value}
+                  onClick={this.handleClick}
+                  onChange={this.handleChange}
+                  onFocus={this.handleFocus}
+                >
+                    {options.map(({ value, label }) =>
+                        <option key={value} value={value}>{label}</option>
+                    )}
                 </select>
+            );
+        } else if (type === 'phone') {
+            input = (
+                <span className={classes.phoneInput}>
+                    <span>+1</span> {input}
+                </span>
             );
         }
         return input;
     }
 }
-
-//Input.defaultProps = {
-
-//}
-
-export default Input;

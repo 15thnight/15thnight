@@ -1,0 +1,44 @@
+#entry {
+    height: 100%;
+}
+h1, h2, h3, h4, h5, h6, th, label {
+    text-shadow: 1px 1px 0px #ddd;
+}
+textarea {
+    resize: vertical;
+}
+a {
+    cursor: pointer;
+}
+.form-horizontal .control-label {
+    padding-top: 7px;
+}
+:local(.chrome) {
+    height: 100%;
+
+    &.hide-page {
+        .container-fluid {
+            display: none;
+        }
+    }
+    .container-fluid {
+        height: 100%;
+        padding-top: 97px;
+    }
+}
+
+@media (min-width:768px) {
+	.container {
+		width: auto;
+	}
+}
+@media (min-width:992px) {
+	.container {
+		width: 970px
+	}
+}
+@media (min-width:1200px) {
+	.container {
+		width: 1170px
+	}
+}

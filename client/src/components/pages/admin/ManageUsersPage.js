@@ -1,73 +1,53 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router';
 
 import { getUsers } from 'api';
+import Button from 'c/button';
+import { ManageHeader } from 'c/manage';
+import Table from 'c/table';
+import Timestamp from 'c/timestamp';
+import { ContactInfo } from 'c/user';
 
-class ManageUsers extends React.Component {
 
+@connect(({ current_user, users }) => ({ current_user, users }), { getUsers })
+export default class ManageUsers extends React.Component {
     componentWillMount() {
         this.props.getUsers();
     }
 
+    getServices = (role, services) =>
+        role !== 'provider'
+            ? 'N/A'
+            : (services.map(({ name }) => name).join(', ') || 'None Selected');
+
     render() {
-        let { users, current_user } = this.props;
+        const { users, current_user } = this.props;
         return (
-            <div className="tab-pane" id="manage-users">
-                <h1 className="text-center">Manage Users</h1>
-                <div className="text-right">
-                    <Link to="/add-user" className="btn btn-success">Register User</Link>
-                </div>
-                <div className="table-responsive">
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Organization</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Created At</th>
-                                <th>Role</th>
-                                <th>Provider Capabilities</th>
-                                <th>Edit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            { users.map((user, key) => {
-                                let services = user.role === 'provider' ?
-                                    user.services.map(service => { return service.name}).join(', ') :
-                                    'N/A';
-                                if (user.role === 'provider' && user.services.length == 0) {
-                                    services = 'None Selected';
-                                }
-                                return (
-                                    <tr key={key}>
-                                        <td>{ user.name }</td>
-                                        <td>{ user.organization }</td>
-                                        <td>{ user.email }</td>
-                                        <td>{ user.phone_number }</td>
-                                        <td>{ user.created_at }</td>
-                                        <td>{ user.role }</td>
-                                        <td>{ services }</td>
-                                        <td><Link to={"/edit-user/" + user.id} className="btn btn-primary">Edit</Link></td>
-                                    </tr>
-                                )
-                            }) }
-                    </tbody>
-                </table>
-            </div>
+            <div>
+                <ManageHeader title="Users" entity="User" addRoute="/add-user" />
+                <Table>
+                    <Table.Header>
+                        <th>Name</th>
+                        <th>Organization</th>
+                        <th>Contact</th>
+                        <th>Created At</th>
+                        <th>Role</th>
+                        <th>Provider Capabilities</th>
+                        <th>Edit</th>
+                    </Table.Header>
+                    {users.map(({ role, services, name, organization, email, phone_number, created_at, id }) => (
+                        <Table.Row key={id}>
+                            <td>{name}</td>
+                            <td>{organization}</td>
+                            <td><ContactInfo email={email} phone_number={phone_number} /></td>
+                            <td><Timestamp time={created_at} multiLine /></td>
+                            <td>{role.charAt(0).toUpperCase() + role.slice(1)}</td>
+                            <td>{this.getServices(role, services)}</td>
+                            <td><Button to={`/edit-user/${id}`}>Edit</Button></td>
+                        </Table.Row>
+                    ))}
+                </Table>
         </div>
         )
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        current_user: state.current_user,
-        users: state.users
-    }
-}
-
-export default connect(mapStateToProps,{
-    getUsers
-})(ManageUsers);

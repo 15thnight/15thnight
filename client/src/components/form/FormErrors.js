@@ -1,20 +1,19 @@
 import React from 'react';
 
-import styles from './FormErrors.css';
+import classes from './FormErrors.css';
+
+const formatError = error => error
+    .replace('of integer type', 'a number')
+    .replace('min ', 'minimum ')
+    .replace('max ', 'maximum ')
 
 
-export default class FormErrors extends React.Component {
-    render() {
-        let { errors } = this.props;
-        if (!errors || errors.length === 0) {
-            return null;
-        }
-        return (
-            <div className={styles.formErrors}>
-                {errors.map((error, key) => (
-                    <div key={key} className="error">{error}</div>
-                ))}
-            </div>
-        );
-    }
-}
+export default /* FormErrors */ ({ errors }) => (
+    (!errors || errors.length === 0) ? null : (
+        <div className={classes.formErrors}>
+            {errors.map((error, key) => (
+                <div key={key} className="error">{formatError(error)}</div>
+            ))}
+        </div>
+    )
+);

@@ -6,3 +6,9 @@
 :local(.nameColumn) {
     padding-top: 14px !important;
 }
+
+:local(.service) {
+    display: flex;
+    flex-direction: row;
+    padding: 5px 0;
+}

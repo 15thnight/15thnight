@@ -31,12 +31,31 @@
     }
 
     .need {
-        margin-top: -98px;
-        padding-top: 98px;
-        border-bottom: 1px solid #ccc;
+        border-radius: 3px;
+        margin-bottom: 40px;
+        padding-top: 40px;
+        border-top: 1px solid #ccc;
+
+        &:first-child {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        h3 {
+            margin: 20px 0;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+        }
     }
 
     .need:last-child {
         border-bottom: none;
+    }
+
+    :local(.pledges) {
+        padding: 0 20px 20px;
     }
 }

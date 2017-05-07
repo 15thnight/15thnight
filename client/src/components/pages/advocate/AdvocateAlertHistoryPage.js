@@ -2,10 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { getAlerts } from 'api';
-import { Alerts } from 'alert';
+import { Alerts } from 'c/alert';
 
-class AdvocateAlertHistoryPage extends React.Component {
 
+@connect(({ alerts }) => ({ alerts }), { getAlerts })
+export default class AdvocateAlertHistoryPage extends React.Component {
     componentWillMount() {
         this.props.getAlerts();
     }
@@ -17,17 +18,8 @@ class AdvocateAlertHistoryPage extends React.Component {
               alerts={alerts}
               role='advocate'
               title='Previously Sent Alerts'
-              description={''} />
+              description={''}
+            />
         );
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        alerts: state.alerts
-    }
-}
-
-export default connect(mapStateToProps,{
-    getAlerts
-})(AdvocateAlertHistoryPage);

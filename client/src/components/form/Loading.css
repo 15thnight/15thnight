@@ -1,0 +1,10 @@
+:local(.loading) {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+
+    h1 {
+        margin-top: -46.5px;
+    }
+}

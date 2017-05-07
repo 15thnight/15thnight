@@ -1,90 +1,48 @@
 import React from 'react';
 import { Link } from 'react-router';
 
+import Timestamp from 'c/timestamp';
+import Button from 'c/button';
+import Table from 'c/table';
+import AlertAdvocate from './AlertAdvocate';
 import Needs from './Needs';
 
 
-export default function AlertTable(props) {
-    let { role, alerts } = props;
-    let headerColumns = [];
-    if (role === 'provider') {
-        headerColumns.push(
-            <th key="response-count"># of times you<br/>have responded</th>,
-            <th key="respond">Respond</th>
-        );
-    } else { // advocates, admins
-        headerColumns.push(
-            <th key="responses">Responses</th>,
-            <th key="resolved">% Resolved</th>,
-            <th key="view"/>
-        );
-    }
-    return (
-        <div>
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>Sent By</th>
-                        <th>Sent At</th>
-                        <th>Description</th>
-                        <th>Gender</th>
-                        <th>Age</th>
-                        <th>Needs</th>
-                        { headerColumns }
-                    </tr>
-                </thead>
-                <tbody>
-                    { alerts.map(alert => {
-                        let columns = [];
-                        if (role === 'provider') {
-                            columns.push(
-                                <td key="response-count">
-                                    {alert.responses.length}
-                                </td>,
-                                <td key="respond-to">
-                                    <Link
-                                      to={"/respond-to/" + alert.id}
-                                      className="btn btn-success">
-                                        Respond
-                                    </Link>
-                                </td>
-                            );
-                        } else { // advocates, admins
-                            let totalResolved = alert.needs.reduce((total, need) => need.resolved ? total + 1 : total, 0);
-                            columns.push(
-                                <td key="responses">
-                                    { alert.responses.length }
-                                </td>,
-                                <td key="resolved">
-                                    { Math.floor((totalResolved / alert.needs.length) * 100)}%
-                                </td>,
-                                <td key="view-responses">
-                                    <Link
-                                      to={'/view-responses/' + alert.id}
-                                      className="btn btn-primary">
-                                        View Responses
-                                    </Link>
-                                </td>
-                            );
-                        }
-                        return (
-                            <tr key={alert.id}>
-                                <td>
-                                    { alert.user.name } <br/>
-                                    { alert.user.organization }<br/>
-                                    { alert.user.email } &middot; { alert.user.phone_number }
-                                </td>
-                                <td>{ alert.created_at }</td>
-                                <td>{ alert.description }</td>
-                                <td>{ alert.gender }</td>
-                                <td>{ alert.age }</td>
-                                <td><Needs needs={ alert.needs}  role={ role }/></td>
-                                { columns }
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
-    );
-}
+export default /* AlertTable */ ({ role, alerts }) => (
+    <Table>
+        <Table.Header>
+            {role !== 'advocate' && <th>Sent By</th>}
+            <th>Sent</th>
+            <th>Description</th>
+            <th>Age/Gender</th>
+            <th>Needs</th>
+            {role === 'provider' && <th key="respond">Respond</th>}
+            {role !== 'provider' && <th key="responses">Responses</th>}
+        </Table.Header>
+        {alerts.map(({ id, responses, totalResolved, needs, user, created_at, description, gender, age }) => (
+            <Table.Row key={id}>
+                {role !== 'advocate' && <td><AlertAdvocate advocate={user} /></td>}
+                <td><Timestamp fromNow time={created_at} multiLine /></td>
+                <td>{description}</td>
+                <td>{age} {gender}</td>
+                <td><Needs needs={needs} role={role} /></td>
+                {role === 'provider' &&
+                    <td key="respond">
+                        You've responded <strong>{responses} time{responses !== 1 && 's'}</strong><br/>
+                        <Button to={`/respond-to/${id}`} style="success">Respond</Button>
+                    </td>
+                }
+                {role !== 'provider' &&
+                    <td key="responses">
+                        <strong>Responses:</strong> {responses}<br/>
+                        <div>
+                            <strong>Resolved: </strong>
+                            {Math.floor((totalResolved / needs.length) * 100)}% ({totalResolved}/{needs.length})
+                        </div>
+                        <Button to={`/view/${id}`}>View Responses</Button>
+                    </td>
+                }
+            </Table.Row>
+        ))}
+    </Table>
+);

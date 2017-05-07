@@ -1,158 +1,124 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link, withRouter } from 'react-router';
+import { withRouter } from 'react-router';
+import cx from 'classnames';
 
 import { getNeed, resolveNeed } from 'api';
-import { Provision } from 'alert';
-import { FormErrors, Input } from 'form';
-import { checkRequest } from 'util';
+import { PledgeInfo } from 'c/alert';
+import Button from 'c/button';
+import { Form, FormErrors, Input, InputField, StaticField, Loading } from 'c/form';
+import { withRequests } from 'react-requests';
 
-import styles from './ResolveNeedPage.css';
+import classes from './ResolveNeedPage.css';
 
-class ResolveNeedPage extends React.Component {
+
+const NO_CHECKED_PROVISIONS_ERROR = 'select at least 1 pledge or enter Notes/Details to resolve this need.';
+
+@withRouter
+@withRequests
+@connect(
+    ({ need }, { params: { id, alert_id }}) => ({ id, alert_id, need: need[id] }),
+    { getNeed, resolveNeed }
+)
+export default class ResolveNeedPage extends React.Component {
     state = {
-        provisionChecked: [],
+        pledges: [],
         message: '',
         notes: '',
         errors: {}
     }
 
     componentWillMount() {
-        this.props.getNeed(this.props.params.id);
-    }
-
-    componentWillReceiveProps({ request, need }) {
-        checkRequest(this.props.request, request, resolveNeed,
-            () => this.props.router.push(`/view-responses/${this.props.need.alert_id}`),
-            error => this.setState({ error })
-        );
+        const { id, alert_id } = this.props;
+        this.props.getNeed({ id });
+        this.props.observeRequest(resolveNeed, {
+            end: () => this.props.router.push(`/view/${alert_id}`),
+            error: error => this.setState({ error })
+        });
     }
 
     handleCheckboxChange = id => {
-        const provisionChecked = this.state.provisionChecked.includes(id) ?
-            this.state.provisionChecked.slice().concat(id) :
-            this.state.provisionChecked.filter(provision => provision !== id);
-        this.setState({ provisionChecked });
+        const pledges = this.state.pledges.includes(id)
+            ? this.state.pledges.filter(pledge => pledge !== id)
+            : this.state.pledges.slice().concat(id);
+        this.setState({ pledges, errors: {} });
     }
 
     handleInputChange = (name, value) => this.setState({ [name]: value });
 
     handleSubmit = e => {
-        const { id, provisions } = this.props.need;
-        const { notes, message, provisionChecked } = this.state;
-        this.setState({ errors: {} });
-        e.preventDefault();
-        if (provisions.length > 0 && provisionChecked.length === 0 && notes === '') {
-            const error = ['You must select providers to notify or specify a note to resolve this need.'];
-            return this.setState({
-                provisions: error,
-                notes: error
-            })
+        const { notes, message, pledges } = this.state;
+        const errors = {};
+        this.setState({ errors });
+        if (this.props.need.pledges.length > 0 && pledges.length === 0 && notes === '') {
+            errors.pledges = errors.notes = [NO_CHECKED_PROVISIONS_ERROR];
+            return this.setState({ errors });
         }
-        this.props.resolveNeed(id, { notes, message, provisions: provisionChecked });
+        const { id } = this.props.need;
+        this.props.resolveNeed({ id, data: { notes, message, pledges } });
     }
 
+    isChecked = ({ id }) => this.state.pledges.includes(id);
+
     render() {
-        const { need } = this.props;
+        const { need, alert_id } = this.props;
         if (!need) {
-            return (<h1 className="text-center">Loading need...</h1>);
+            return <Loading title="Need" />;
+        }
+        let notesPlaceholder = "Notes on the resolution of this need";
+        if (need.pledges.length > 0) {
+            notesPlaceholder += ' (required if no pledges are selected)'
         }
         return (
-            <form
-              onSubmit={this.handleSubmit}
-              className="text-center col-md-offset-3 col-md-6">
+            <Form onSubmit={this.handleSubmit} className={classes.resolveNeedPage}>
                 <div className="text-left">
-                    <Link
-                      to={'/view-responses/' + need.alert_id}
-                      className="btn btn-primary">
-                        Back to View Responses
-                    </Link>
+                    <Button to={`/view/${alert_id}`}>Back to View Responses</Button>
                 </div>
                 <h1>Resolve Need</h1>
-                <h3>Need: { need.service.name }</h3>
-                {need.provisions.length > 0 &&
-                    <div className={styles.provisionResponse}>
-                        <div className={styles.message}>
-                            <div>
-                               Enter an optional message that will be sent to
-                               the Providers you've selected to meet this need.
-                            </div>
-                            <br/>
-                            <Input
-                              type="textarea"
-                              name="message"
-                              value={this.state.message}
-                              onChange={this.handleInputChange}/>
-                        </div>
-                        <br/>
-                        <div>
-                            Select which Provider(s) will meet the youth's need.
-                            Check a box to select a Provider.
-                            Choose as many Providers as necessary to satisfy the youth's need:
-                        </div>
-                        <br/>
-                        <FormErrors errors={this.state.errors.provisions} />
-                        <div className="text-left">
-                            {need.provisions.map(provision => {
-                                let { id } = provision;
-                                let style = [styles.provision];
-                                if (this.state.provisionChecked.indexOf(id) >= 0) {
-                                    style.push(styles.provisionSelected)
-                                }
-                                return (
-                                    <div
-                                      key={id}
-                                      className={style.join(' ')}
-                                      onClick={this.handleCheckboxChange.bind(this, id)}
+                <h3>Need name: {need.service_name}</h3>
+                <br/>
+                <InputField
+                  label="Notes"
+                  type="textarea"
+                  name="notes"
+                  placeholder={notesPlaceholder}
+                  value={this.state.notes}
+                  onChange={this.handleInputChange}
+                  errors={this.state.errors.notes}
+                />
+                {need.pledges.length > 0 &&
+                    <div className="response">
+                        <StaticField label="Pledges">
+                            Select as many pledges as necessary to satisfy the youth's need
+                            <FormErrors errors={this.state.errors.pledges} />
+                            {need.pledges.map(pledge => (
+                                <div key={pledge.id} className={cx("pledge", { selected: this.isChecked(pledge) })}>
+                                    <PledgeInfo {...pledge} />
+                                    <Button
+                                      type="button"
+                                      style={this.isChecked(pledge) ? "danger" : "success"}
+                                      onClick={e => this.handleCheckboxChange(pledge.id)}
                                     >
-                                        <div className={styles.provisionCheckbox}>
-                                            <Input
-                                                type="checkbox"
-                                                name={id}
-                                                checked={this.state.provisionChecked.indexOf(id) >= 0}
-                                            />
-                                        </div>
-                                        <div className={styles.provisionInfo}>
-                                            <Provision provision={provision} />
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                        {this.isChecked(pledge) ? "Deselect" : "Select"} Pledge
+                                    </Button>
+                                </div>
+                            ))}
+                        </StaticField>
+                        <InputField
+                          label="Message to Selected Providers (optional)"
+                          type="textarea"
+                          name="message"
+                          disabled={this.state.pledges.length === 0}
+                          placeholder="Message that will be sent to the provider of the pledge(s) selected (optional)"
+                          value={this.state.message}
+                          onChange={this.handleInputChange}
+                        />
                     </div>
                 }
-                <br/>
-                <br/>
-                <div>
-                    <div>
-                        <span>Enter any notes about the resolution of this need</span>
-                        {need.provisions.length > 0 &&
-                            <span> (required if no providers are selected)</span>
-                        }
-                        <span>:</span>
-                    </div>
-                    <br/>
-                    <Input
-                      type="textarea"
-                      name="notes"
-                      value={this.state.notes}
-                      onChange={this.handleInputChange}
-                    />
+                <div className={classes.submitButton}>
+                    <Button lg style="success">Submit</Button>
                 </div>
-                <FormErrors errors={this.state.errors.notes} />
-                <br/>
-                <div>
-                    <button className="btn btn-success">Submit</button>
-                </div>
-            </form>
+            </Form>
         )
     }
 }
-
-const mapStateToProps = ({ request, need }, { params: { id }}) =>
-    ({ request, need: need[id] });
-
-export default connect(mapStateToProps, {
-    getNeed,
-    resolveNeed
-})(withRouter(ResolveNeedPage));

@@ -1,22 +1,24 @@
 import React from 'react';
+import { Link } from 'react-router';
+import cx from 'classnames';
 
 
-export default function DropdownMenu(props) {
-    const { label, children, isOpen } = props;
-    let className = 'dropdown';
-    if (isOpen) {
-        className += ' open';
-    }
-    return (
-        <li key='mobile' className={className}>
-            <a href="#" className="dropdown-toggle hidden-sm hidden-md hidden-lg">
-                {label}
-            </a>
-            <a href="#" className="dropdown-toggle hidden-xs" onClick={props.onClick}>
-                {label}
-                <span className="caret"></span>
-            </a>
-            <ul className="dropdown-menu">{children}</ul>
-        </li>
-    );
-}
+export default /* DropdownMenu */ ({ label, children, onClick, isOpen, links }) => (
+    <li key='mobile' className={cx('dropdown', { open: isOpen })}>
+        <a href="#" className="dropdown-toggle hidden-sm hidden-md hidden-lg">
+            {label}
+        </a>
+        <a href="#" className="dropdown-toggle hidden-xs" onClick={onClick}>
+            {label}
+            <span className="caret"></span>
+        </a>
+        <ul className="dropdown-menu">
+            {links.map(({ to, href, text, divider }, key) => (
+                <li key={key} className={cx({ divider })}>
+                    {to && <Link to={to}>{text}</Link>}
+                    {href && <a href={href}>{text}</a>}
+                </li>
+            ))}
+        </ul>
+    </li>
+);

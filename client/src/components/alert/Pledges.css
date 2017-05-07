@@ -1,0 +1,16 @@
+:local(.pledge) {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding: 0 10px;
+
+    &:last-child {
+        border-bottom: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .col-sm-3 {
+        margin-right: -10px;
+    }
+}

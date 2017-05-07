@@ -1,0 +1,7 @@
+:local(.staticField) {
+    margin-bottom: 0;
+
+    > div {
+        padding-left: 0;
+    }
+}

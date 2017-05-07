@@ -1,4 +1,4 @@
-export { default as ForgotPasswordPage } from './ForgotPasswordPage';
-export { default as LoginPage } from './LoginPage';
-export { default as ResetPasswordPage } from './ResetPasswordPage';
-export { default as RespondToRedirect } from './RespondToRedirect';
+export ForgotPasswordPage from './ForgotPasswordPage';
+export LoginPage from './LoginPage';
+export ResetPasswordPage from './ResetPasswordPage';
+export RespondToRedirect from './RespondToRedirect';

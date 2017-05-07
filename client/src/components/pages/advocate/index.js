@@ -1,5 +1,5 @@
-export { default as AdvocateAlertHistoryPage } from './AdvocateAlertHistoryPage';
-export { default as AdvocateHelpPage } from './AdvocateHelpPage';
-export { default as AlertFormPage } from './AlertFormPage';
-export { default as ResolveNeedPage } from './ResolveNeedPage';
-export { default as ViewResponsesPage } from './ViewResponsesPage';
+export AdvocateAlertHistoryPage from './AdvocateAlertHistoryPage';
+export AdvocateHelpPage from './AdvocateHelpPage';
+export AlertFormPage from './AlertFormPage';
+export ResolveNeedPage from './ResolveNeedPage';
+export ViewResponsesPage from './ViewResponsesPage';

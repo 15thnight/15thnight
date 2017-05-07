@@ -1,28 +1,31 @@
-:local(.provisionResponse) {
-    border: 1px solid #ccc;
-    border-radius: 3px;
-}
-:local(.message) {
-    padding: 13px 26px 0;
-}
-:local(.provision) {
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 10px;
-    padding-top: 10px;
-    cursor: pointer;
-}
-:local(.provision:last-child) {
-    border: none;
-}
-:local(.provisionSelected) {
-    background-color: #ffff99;
-}
-:local(.provisionCheckbox) {
-    display: inline-block;
-    padding: 0 15px 0 25px;
-}
+:local(.resolveNeedPage) {
 
-:local(.provisionInfo) {
-    display: inline-block;
-    vertical-align: middle;
+    .response {
+        .message {
+            padding: 13px 26px 0;
+        }
+
+        .pledge {
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding-bottom: 10px;
+            padding-top: 10px;
+            margin: 15px 0;
+
+            &.selected {
+                background-color: #ffff99;
+            }
+
+            button {
+                display: block;
+                width: 80%;
+                margin: 0 auto;
+            }
+        }
+
+    }
+
+    :local(.submitButton) {
+        margin: 35px 0;
+    }
 }

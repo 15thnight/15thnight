@@ -3,165 +3,127 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { InputField, FormGroup } from 'form';
-import {
-    createCategory,
-    editCategory,
-    getCategory,
-    deleteCategory,
-} from 'api';
-import { checkRequest } from 'util';
+import { createCategory, editCategory, getCategory, deleteCategory } from 'api';
+import { withRequests } from 'react-requests';
+import { DeleteConfirmForm, Form, InputField, FormGroup, Sortable, StaticField } from 'c/form';
 
-import styles from './CategoryFormPage.css';
+import classes from './CategoryFormPage.css';
 
-class CategoryForm extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: '',
-            description: '',
-            services: [],
-            error: {}
-        }
+@withRouter
+@withRequests
+@connect(
+    ({ category, request }, { params: { id }}) =>
+        ({ category: category[id], request, id }),
+    { createCategory, editCategory, getCategory, deleteCategory }
+)
+export default class CategoryForm extends React.Component {
+    state = {
+        name: '',
+        description: '',
+        services: [],
+        error: {},
+        deleting: false
     }
 
     componentWillMount() {
-        if (this.props.id) {
-            this.props.getCategory(this.props.id);
+        const { id } = this.props;
+        if (id) {
+            this.props.getCategory({ id });
         }
+        this.props.observeRequest([editCategory, createCategory, deleteCategory], {
+            end: () => this.props.router.push('/manage-categories'),
+            error: error => this.setState({ error })
+        });
     }
 
     componentWillReceiveProps({ request, category }) {
-        if (checkRequest(this.props.request, request,
-                (this.props.id ? editCategory : createCategory).symbol,
-                () => this.props.router.push('/manage-categories'),
-                error => this.setState({ error }))) {
-            return;
-        }
         if (category && this.props.category !== category) {
             const { name, description } = category;
-            const services = category.services.slice();
-            services.forEach((service, key) => service.internalSort = key);
+            const services = category.services.map((s, tmpSort) => s.merge({ tmpSort }));
             this.setState({ name, description, services });
         }
     }
 
-    handleDeleteClick() {
-        if (confirm('Are you sure you wish to delete this category?')) {
-            this.props.deleteCategory(this.props.id);
-        }
-    }
+    handleInputChange = (name, value) => this.setState({ [name]: value });
 
-    handleInputChange(name, value) {
-        this.setState({ [name]: value });
-    }
-
-    handleFormSubmit(e) {
-        e.preventDefault();
+    handleSubmit = e => {
         this.setState({ error: {} });
-        let { name, description, services } = this.state;
-        services = services.map(service => {
-            return {
-                id: service.id,
-                sort_order: service.internalSort
-            }
-        })
-        let data = { name, description, services }
-        this.props.id ? this.props.editCategory(this.props.id, data) : this.props.createCategory(data);
+        const services = this.state.services.map(({ id }) => id);
+        const { name, description } = this.state;
+        const { id } = this.props;
+        const data = { name, description, services }
+        id ? this.props.editCategory({ data, id }) : this.props.createCategory({ data });
     }
 
-    handleSort(sorted_service, direction) {
-        let { services } = this.state;
-        let swapSort = direction === 'up' ? sorted_service.internalSort - 1 : sorted_service.internalSort + 1;
-        services.map((service, key) => {
-            if (service.internalSort === swapSort) {
-                direction === 'up' ? service.internalSort += 1 : service.internalSort -= 1;
-            }
-        });
-        sorted_service.internalSort = swapSort;
-        services.sort((a, b) => a.internalSort < b.internalSort ? -1 : 1)
-        this.setState({ services });
-    }
+    renderServices = services => (
+        <FormGroup label="Services">
+            {services.map((service, idx) =>
+                <div key={idx} className={classes.service}>
+                    <Sortable
+                      items={services}
+                      idx={idx}
+                      tmpSort={service.tmpSort}
+                      onSort={services => this.setState({ services })}
+                    />
+                    <div>{service.name}</div>
+                </div>
+            )}
+        </FormGroup>
+    )
 
-    renderServices() {
-        let { services } = this.state;
-        return (
-            <FormGroup label="Services">
-                <table className="table">
-                    <tbody>
-                        {services.map((service, key) => {
-                            return (
-                                <tr key={key}>
-                                    <td className={styles.sortColumn}>
-                                         {
-                                            key !== 0 &&
-                                            <span className="btn btn-primary" onClick={this.handleSort.bind(this, service, 'up')}>
-                                                <span className="glyphicon glyphicon-chevron-up"></span>
-                                            </span>
-                                        }
-                                    </td>
-                                    <td className={styles.sortColumn}>
-                                        {
-                                            key !== services.length - 1 &&
-                                            <span className="btn btn-primary"  onClick={this.handleSort.bind(this, service, 'down')}>
-                                                <span className="glyphicon glyphicon-chevron-down"></span>
-                                            </span>
-                                        }
-                                    </td>
-                                    <td className={styles.nameColumn}>{service.name}</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </FormGroup>
-        )
-    }
+    renderDeleteConfirm = ({ id, name, description, services }) => (
+        <DeleteConfirmForm
+          title='Category'
+          onCancel={e => this.setState({ deleting: false })}
+          onConfirm={e => this.props.deleteCategory({ id })}
+        >
+            <StaticField label='Name'>{name}</StaticField>
+            <StaticField label='Description'>{description}</StaticField>
+            {services.length > 0 &&
+                <StaticField>Deleting this category will also delete the following services:</StaticField>
+            }
+            <StaticField><ul>{services.map((service, idx) => <li idx={idx}>{service.name}</li>)}</ul></StaticField>
+        </DeleteConfirmForm>
+    )
 
     render() {
+        if (this.state.deleting) {
+            return this.renderDeleteConfirm(this.props.category);
+        }
+        if (!this.state.services) {
+            return 'Loading';
+        }
         const { services } = this.state;
+        const { id } = this.props;
         return (
-            <div className="text-center row col-md-offset-3 col-md-6">
-                <h1>{ this.props.id ? "Edit" : "Create"} Category</h1>
-                {
-                    this.props.id &&
+            <Form onSubmit={this.handleSubmit}>
+                <h1>{id ? "Edit" : "Create"} Category</h1>
+                {id &&
                     <p className="text-right">
-                        <span className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Category</span>
+                        <span className="btn btn-danger" onClick={() => this.setState({ deleting: true })}>Delete Category</span>
                     </p>
                 }
-                <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
-                    <InputField
-                      label="Name"
-                      name="name"
-                      value={this.state.name}
-                      errors={this.state.error.name}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <InputField
-                      type="textarea"
-                      label="Description"
-                      name="description"
-                      value={this.state.description}
-                      errors={this.state.error.description}
-                      onChange={this.handleInputChange.bind(this)} />
-                    {services.length > 0 &&
-                        this.renderServices()
-                    }
-                    <button className="btn btn-success" type="submit">
-                        { this.props.id ? "Submit" : "Create" } Category
-                    </button>
-                </form>
-            </div>
+                <InputField
+                  label="Name"
+                  name="name"
+                  value={this.state.name}
+                  errors={this.state.error.name}
+                  onChange={this.handleInputChange}
+                />
+                <InputField
+                  type="textarea"
+                  label="Description"
+                  name="description"
+                  value={this.state.description}
+                  errors={this.state.error.description}
+                  onChange={this.handleInputChange}
+                />
+                {services.length > 0 && this.renderServices(services)}
+                <button className="btn btn-success" type="submit">
+                    {id ? "Submit" : "Create"} Category
+                </button>
+            </Form>
         )
     }
 }
-
-const mapStateToProps = ({ category, request }, { params: { id }}) =>
-    ({ category: category[id], request, id });
-
-export default connect(mapStateToProps, {
-    createCategory,
-    editCategory,
-    deleteCategory,
-    getCategory
-})(withRouter(CategoryForm));

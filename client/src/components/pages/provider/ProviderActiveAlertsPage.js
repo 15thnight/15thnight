@@ -4,10 +4,15 @@ import { withRouter } from 'react-router';
 
 import { setAlertRedirect } from 'actions';
 import { getAlerts } from 'api';
-import { Alerts } from 'alert';
+import { Alerts } from 'c/alert';
 
-class ProviderActiveAlertsPage extends React.Component {
 
+@withRouter
+@connect(
+    ({ alerts, alertRedirect }) => ({ alerts, alertRedirect }),
+    { getAlerts, setAlertRedirect }
+)
+export default class ProviderActiveAlertsPage extends React.Component {
     componentWillMount() {
         if (this.props.alertRedirect) {
             this.props.setAlertRedirect(null);
@@ -28,19 +33,8 @@ class ProviderActiveAlertsPage extends React.Component {
               alerts={alerts}
               role='provider'
               title='Active Alerts'
-              description={description} />
+              description={description}
+            />
         );
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        alerts: state.alerts,
-        alertRedirect: state.alertRedirect
-    }
-}
-
-export default connect(mapStateToProps, {
-    getAlerts,
-    setAlertRedirect
-})(withRouter(ProviderActiveAlertsPage));

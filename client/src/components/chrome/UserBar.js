@@ -1,15 +1,12 @@
 import React from 'react';
 
-import styles from './UserBar.css';
+import classes from './UserBar.css';
 
 
-export default function UserBar(props) {
-    let { current_user } = props;
-    return (
-        <div className={styles.userBar}>
-            <div className="container">
-                Logged in as <strong>{ current_user.email }</strong>
-            </div>
+export default /* UserBar */ ({ current_user: { email } }) => (
+    <div className={classes.userBar}>
+        <div className="container">
+            Logged in as <strong>{email}</strong>
         </div>
-    )
-}
+    </div>
+);

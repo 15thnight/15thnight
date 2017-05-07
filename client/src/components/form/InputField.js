@@ -4,29 +4,10 @@ import FormErrors from './FormErrors';
 import FormGroup from './FormGroup';
 import Input from './Input';
 
-class InputField extends React.Component {
-    constructor(props) {
-        super(props);
-        this.defaultProps = {
-            errors: []
-        }
-    }
-
-    render() {
-        let { label, errors } = this.props;
-        label += ':';
-        return (
-            <FormGroup htmlFor={name} label={label}>
-                <Input {...this.props} />
-                <FormErrors errors={errors} />
-                {this.props.children}
-            </FormGroup>
-        )
-    }
-}
-
-//InputField.defaultProps = {
-
-//}
-
-export default InputField;
+export default /* InputField */ ({ label, errors=[], children, xs, sizes, ...props }) => (
+    <FormGroup htmlFor={name} label={label} xs={xs} sizes={sizes}>
+        <Input {...props} />
+        <FormErrors errors={errors} />
+        {children}
+    </FormGroup>
+)

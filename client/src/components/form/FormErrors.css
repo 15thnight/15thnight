@@ -1,6 +1,5 @@
 :local(.formErrors) {
     .error {
-        padding: 5px 0 15px;
         color: red;
     }
 }

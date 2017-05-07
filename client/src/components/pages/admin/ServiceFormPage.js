@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { InputField } from 'form';
+import { DeleteConfirmForm, Form, InputField, StaticField } from 'c/form';
 import {
     createService,
     editService,
@@ -11,105 +11,110 @@ import {
     deleteService,
     getCategories,
 } from 'api';
+import { withRequests } from 'react-requests';
 
-class ServiceForm extends React.Component {
 
+@withRequests
+@withRouter
+@connect(
+    ({ service, categories }, { params: { id }}) => ({ categories, id, service: service[id] }),
+    { createService, editService, deleteService, getService, getCategories }
+)
+export default class ServiceForm extends React.Component {
     state = {
         name: '',
         description: '',
         category: '',
+        deleting: false,
         error: {}
     }
 
     componentWillMount() {
         this.props.getCategories();
-        if (this.props.params.id) {
-            this.props.getService(this.props.params.id);
+        const { id } = this.props.params;
+        if (id) {
+            this.props.getService({ id });
         }
+        this.props.observeRequest([createService, editService, deleteService], {
+            end: () => this.props.router.push('/manage-services'),
+            error: error => this.setState({ error })
+        });
     }
 
-    componentWillReceiveProps({ request, service, params: { id } }) {
-        checkRequest(this.props.request, request, [createService, editService],
-            () => this.props.router.push('/manage-services'),
-            error => this.setState({ error })
-        );
-        checkRequest(this.props.request, request, deleteService,
-            () => this.props.router.push('/manage-services')
-        );
-
-        if(this.props.service !== service) {
+    componentWillReceiveProps({ service }) {
+        if (this.props.service !== service && service) {
             const { name, description, category: { id: category } } = service;
             this.setState({ name, description, category });
         }
     }
 
-    handleDeleteClick() {
-        if (confirm('Are you sure you wish to delete this service?')) {
-            this.props.deleteService(this.props.params.id);
-        }
-    }
-
     handleInputChange = (name, value) => this.setState({ [name]: value });
 
-    handleFormSubmit = e => {
-        e.preventDefault();
+    handleSubmit = e => {
         this.setState({ error: {} });
-        let { name, description, category } = this.state;
-        let data = { name, description, category };
-        const { id } = this.props.params;
-        id ? this.props.editService(id, data) : this.props.createService(data);
+        const { name, description, category } = this.state;
+        const data = { name, description, category };
+        const { id } = this.props;
+        id ? this.props.editService({ id, data }) : this.props.createService({ data });
     }
 
+    renderDeleteConfirm = ({ id, name, description, category }) => (
+        <DeleteConfirmForm
+          title='Service'
+          onCancel={e => this.setState({ deleting: false })}
+          onConfirm={e => this.props.deleteService({ id })}
+        >
+            <StaticField label='Name'>{name}</StaticField>
+            <StaticField label='Description'>{description}</StaticField>
+            <StaticField label='Category'>{category.name}</StaticField>
+        </DeleteConfirmForm>
+    );
+
     render() {
-        if (!this.props.categories) {
-            return (<h1 className="text-center">Loading Categories...</h1>);
+        if (this.state.deleting) {
+            return this.renderDeleteConfirm(this.props.service);
         }
-        let categories = this.props.categories.map(category => [category.id, category.name])
+        const { categories, id, service } = this.props;
+        if (!categories || (id && !service)) {
+            return (<h1 className="text-center">Loading...</h1>);
+        }
+        const categoryOptions = categories.map(({ id, name }) => ({ value: id, label: name }));
         return (
-            <div className="text-center row col-md-offset-3 col-md-6">
-                <h1>{ this.props.params.id ? "Edit" : "Create"} Service</h1>
-                { this.props.params.id &&
+            <Form onSubmit={this.handleSubmit}>
+                <h1>{id ? "Edit" : "Create"} Service</h1>
+                {id &&
                     <p className="text-right">
-                        <div className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Service</div>
-                    </p> }
-                <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
-                    <InputField
-                      label="Name"
-                      name="name"
-                      value={this.state.name}
-                      errors={this.state.error.name}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <InputField
-                      type="textarea"
-                      label="Description"
-                      name="description"
-                      value={this.state.description}
-                      errors={this.state.error.description}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <InputField
-                      type="select"
-                      label="Category"
-                      name="category"
-                      value={this.state.category}
-                      values={categories}
-                      errors={this.state.error.category}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <button className="btn btn-success" type="submit">
-                        { this.props.params.id ? "Submit" : "Create" } Service
-                    </button>
-                </form>
-            </div>
+                        <div className="btn btn-danger" onClick={e => this.setState({ deleting: true })}>Delete Service</div>
+                    </p>
+                }
+                <InputField
+                  label="Name"
+                  name="name"
+                  value={this.state.name}
+                  errors={this.state.error.name}
+                  onChange={this.handleInputChange}
+                />
+                <InputField
+                  type="textarea"
+                  label="Description"
+                  name="description"
+                  value={this.state.description}
+                  errors={this.state.error.description}
+                  onChange={this.handleInputChange}
+                />
+                <InputField
+                  type="select"
+                  label="Category"
+                  name="category"
+                  value={this.state.category}
+                  options={categoryOptions}
+                  errors={this.state.error.category}
+                  onChange={this.handleInputChange}
+                />
+                <button className="btn btn-success" type="submit">
+                    {id ? "Submit" : "Create" } Service
+                </button>
+            </Form>
         )
     }
 }
-
-const mapStateToProps = ({ request, service, categories }, { params: { id }}) =>
-    ({ request, categories, service: service[id] });
-
-export default connect(mapStateToProps, {
-    createService,
-    editService,
-    deleteService,
-    getService,
-    getCategories
-})(withRouter(ServiceForm));

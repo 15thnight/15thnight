@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 
 from flask import url_for
 from sqlalchemy import (
-    Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text, desc,
-    Boolean
+    Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Table, Text,
+    desc
 )
 from sqlalchemy.orm import backref, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -143,7 +143,7 @@ class Alert(Model):
     __tablename__ = 'alerts'
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    description = Column(String(200), nullable=False)
+    description = Column(Text, nullable=False)
     gender = Column(Enum(
         'male', 'female', 'unspecified'), nullable=False, default='unspecified'
     )

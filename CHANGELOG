@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Pre-release
 ### Added
+
 ### Changed
+- Alert description no longer has character limit
+
 ### Fixed
 
 

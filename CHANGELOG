@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 ### Added
 - 200 Character limit messaging in alert form for description
+- Admins can mark all needs as resolved on alert, with option to notify providers
 
 ## 0.1.1
 ### Added

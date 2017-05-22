@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from flask.ext.login import current_user, login_required
 
-from _15thnight.core import send_out_alert
+from _15thnight.core import send_out_alert, send_out_alert_closed
 from _15thnight.forms import AlertForm
 from _15thnight.models import Alert
 from _15thnight.util import required_access, jsonify, api_error
@@ -49,7 +49,7 @@ def get_alert(alert_id):
         if alert.user.id != current_user.id:
             return api_error('Permission denied')
         data = alert.to_advocate_json()
-    else:  # is an admin
+    else: # is an admin
         data = alert.to_advocate_json()
     return jsonify(data)
 
@@ -92,4 +92,23 @@ def delete_alert(id):
         return api_error('No alert was found.', 404)
 
     alert.delete()
+    return '', 200
+
+@alert_api.route('/<int:alert_id>/resolve-all-needs', methods=['POST'])
+@required_access('admin')
+def resolve_all_alert_needs(alert_id):
+    alert = Alert.get(alert_id)
+    if not alert:
+        return api_error('Alert not found')
+
+    for need in alert.needs:
+        need.resolved = True
+        need.save(False)
+
+    alert.save()
+
+    if ('notifyProvidersAllResolved' in request.json and
+        request.json['notifyProvidersAllResolved']):
+        send_out_alert_closed(alert)
+
     return '', 200

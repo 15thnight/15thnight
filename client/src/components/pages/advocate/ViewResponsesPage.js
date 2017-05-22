@@ -1,15 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router';
+import { Link, withRouter } from 'react-router';
 
 
 import {
     getAlert,
     resolveAlertNeed,
-    unresolveAlertNeed
+    unresolveAlertNeed,
+    resolveAllNeeds,
+    clearFormStatus
 } from 'actions';
 import { AlertInfo, Provisions } from 'alert';
-import { FormGroup } from 'form';
+import { FormGroup, Input } from 'form';
 
 import styles from './ViewResponsesPage.css';
 
@@ -20,7 +22,9 @@ class ViewResponsesPage extends React.Component {
         super(props);
         this.state = {
             alert: null,
-            showResolveHistory: {}
+            showResolveHistory: {},
+            confirmResolveAll: false,
+            notifyProvidersAllResolved: false
         }
     }
 
@@ -32,6 +36,10 @@ class ViewResponsesPage extends React.Component {
         let alert = nextProps.alert[this.props.params.id]
         if (alert) {
             this.setState({ alert });
+        }
+        if (nextProps.submitFormSuccess) {
+            this.props.clearFormStatus();
+            this.props.router.push('/alert-history');
         }
     }
 
@@ -50,11 +58,41 @@ class ViewResponsesPage extends React.Component {
         this.setState({ showResolveHistory });
     }
 
+    handleResolveAllClick() {
+        this.props.resolveAllNeeds(this.props.params.id, this.state.notifyProvidersAllResolved);
+    }
+
     render() {
-        let { alert } = this.state;
-        let { current_user } = this.props;
+        const { current_user } = this.props;
+        let { alert, confirmResolveAll, notifyProvidersAllResolved } = this.state;
         if (!alert) {
             return (<h1 className="text-center">Loading Alert...</h1>);
+        }
+        if (confirmResolveAll) {
+            return (
+                <div className="col-sm-offset-3 col-sm-6">
+                    <div>
+                        <div className="btn btn-primary btn-lg" onClick={e => this.setState({ confirmResolveAll: false })}>
+                            Go back to Alert
+                        </div>
+                    </div>
+                    <br/>
+                    <h3 className="text-center">
+                        Are you sure you wish to resolve all unresolved needs?
+                    </h3>
+                    <br/><br/>
+                    <div className="text-center form-horizontal">
+                        <div onClick={e => this.setState({ notifyProvidersAllResolved: !notifyProvidersAllResolved })}>
+                            <Input type="checkbox" checked={notifyProvidersAllResolved} onChange={e => {}} />
+                            <span>Send a text message saying the alert is closed to providers who responded.</span>
+                        </div>
+                        <br/>
+                        <div className="btn btn-danger btn-lg" onClick={this.handleResolveAllClick.bind(this)}>
+                            Resolve All Unresolved Needs
+                        </div>
+                    </div>
+                </div>
+            )
         }
         let totalResolved = alert.needs.reduce((total, need) => { return need.resolved ? total + 1 : total }, 0);
         let percentResolved = (totalResolved / alert.needs.length) * 100;
@@ -62,6 +100,14 @@ class ViewResponsesPage extends React.Component {
             <div className="text-center col-md-offset-3 col-md-6">
                 <h1>Alert Responses</h1>
                 <AlertInfo alert={alert} />
+                {current_user.role === 'admin' && totalResolved !== alert.needs.length &&
+                    <div>
+                        <div className="btn btn-lg btn-primary" onClick={e => this.setState({ confirmResolveAll: true })}>
+                            Resolve All Unresolved Needs
+                        </div>
+                        <br/>
+                    </div>
+                }
                 <div className={styles.resolveProgress}>
                     <div className={styles.progressLine} style={{width: percentResolved + '%'}}/>
                     <div className={styles.progressPercent}>
@@ -136,12 +182,15 @@ class ViewResponsesPage extends React.Component {
 function mapStateToProps(state) {
     return {
         current_user: state.current_user,
-        alert: state.alert
+        alert: state.alert,
+        submitFormSuccess: state.submitFormSuccess
     }
 }
 
 export default connect(mapStateToProps, {
     getAlert,
     resolveAlertNeed,
-    unresolveAlertNeed
-})(ViewResponsesPage);
+    unresolveAlertNeed,
+    resolveAllNeeds,
+    clearFormStatus
+})(withRouter(ViewResponsesPage));

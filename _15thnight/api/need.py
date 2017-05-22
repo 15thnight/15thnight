@@ -12,18 +12,18 @@ need_api = Blueprint('need_api', __name__)
 
 
 @need_api.route('/<int:need_id>')
-@required_access('advocate')
+@required_access('advocate', 'admin')
 def get_need(need_id):
     need = Need.get(need_id)
     if not need:
         return api_error('Need not found')
-    if current_user.id != need.alert.user_id:
+    if not current_user.is_admin and current_user.id != need.alert.user_id:
         return api_error('Permission denied')
     return jsonify(need.to_advocate_json())
 
 
 @need_api.route('/<int:need_id>/resolve', methods=['POST'])
-@required_access('advocate')
+@required_access('advocate', 'admin')
 def mark_need_resolved(need_id):
     """
     Resolve a need and close an alert if necessary.
@@ -34,7 +34,7 @@ def mark_need_resolved(need_id):
     # Check validity of need_id
     if not need:
         return api_error('Need not found')
-    if current_user.id != need.alert.user_id:
+    if not current_user.is_admin and current_user.id != need.alert.user_id:
         return api_error('Permission denied')
     if need.resolved:
         return api_error('Need already resolved!')

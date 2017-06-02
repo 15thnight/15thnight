@@ -57,3 +57,13 @@ export function sendAlert(data) {
         )
     }
 }
+
+export const resolveAllNeeds = (id, notifyProvidersAllResolved) => dispatch =>
+    request.post(`/api/v1/alert/${id}/resolve-all-needs`, { notifyProvidersAllResolved }).then(
+        res => {
+            dispatch(dispatchFormSuccess('Alert closed successfully.'));
+        },
+        err => {
+            dispatch(dispatchAppError('An unknown error occured while closing alert.'));
+        }
+    )

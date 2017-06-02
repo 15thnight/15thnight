@@ -216,3 +216,26 @@ def send_help_message(user, message):
         recipients=[current_app.config.get('SUPPORT_EMAIL', '')]
     )
     queue_send_email.apply_async(kwargs=dict(message=message))
+
+
+def send_out_alert_closed(alert):
+    #TODO: Better date formatting
+    #TODO: Send out which needs were just resolved, to the outstanding providers
+    gender = '' if alert.gender == 'unspecified' else ' ' + alert.gender
+    body = ('15th Night was alert closed.\n'
+            'Alert for %d y/o%s sent on %d/%d is now closed.\n') % \
+            (alert.age, gender, alert.created_at.month, alert.created_at.day)
+
+    providers = set(
+        [notified.provider for notified in alert.providers_notified]
+    )
+
+    for provider in providers:
+        queue_send_message.apply_async(
+            kwargs=dict(
+                email=provider.email,
+                number=provider.phone_number,
+                subject='15th Night Alert Closed',
+                body=body
+            )
+        )

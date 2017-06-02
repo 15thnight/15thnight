@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, request
 from flask.ext.login import current_user, login_required
 
@@ -103,6 +105,7 @@ def resolve_all_alert_needs(alert_id):
 
     for need in alert.needs:
         need.resolved = True
+        need.resolved_at = datetime.utcnow()
         need.save(False)
 
     alert.save()

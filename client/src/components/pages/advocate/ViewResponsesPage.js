@@ -84,7 +84,7 @@ class ViewResponsesPage extends React.Component {
                     <div className="text-center form-horizontal">
                         <div onClick={e => this.setState({ notifyProvidersAllResolved: !notifyProvidersAllResolved })}>
                             <Input type="checkbox" checked={notifyProvidersAllResolved} onChange={e => {}} />
-                            <span>Send a text message saying the alert is closed to providers who responded.</span>
+                            <span>Check this box to send a text message and email to all notified providers that the alert is closed.</span>
                         </div>
                         <br/>
                         <div className="btn btn-danger btn-lg" onClick={this.handleResolveAllClick.bind(this)}>

@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## Unreleased
+### Added
+- 200 Character limit messaging in alert form for description
+
 ## 0.1.1
 ### Added
 - [Precss](https://github.com/jonathantneal/precss) for stylesheets

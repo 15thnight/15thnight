@@ -113,7 +113,8 @@ class LoginForm(Form):
 
 
 class AlertForm(Form):
-    description = TextAreaField('Description', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[DataRequired(),
+        Length(max=200)])
     gender = SelectField('Gender', choices=GENDERS)
     age = IntegerField('Age')
     needs = service_field

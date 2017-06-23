@@ -1,6 +1,6 @@
 from flask import current_app, request
 from flask.json import dumps, JSONEncoder
-from flask.ext.login import current_user
+from flask_login import current_user
 from functools import wraps
 
 

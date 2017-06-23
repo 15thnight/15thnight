@@ -1,7 +1,7 @@
 """15th Night Flask App."""
 
 from flask import Flask, json, redirect, render_template, request
-from flask.ext.login import LoginManager, current_user, logout_user
+from flask_login import LoginManager, current_user, logout_user
 from werkzeug.datastructures import MultiDict
 
 from _15thnight.email import mailer
@@ -106,5 +106,6 @@ def create_app(cfg=object):
         return redirect('/')
 
     return app
+
 
 app = create_app()

@@ -1,5 +1,5 @@
 from flask_wtf import Form
-from flask_wtf.csrf import CsrfProtect
+from flask_wtf.csrf import CSRFProtect
 from wtforms import (
     IntegerField, PasswordField, SelectField,
     SelectMultipleField, TextAreaField, TextField,
@@ -10,7 +10,7 @@ from wtforms.validators import DataRequired, Email, Length
 from _15thnight.models import Category, Service, User
 
 
-csrf_protect = CsrfProtect()
+csrf_protect = CSRFProtect()
 
 
 USER_ROLES = [
@@ -75,6 +75,7 @@ class BaseUserForm(Form):
         if self.validate_unique_email and User.get_by_email(field.data):
             raise ValidationError('This email is already in use.')
 
+
 class FullUserForm(BaseUserForm):
     password = user_password_field
 
@@ -90,6 +91,7 @@ class CategoryForm(Form):
     def validate_name(self, field):
         if self.validate_unique_name and Category.get_by_name(field.data):
             raise ValidationError('This service name is already in use.')
+
 
 class ServiceForm(Form):
     name = TextField("Name", validators=[DataRequired()])
@@ -107,14 +109,15 @@ class ServiceForm(Form):
         if self.validate_unique_name and Service.get_by_name(field.data):
             raise ValidationError('This service name is already in use.')
 
+
 class LoginForm(Form):
     email = TextField('Email', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
 
 
 class AlertForm(Form):
-    description = TextAreaField('Description', validators=[DataRequired(),
-        Length(max=200)])
+    description = TextAreaField(
+        'Description', validators=[DataRequired(), Length(max=200)])
     gender = SelectField('Gender', choices=GENDERS)
     age = IntegerField('Age')
     needs = service_field
@@ -128,6 +131,7 @@ class AlertForm(Form):
     def validate_needs(self, field):
         if len(field.data) == 0:
             raise ValidationError('You must specify at least one need.')
+
 
 class ResponseForm(Form):
     message = TextAreaField('Message', validators=[DataRequired()])

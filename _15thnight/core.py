@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from flask import current_app, render_template, request, url_for
-from flask.ext.login import current_user
+from flask_login import current_user
 from flask_mail import Message
 
 from _15thnight.queue import queue_send_message, queue_send_email
@@ -219,12 +219,13 @@ def send_help_message(user, message):
 
 
 def send_out_alert_closed(alert):
-    #TODO: Better date formatting
-    #TODO: Send out which needs were just resolved, to the outstanding providers
+    # TODO: Better date formatting
+    # TODO: Send out which needs were just resolved to the
+    #       outstanding providers
     gender = '' if alert.gender == 'unspecified' else ' ' + alert.gender
     body = ('15th Night was alert closed.\n'
             'Alert for %d y/o%s sent on %d/%d is now closed.\n') % \
-            (alert.age, gender, alert.created_at.month, alert.created_at.day)
+           (alert.age, gender, alert.created_at.month, alert.created_at.day)
 
     providers = set(
         [notified.provider for notified in alert.providers_notified]

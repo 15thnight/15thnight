@@ -1,4 +1,6 @@
 #!/bin/sh
+set -x
+set -v
 
 # Install firefox and xvfb (for headless firefoxo)
 apt-get install firefox xvfb
@@ -17,4 +19,7 @@ $(which xvfb) $(which firefox)
 EOF
 
 # Make "headless" firefox executable
+echo ls /usr/bin/fx.sh
+ls /usr/bin/fx.sh
+echo  chmod +x /usr/bin/fx.sh
 chmod +x /usr/bin/fx.sh

@@ -1,0 +1,6 @@
+sudo: required
+language: python
+python: ["2.7"]
+before_install: "sudo ${TRAVIS_BUILD_DIR}/test_env.sh"
+insall: "pip install -r requirements"
+script: python manage.py tests

@@ -1,6 +1,10 @@
 """Send texts and stuff."""
 
-from twilio.rest import Client as TwilioRestClient
+try:
+    from twilio.rest import Client as TwilioRestClient
+except:
+    from twilio.rest import TwilioRestClient
+
 
 try:
     from config import (

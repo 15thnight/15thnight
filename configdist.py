@@ -26,8 +26,8 @@ TEST_BROWSER = "Firefox"
 
 # Third Party Tool/Library Configuration options #
 # TWILIO credentials start
-TWILIO_ACCOUNT_SID = ""
-TWILIO_ACCOUNT_AUTH_TOKEN = ""
+TWILIO_ACCOUNT_SID = "AC38135355602040856210245275870"
+TWILIO_ACCOUNT_AUTH_TOKEN = "2flnf5tdp7so0lmfdu3d"
 TWILIO_FROM_NUMBER = ""
 # Config option for using manage.py to test twilio access.
 # This should be in the form of 10 digits. (e.g. 2125553456)
@@ -45,3 +45,5 @@ MAIL_PASSWORD = None
 MAIL_USE_TLS = False
 MAIL_USE_SSL = False
 # End Mail Configuration
+
+HEADLESS_BROWSER_PATH = "/usr/bin/fx.sh"

@@ -30,6 +30,6 @@ pytz==2017.2
 selenium==3.4.3
 six==1.10.0
 SQLAlchemy==1.1.11
-twilio==6.4.1
+twilio==5.6.0
 Werkzeug==0.12.2
 WTForms==2.1

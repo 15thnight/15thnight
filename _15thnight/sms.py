@@ -1,6 +1,6 @@
-"""Send texts and stuff."""
+"""Send sms messages."""
 
-from twilio.rest import TwilioRestClient
+from twilio.rest import Client
 
 try:
     from config import (
@@ -14,7 +14,7 @@ except:
 account_sid = TWILIO_ACCOUNT_SID
 auth_token = TWILIO_ACCOUNT_AUTH_TOKEN
 from_number = TWILIO_FROM_NUMBER
-twilio_client = TwilioRestClient(account_sid, auth_token)
+twilio_client = Client(account_sid, auth_token)
 
 
 def send_sms(to_number=None, body=None):

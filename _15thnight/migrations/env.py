@@ -83,11 +83,9 @@ def run_migrations_online():
     engine = engine_from_config(alembic_config, poolclass=pool.NullPool)
 
     connection = engine.connect()
-    context.configure(
-                connection=connection,
-                target_metadata=target_metadata,
-                compare_type=compare_type
-                )
+    context.configure(connection=connection,
+                      target_metadata=target_metadata,
+                      compare_type=compare_type)
 
     try:
         with context.begin_transaction():

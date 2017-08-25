@@ -10,8 +10,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import backref, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from _15thnight import marshal
 from _15thnight.database import Model
-from _15thnight.util import extend, to_local_datetime
+from _15thnight.marshal import marshal_alert
 
 
 class User(Model):
@@ -32,8 +33,9 @@ class User(Model):
     phone_number = Column(String(20), nullable=False)
     role = Column(Enum('admin', 'advocate', 'provider'), default='advocate')
     # Services only apply to providers
-    services = relationship(
-        "Service", secondary="user_services", backref="providers")
+    services = relationship("Service",
+                            secondary="user_services",
+                            backref="providers")
     reset_token = Column(String(255))
     reset_created_at = Column(DateTime)
 
@@ -56,8 +58,8 @@ class User(Model):
         self.reset_created_at = datetime.utcnow()
 
     def get_alerts(self):
-        return Alert.query.filter(Alert.user == self) \
-            .order_by(desc(Alert.created_at)).all()
+        order = desc(self.created_at)
+        return self.query.filter(self.user == self).order_by(order).all()
 
     def get_id(self):
         """Get the User id in unicode or ascii."""
@@ -120,21 +122,9 @@ class User(Model):
         """Return user based on email."""
         return cls.query.filter(cls.email == email).first()
 
-    def to_json(self):
-        return dict(
-            id=self.id,
-            name=self.name,
-            organization=self.organization,
-            email=self.email,
-            role=self.role,
-            phone_number=self.phone_number,
-            created_at=self.created_at,
-            services=[dict(name=s.name, id=s.id) for s in self.services]
-        )
-
     def __repr__(self):
         """Return <User: %(email)."""
-        return '<User %s>' % (self.email)
+        return '<User %s>' % self.email
 
 
 class Alert(Model):
@@ -144,50 +134,51 @@ class Alert(Model):
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     description = Column(String(200), nullable=False)
-    gender = Column(Enum(
-        'male', 'female', 'unspecified'), nullable=False, default='unspecified'
-    )
+    gender = Column(Enum('male', 'female', 'unspecified'),
+                    nullable=False, default='unspecified')
     age = Column(Integer, nullable=False, default=0)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     # The advocate who created the alert
     user = relationship('User', backref='alerts')
 
     @classmethod
-    def get_active_alerts_for_provider(cls, user):
-        time_to_filter_from = datetime.now() - timedelta(days=2)
-        alerts_past_two_days = cls.query\
-            .filter(cls.created_at > time_to_filter_from)\
+    def get_active_alerts_for_provider(cls, provider):
+        # TODO: possibly change this to use provider notified?
+        two_days_ago = datetime.now() - timedelta(days=2)
+        alerts_past_two_days = cls.query \
+            .filter(cls.created_at > two_days_ago) \
             .order_by(desc(cls.created_at)) \
             .all()
-        capabilities = set(map(lambda service: service.id, user.services))
+        capabilities = set(map(lambda service: service.name, provider.services))
         alerts = []
 
         def need_mapper(need):
             """
-            Need is applicable it's not marked as resolved
+            Need is applicable if it's not marked as resolved
             or the provider hasn't responded to it.
             """
-            need_count = len(NeedProvided.get_by_need_and_provider(need, user))
+            need_count = len(Pledge.get_by_need_and_provider(need, provider))
             if need.resolved or need_count > 0:
                 return None
-            return need.service.id
+            return need.service_name
 
         for alert in alerts_past_two_days:
             service_ids = set(map(need_mapper, alert.needs))
             if (len(capabilities.intersection(service_ids)) > 0):
                 alerts.append(alert)
 
-        return [alert.to_provider_json(user) for alert in alerts]
+        return [marshal_alert(alert, provider) for alert in alerts]
 
     @classmethod
-    def get_admin_alerts(cls):
-        return [alert.to_advocate_json() for alert in cls.get_alerts()]
+    def get_admin_alerts(cls, admin):
+        return [marshal_alert(alert, admin) for alert in cls.get_alerts()]
 
     @classmethod
     def get_advocate_alerts(cls, advocate):
-        alerts = cls.query.filter(cls.user == advocate) \
+        alerts = cls.query \
+            .filter(cls.user == advocate) \
             .order_by(desc(Alert.created_at)).all()
-        return [alert.to_advocate_json() for alert in alerts]
+        return [marshal_alert(alert, advocate) for alert in alerts]
 
     @classmethod
     def get_user_alert(cls, user, alert_id):
@@ -201,11 +192,11 @@ class Alert(Model):
     @classmethod
     def get_provider_alerts(cls, provider):
         alerts = Alert.query \
-            .join(cls.providers_notified) \
+            .join(cls.notified) \
             .filter(ProviderNotified.provider_id == provider.id) \
             .order_by(desc(cls.created_at)) \
             .distinct().all()
-        return [alert.to_provider_json(provider) for alert in alerts]
+        return [marshal_alert(alert, provider) for alert in alerts]
 
     @classmethod
     def get_responded_alerts_for_provider(cls, provider):
@@ -214,54 +205,22 @@ class Alert(Model):
             .filter(Response.user_id == provider.id) \
             .order_by(desc(cls.created_at)) \
             .distinct().all()
-        return [alert.to_provider_json(provider) for alert in alerts]
+        return [marshal_alert(alert, provider) for alert in alerts]
 
     def provider_has_permission(self, provider):
         """Checks if a provider was notified for this alert"""
-        provider_ids = map(
-            lambda notified: notified.provider_id, self.providers_notified)
-        return provider.id in provider_ids
+        return provider.id in [n.provider_id for n in self.notified]
 
-    def get_user_response(self, user):
-        response = Response.get_by_user_and_alert(user, self)
-        if response:
-            return response
-        return False
-
-    def to_json(self):
-        return dict(
-            id=self.id,
-            user=self.user,
-            created_at=to_local_datetime(self.created_at),
-            description=self.description,
-            gender=self.gender,
-            age=self.age,
-            needs=[need for need in self.needs]
-        )
-
-    def to_advocate_json(self):
-        return extend(self.to_json(), dict(
-            responses=self.responses,
-            needs=[need.to_advocate_json() for need in self.needs]
-        ))
-
-    def to_provider_json(self, provider):
-        service_ids = [service.id for service in provider.services]
-        return extend(self.to_json(), dict(
-            responses=Response.get_by_user_and_alert(provider, self),
-            needs=[
-                need.to_provider_json(provider) for need in self.needs
-                if need.service.id in service_ids
-            ]
-        ))
+    def notified_needs(self, provider):
+        notified = ProviderNotified.query \
+            .filter(ProviderNotified.alert == self) \
+            .filter(ProviderNotified.provider == provider).first()
+        return notified.needs if notified else []
 
     @property
     def is_closed(self):
         """Check if all needs have been met."""
-        for need in self.needs:
-            if not need.resolved:
-                return False
-        return True
+        return len([need for need in self.needs if not need.resolved]) == 0
 
     def get_gender(self):
         """
@@ -269,18 +228,12 @@ class Alert(Model):
         Blank string if unspecified.
         """
         gender = '' if self.gender == 'unspecified' else self.gender
-        gender_string = " %s" % gender
-        return gender_string
+        return " %s" % gender
 
     @property
     def url(self):
         """Return this alert object's respond URL."""
-        url = "%sr/%s" % (url_for('index', _external=True), self.id)
-        return url
-
-    def need_count(self):
-        """Return the number of needs for this alert."""
-        return len(self.needs)
+        return "%sr/%s" % (url_for('index', _external=True), self.id)
 
     def __repr__(self):
         return '<Alert(%d) %s %d %s %s>' % (
@@ -294,13 +247,12 @@ class ProviderNotified(Model):
 
     id = Column(Integer, primary_key=True)
     provider_id = Column(ForeignKey('users.id'))
-    provider = relationship('User', backref='alerts_notified')
+    provider = relationship('User', backref='notified')
     alert_id = Column(ForeignKey('alerts.id'))
-    alert = relationship('Alert', backref='providers_notified')
-    needs = relationship(
-        'Need',
-        secondary='provider_notified_needs',
-        backref='providers_notified')
+    alert = relationship('Alert', backref='notified')
+    needs = relationship('Need',
+                         secondary='provider_notified_needs',
+                         backref='notified')
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -312,6 +264,12 @@ class Category(Model):
     name = Column(String(255), nullable=False, unique=True)
     description = Column(Text)
     sort_order = Column(Integer, nullable=False, default=0)
+    services = relationship('Service',
+                            backref=backref('category',
+                                            cascade="all, delete-orphan",
+                                            single_parent=True),
+                            single_parent=True,
+                            order_by='Service.sort_order')
 
     @classmethod
     def all(cls):
@@ -320,15 +278,6 @@ class Category(Model):
     @classmethod
     def get_by_name(cls, name):
         return cls.query.filter(cls.name == name).first()
-
-    def to_json(self):
-        return dict(
-            id=self.id,
-            name=self.name,
-            description=self.description,
-            services=Service.get_by_category(self.id),
-            sort_order=self.sort_order
-        )
 
 
 class Service(Model):
@@ -339,8 +288,6 @@ class Service(Model):
     name = Column(String(255), nullable=False, unique=True)
     description = Column(Text)
     category_id = Column(ForeignKey('categories.id'), nullable=False)
-    category = relationship(
-        'Category', backref=backref('services', cascade="all, delete-orphan"))
     sort_order = Column(Integer, nullable=False, default=0)
 
     @classmethod
@@ -353,22 +300,9 @@ class Service(Model):
     def get_by_name(cls, name):
         return cls.query.filter(cls.name == name).first()
 
-    def to_json(self):
-        return dict(
-            id=self.id,
-            name=self.name,
-            description=self.description,
-            category=dict(
-                id=self.category.id,
-                name=self.category.name,
-                description=self.category.description
-            ),
-            sort_order=self.sort_order
-        )
-
 
 class Response(Model):
-    """Response model."""
+    """A Response model."""
 
     __tablename__ = 'responses'
     id = Column(Integer, primary_key=True)
@@ -378,28 +312,20 @@ class Response(Model):
     alert_id = Column(ForeignKey('alerts.id'))
     alert = relationship('Alert', backref='responses')
 
-    @classmethod
-    def get_by_user_and_alert(cls, user, alert):
-        return cls.query.filter(
-            (cls.user == user) & (cls.alert == alert)).all()
 
-    def to_json(self):
-        return dict(
-            user=self.user,
-            created_at=to_local_datetime(self.created_at),
-            needs_provided=self.needs_provided
-        )
-
-
-class NeedProvided(Model):
-    """A need provided in a response."""
+class Pledge(Model):
+    """A pledged need in a response."""
 
     __tablename__ = 'need_provided'
     id = Column(Integer, primary_key=True)
+    alert_id = Column(ForeignKey('alerts.id'))
+    alert = relationship('Alert', backref='pledges')
+    provider_id = Column(ForeignKey('users.id'))
+    provider = relationship('User', backref='pledges')
     need_id = Column(ForeignKey('need.id'))
-    need = relationship('Need', backref='provisions')
+    need = relationship('Need', backref='pledges')
     response_id = Column(ForeignKey('responses.id'))
-    response = relationship('Response', backref='needs_provided')
+    response = relationship('Response', backref='pledges')
     message = Column(Text, nullable=False, default='')
     selected = Column(Boolean)
 
@@ -411,18 +337,6 @@ class NeedProvided(Model):
             .filter(Response.user == provider) \
             .all()
 
-    def to_json(self):
-        return dict(
-            id=self.id,
-            created_at=to_local_datetime(self.response.created_at),
-            message=self.message
-        )
-
-    def to_advocate_json(self):
-        return extend(self.to_json(), dict(
-            provider=self.response.user
-        ))
-
 
 class Need(Model):
     __tablename__ = 'need'
@@ -430,38 +344,14 @@ class Need(Model):
     id = Column(Integer, primary_key=True)
     alert_id = Column(ForeignKey('alerts.id'), nullable=False)
     alert = relationship('Alert', backref='needs')
-    service_id = Column(ForeignKey('service.id'), nullable=False)
-    service = relationship('Service')
+    service_name = Column(String(255))
+    service_description = Column(Text)
+    category_name = Column(String(255))
+    category_description = Column(Text)
     resolved = Column(Boolean, default=False, nullable=False)
     resolved_at = Column(DateTime)
     resolve_notes = Column(Text)
     resolve_message = Column(Text)
-
-    @classmethod
-    def get_by_id_and_alert(cls, need_id, alert):
-        return cls.query.filter(
-            (cls.alert == alert) & (cls.id == need_id)).first()
-
-    def to_json(self):
-        return dict(
-            id=self.id,
-            alert_id=self.alert_id,
-            service=self.service,
-            resolved=self.resolved,
-            resolved_at=to_local_datetime(self.resolved_at)
-        )
-
-    def to_advocate_json(self):
-        return extend(self.to_json(), dict(
-            provisions=[
-                provision.to_advocate_json() for provision in self.provisions
-            ]
-        ))
-
-    def to_provider_json(self, provider):
-        return extend(self.to_json(), dict(
-            provisions=NeedProvided.get_by_need_and_provider(self, provider)
-        ))
 
 
 # MtM tables
@@ -473,8 +363,7 @@ user_categories = Table(
 
 provider_notified_needs = Table(
     'provider_notified_needs', Model.metadata,
-    Column(
-        'provider_notified_id', Integer,
-        ForeignKey('provider_notified.id'), nullable=False),
+    Column('provider_notified_id', Integer,
+           ForeignKey('provider_notified.id'), nullable=False),
     Column('need_id', Integer, ForeignKey('need.id'), nullable=False)
 )

@@ -2,106 +2,97 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { InputField, CategoryField } from 'form';
-import { updateProfile, clearFormStatus } from 'actions';
+import { Form, InputField, CategoryField, Loading } from 'c/form';
+import { getCurrentUser, updateProfile} from 'api';
+import { withRequests } from 'react-requests';
 
-const { stringify, parse } = JSON;
 
-class EditProfilePage extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.defaultState = {
-            email: '',
-            phone_number: '',
-            services: [],
-            error: {}
-        }
-        this.state = parse(stringify(this.defaultState));
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormError) {
-            this.setState({ error: nextProps.submitFormError });
-            return this.props.clearFormStatus();
-        }
+@withRouter
+@withRequests
+@connect(({ current_user }) => ({ current_user }), { getCurrentUser, updateProfile })
+export default class EditProfilePage extends React.Component {
+    state = {
+        loading: true,
+        email: '',
+        phone_number: '',
+        services: [],
+        error: {}
     }
 
     componentWillMount() {
-        let { name, organization, email, phone_number, services } = this.props.user;
-        services = services.map(service => service.id);
-        this.setState({ name, organization, email, phone_number, services });
+        this.props.observeRequest(updateProfile, {
+            end: () => this.props.router.push('/'),
+            error: error => this.setState({ error })
+        });
+        this.props.observeRequest(getCurrentUser, { end: this.loadedData });
+        this.props.getCurrentUser()
     }
 
-    handleCategoryChange(services) {
-        this.setState({ services: services });
+    loadedData = ({ name, organization, email, phone_number, services }) => {
+        services = services.slice().map(({ id }) => id);
+        this.setState({ name, organization, email, phone_number, services, loading: false });
     }
 
-    handleInputChange(name, value) {
-        this.setState({ [name]: value });
-    }
+    handleCategoryChange = services => this.setState({ services });
 
-    handleFormSubmit(e) {
-        e.preventDefault();
+    handleInputChange = (name, value) => this.setState({ [name]: value })
+
+    handleSubmit = e => {
         this.setState({ error: {} });
-        let { name, organization, email, phone_number, services } = this.state;
-        this.props.updateProfile({ name, organization, email, phone_number, services });
+        const { name, organization, email, phone_number, services } = this.state;
+        const data = { name, organization, email, phone_number, services };
+        this.props.updateProfile({ data });
     }
 
     render() {
-        let { user } = this.props;
+        if (this.state.loading) {
+            return (<Loading title="Your Profile" />)
+        }
+        const { current_user } = this.props;
+        const { name, organization, email, phone_number, services, error } = this.state;
         return (
-            <div className="text-center row col-md-offset-3 col-md-6">
+            <Form onSubmit={this.handleSubmit}>
                 <h1>Edit Profile</h1>
                 <br/>
-                <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
-                    <InputField
-                      label="Name"
-                      name="name"
-                      value={this.state.name}
-                      errors={this.state.error.name}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <InputField
-                      label="Organization"
-                      name="organization"
-                      value={this.state.organization}
-                      errors={this.state.error.organization}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <InputField
-                      label="Email"
-                      name="email"
-                      value={this.state.email}
-                      errors={this.state.error.email}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <InputField
-                      label="Phone Number"
-                      name="phone_number"
-                      value={this.state.phone_number}
-                      errors={this.state.error.phone_number}
-                      onChange={this.handleInputChange.bind(this)} />
-                    {
-                        user.role === 'provider' &&
-                        <CategoryField
-                          label="Capabilities:"
-                          value={this.state.services}
-                          onCategoryChange={this.handleCategoryChange.bind(this)} />
-                    }
-                    <button className="btn btn-success" type="submit">
-                        Submit
-                    </button>
-                </form>
-            </div>
+                <InputField
+                  label="Name"
+                  name="name"
+                  value={name}
+                  errors={error.name}
+                  onChange={this.handleInputChange}
+                />
+                <InputField
+                  label="Organization"
+                  name="organization"
+                  value={organization}
+                  errors={error.organization}
+                  onChange={this.handleInputChange}
+                />
+                <InputField
+                  label="Email"
+                  name="email"
+                  value={email}
+                  errors={error.email}
+                  onChange={this.handleInputChange}
+                />
+                <InputField
+                  label="Phone Number"
+                  name="phone_number"
+                  type="phone"
+                  value={phone_number}
+                  errors={error.phone_number}
+                  onChange={this.handleInputChange}
+                />
+                {current_user.role === 'provider' &&
+                    <CategoryField
+                      label="Capabilities"
+                      values={services}
+                      onCategoryChange={this.handleCategoryChange} />
+                }
+                <button className="btn btn-success" type="submit">
+                    Submit
+                </button>
+            </Form>
         )
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        user: state.current_user,
-        submitFormError: state.submitFormError
-    }
-}
-
-export default connect(mapStateToProps, {
-    updateProfile, clearFormStatus
-})(withRouter(EditProfilePage));

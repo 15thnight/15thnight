@@ -1,73 +1,56 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 
-import {
-    sendHelpMessage,
-    clearFormStatus
-} from 'actions';
-import { InputField } from 'form';
+import { Form, InputField } from 'c/form';
+import { sendHelpMessage } from 'api';
+import { withRequests } from 'react-requests';
 
 
-class ProviderHelpPage extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            message: ''
-        }
+@withRouter
+@withRequests
+@connect(null, { sendHelpMessage })
+export default class ProviderHelpPage extends React.Component {
+    state = {
+        message: '',
+        error: {}
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.setState({ message: '' });
-            return this.props.clearFormStatus();
-        }
-        if (nextProps.submitFormError) {
-            this.setState({ error: nextProps.submitFormError });
-            return this.props.clearFormStatus();
-        }
+    componentWillMount() {
+        this.props.observeRequest(sendHelpMessage, {
+            end: () => this.props.router.push('/'),
+            error: error => this.setState({ error })
+        });
     }
 
-    handleSubmit(e) {
-        e.preventDefault();
-        this.props.sendHelpMessage(this.state.message);
+    handleSubmit = e => {
+        const { message } = this.state;
+        const data = { message };
+        this.props.sendHelpMessage({ data });
 
     }
 
-    onChange(name, message) {
+    onChange = (name, message) => {
         this.setState({ message });
     }
 
     render() {
-        let { message, error } = this.state;
+        const { message, error } = this.state;
         return (
-            <div className="col-md-6 col-md-offset-3 text-center">
+            <Form onSubmit={this.handleSubmit}>
                 <h1>Contact Help</h1>
                 <p>Your message will be sent to OSLC support.</p>
-                <form className="form-horizontal" onSubmit={(e) => this.handleSubmit(e)}>
-                    <InputField
-                      label="Enter your message"
-                      type="textarea"
-                      name="message"
-                      errors={error}
-                      value={this.state.message}
-                      onChange={this.onChange.bind(this)} />
-                    <br/>
-                    <button className="btn btn-success">Send Message</button>
-                </form>
-            </div>
+                <InputField
+                  label="Enter your message"
+                  type="textarea"
+                  name="message"
+                  errors={error.message}
+                  value={message}
+                  onChange={this.onChange}
+                />
+                <br/>
+                <button className="btn btn-success">Send Message</button>
+            </Form>
         )
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        submitFormSuccess: state.submitFormSuccess,
-        submitFormError: state.submitFormError
-    }
-}
-
-export default connect(mapStateToProps, {
-    sendHelpMessage,
-    clearFormStatus
-})(ProviderHelpPage);

@@ -1,36 +1,62 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import {
+    error as errorFlash,
+    success as successFlash,
+    hide as hideFlash
+} from 'react-notification-system-redux';
 
-import { clearFlash } from 'actions';
+import { sendAlert, updateProfile } from 'api';
+import { withRequests } from 'react-requests';
+import systemMessages from 'messages';
 
-class Flash extends React.Component {
 
-    handleHideFlash(id) {
-        this.props.clearFlash(id);
+@withRequests
+@connect(null, { successFlash, errorFlash, hideFlash })
+export default class Flash extends React.Component {
+    componentDidMount() {
+        const position = 'br';
+        Object.keys(systemMessages).map(apiMethod => {
+            const makeUid = () => `${apiMethod} ${new Date()}`;
+            const systemMessage = systemMessages[apiMethod];
+            let uid = makeUid();
+            const callbacks = { every: () => this.props.hideFlash(uid) };
+            if (systemMessage.success) {
+                callbacks.end = () => {
+                    uid = makeUid();
+                    const title = 'Successfully ' + systemMessage.success;
+                    this.props.successFlash({ title, position, uid });
+                };
+            }
+            if (systemMessage.error) {
+                callbacks.error = error => {
+                    uid = makeUid();
+                    const message = systemMessage.isForm !== false && this.renderFormErrors(error);
+                    const title = 'Failed to ' + systemMessage.error;
+                    const autoDismiss = systemMessage.errorAutodismiss || 0;
+                    this.props.errorFlash({ title, message, position, autoDismiss, uid });
+                }
+            }
+            this.props.observeRequest(apiMethod, callbacks);
+        });
     }
 
-    render() {
-        return (
-            <div>
-                {this.props.flash.map(flash => {
-                    return (
-                        <div onClick={() => this.handleHideFlash(flash.id)} key={flash.id} className={"alert alert-dismissible alert-" + flash.type}>
-                            <button className="close">&times;</button>
-                            <span>{ flash.message }</span>
-                        </div>
-                    );
-                })}
-            </div>
-        )
-    }
+    capFirst = str => str.charAt(0).toUpperCase() + str.slice(1);
+
+    renderFormErrors = error => (
+        <div>
+            <div>Please fix the following errors:</div>
+            <br/>
+            {Object.keys(error).map(key =>
+                <div key={key}>
+                    <div>{this.capFirst(key)}</div>
+                    <ul>
+                        {error[key].map((msg, key) => <li key={key}>{msg}</li>)}
+                    </ul>
+                </div>
+            )}
+        </div>
+    )
+
+    render = () => null;
 }
-
-function mapStateToProps(state) {
-    return {
-        flash: state.flash
-    }
-}
-
-export default connect(mapStateToProps, {
-    clearFlash
-})(Flash);

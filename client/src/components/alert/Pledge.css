@@ -1,0 +1,50 @@
+:local(.pledge) {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 5px;
+    margin-top: 15px;
+    position: relative;
+    padding-left: 42px;
+    height: 52px;
+    cursor: pointer;
+
+    &:local(.expandedPledge) {
+        height: auto;
+    }
+
+    :local(.collapseButton) {
+        position: absolute;
+        top: -10px;
+        right: 10px;
+        background: white;
+    }
+
+    .glyphicon {
+        font-size: 20px;
+        position: absolute;
+        top: 25px;
+        left: 10px;
+        margin-top: -10px;
+    }
+    strong {
+        text-overflow: ellipsis;
+    }
+}
+
+:local(.collapsedLine) {
+    height: 38px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+@media (max-width: 600px) {
+    :local(.expandedPledge) {
+        padding-left: 0px;
+    }
+}
+@media (min-width: 601px) {
+    :local(.expandedPledge) {
+
+    }
+}

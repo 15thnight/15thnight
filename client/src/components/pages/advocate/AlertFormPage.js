@@ -3,121 +3,99 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
-import { CategoryField, FormErrors, InputField } from 'form';
+import Button from 'c/button';
+import { CategoryField, Form, FormErrors, InputField } from 'c/form';
+import { sendAlert } from 'api';
+import { withRequests } from 'react-requests';
 
-import {
-    sendAlert, clearFormStatus
-} from 'actions';
 
-const { parse, stringify } = JSON;
+const GENDER_OPTIONS = [
+    { value: 'male',        label: 'Male' },
+    { value: 'female',      label: 'Female' },
+    { value: 'unspecified', label: 'Unspecified' }
+];
 
-class AlertForm extends React.Component {
+const DEFAULT_STATE = {
+    description: '',
+    gender: 'male',
+    age: '',
+    needs: [],
+    error: {}
+}
 
-    constructor(props) {
-        super(props);
-        this.defaultState = {
-            description: '',
-            gender: 'male',
-            age: '',
-            needs: [],
-            error: {}
-        }
+@withRouter
+@withRequests
+@connect(null, { sendAlert })
+export default class AlertForm extends React.Component {
+    state = Object.assign({}, DEFAULT_STATE);
 
-        this.state = parse(stringify(this.defaultState));
+    componentDidMount() {
+        this.props.observeRequest(sendAlert, {
+            end: () => this.setState(DEFAULT_STATE),
+            error: error => this.setState({ error })
+        })
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.setState(parse(stringify(this.defaultState)));
-            return this.props.clearFormStatus();
-        }
-        if (nextProps.submitFormError) {
-            this.setState({ error: nextProps.submitFormError });
-            return this.props.clearFormStatus();
-        }
-    }
+    handleCategoryChange = needs => this.setState({ needs });
 
-    handleCategoryChange(needs) {
-        this.setState({ needs: needs });
-    }
+    handleInputChange = (name, value) => this.setState({ [name]: value });
 
-    handleInputChange(name, value) {
-        this.setState({ [name]: value });
-    }
-
-    handleFormSubmit(e) {
-        e.preventDefault();
+    handleSubmit = e => {
         this.setState({ error: {} });
-        let { description, age, gender, needs } = this.state;
-        this.props.sendAlert({ description, age, gender, needs });
+        const { description, age, gender, needs } = this.state;
+        const data = { description, age, gender, needs };
+        this.props.sendAlert({ data });
     }
 
-    handleTogglePassword() {
+    handleTogglePassword = () =>
         this.setState({ editingPassword: !this.state.editingPassword });
-    }
+
 
     render() {
-        const genders = [
-            ['male',        'Male'],
-            ['female',      'Female'],
-            ['unspecified', 'Unspecified']
-        ];
         return (
-            <div className="text-center row col-md-offset-3 col-md-6">
+            <Form onSubmit={this.handleSubmit}>
                 <h1>Send an Alert</h1>
-                { this.props.id &&
+                {this.props.id &&
                     <div className="text-right">
-                        <div className="btn btn-danger" onClick={this.handleDeleteClick.bind(this)}>Delete Category</div>
-                    </div> }
-                <form className="form-horizontal" onSubmit={this.handleFormSubmit.bind(this)}>
-                    <button className="btn btn-success" type="submit">
-                        Send Alert
-                    </button>
-                    <br/>
-                    <InputField
-                      label="Age"
-                      name="age"
-                      value={this.state.age}
-                      errors={this.state.error.age}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <InputField
-                      type="select"
-                      label="Gender"
-                      name="gender"
-                      value={this.state.gender}
-                      values={genders}
-                      errors={this.state.error.gender}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <InputField
-                      type="textarea"
-                      label="Description"
-                      name="description"
-                      value={this.state.description}
-                      errors={this.state.error.description}
-                      onChange={this.handleInputChange.bind(this)} />
-                    <FormErrors errors={this.state.error.needs} />
-                    <CategoryField
-                      label="Needs:"
-                      value={this.state.needs}
-                      onCategoryChange={this.handleCategoryChange.bind(this)} />
-                    <FormErrors errors={this.state.error.needs} />
-                    <button className="btn btn-success" type="submit">
-                        Send Alert
-                    </button>
-                </form>
-            </div>
+                        <div className="btn btn-danger" onClick={this.handleDeleteClick}>Delete Category</div>
+                    </div>
+                }
+                <Button style="success" lg>Send Alert</Button>
+                <br/>
+                <br/>
+                <InputField
+                  label="Age"
+                  name="age"
+                  value={this.state.age}
+                  errors={this.state.error.age}
+                  onChange={this.handleInputChange}
+                />
+                <InputField
+                  type="select"
+                  label="Gender"
+                  name="gender"
+                  value={this.state.gender}
+                  options={GENDER_OPTIONS}
+                  errors={this.state.error.gender}
+                  onChange={this.handleInputChange}
+                />
+                <InputField
+                  type="textarea"
+                  label="Description"
+                  name="description"
+                  value={this.state.description}
+                  errors={this.state.error.description}
+                  onChange={this.handleInputChange}
+                />
+                <FormErrors errors={this.state.error.needs} />
+                <CategoryField
+                  label="Needs"
+                  values={this.state.needs}
+                  onCategoryChange={this.handleCategoryChange}
+                />
+                <FormErrors errors={this.state.error.needs} />
+                <Button style="success" lg>Send Alert</Button>
+            </Form>
         )
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        submitFormSuccess: state.submitFormSuccess,
-        submitFormError: state.submitFormError
-    }
-}
-
-export default connect(mapStateToProps, {
-   clearFormStatus,
-   sendAlert
-})(withRouter(AlertForm));

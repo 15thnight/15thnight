@@ -1,9 +1,10 @@
-from flask import Blueprint, request
-from flask.ext.login import current_user
+from flask import Blueprint, jsonify, request as r
+from flask_login import current_user
 
 from _15thnight.core import respond_to_alert
 from _15thnight.models import Alert, Response
-from _15thnight.util import required_access, jsonify, api_error
+from _15thnight.schema import response_schema
+from _15thnight.util import api_error, app_error, required_access, validate
 
 response_api = Blueprint('response_api', __name__)
 
@@ -19,23 +20,17 @@ def get_responses():
 
 @response_api.route('', methods=['POST'])
 @required_access('provider')
+@validate(response_schema)
 def create_response():
     """
     Create a response to an alert.
-
-    POST params:
-        - alert_id: alert identifier
-        - message: response message
     """
-    if 'alert_id' not in request.json or 'needs_provided' not in request.json:
-        return api_error('Invalid form')
-
-    alert = Alert.get(int(request.json['alert_id']))
+    alert = Alert.get(r.json['alert_id'])
 
     if not alert:
         return api_error('Alert not found.', 404)
 
-    respond_to_alert(current_user, request.json['needs_provided'], alert)
+    respond_to_alert(current_user, r.json['pledges'], alert)
 
     return '', 201
 

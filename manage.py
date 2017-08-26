@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask.ext.script import Manager
+from flask_script import Manager
 
 from _15thnight import app
 from _15thnight.database import Model, engine
@@ -106,7 +106,7 @@ def seed_db():
     '-n', '--number', help='Twillio Test Phone Number (e.g. 2125553456)')
 def twillio_test(number=None):
     """Quick sms test to make sure twillio is functioning as expected."""
-    from _15thnight.twilio_client import send_sms
+    from _15thnight.sms import send_sms
 
     with app.app_context():
         # This default test number will force twillio to fail, but still be

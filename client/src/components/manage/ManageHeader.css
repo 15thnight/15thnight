@@ -1,0 +1,9 @@
+:local(.manageHeader) {
+
+    > a {
+        float: right;
+        margin-top: 3px;
+        margin-bottom: 6px;
+        text-shadow: initial;
+    }
+}

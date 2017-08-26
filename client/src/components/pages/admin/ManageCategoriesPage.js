@@ -1,19 +1,20 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router';
+import Immutable from 'seamless-immutable';
 
-import { getCategories, setCategorySort } from 'actions';
+import { getCategories, setCategorySort } from 'api';
+import Button from 'c/button';
+import { Sortable } from 'c/form';
+import { ManageHeader } from 'c/manage';
+import Table from 'c/table';
 
-import styles from './ManageCategoriesPage.css';
+import classes from './ManageCategoriesPage.css';
 
 
-class ManageCategoriesPage extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            categories: null
-        }
+@connect(({ categories }) => ({ categories }), { getCategories, setCategorySort })
+export default class ManageCategoriesPage extends React.Component {
+    state = {
+        categories: null
     }
 
     componentWillMount() {
@@ -21,93 +22,51 @@ class ManageCategoriesPage extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        let { categories } = nextProps;
-        categories.map((category, key) => {
-            category.internalSort = key;
-        });
-        this.setState({ categories: nextProps.categories });
+        if (this.props.categories !== nextProps.categories && nextProps.categories) {
+            const categories = Immutable(nextProps.categories.map((c, tmpSort) => c.merge({ tmpSort })));
+            this.setState({ categories });
+        }
     }
 
-    handleSort(sorted_category, direction) {
-        let { categories } = this.state;
-        let swapSort = direction === 'up' ? sorted_category.internalSort - 1 : sorted_category.internalSort + 1;
-        categories.map((category, key) => {
-            if (category.internalSort === swapSort) {
-                direction === 'up' ? category.internalSort += 1 : category.internalSort -= 1;
-            }
-        });
-        sorted_category.internalSort = swapSort;
-        categories.sort((a, b) => a.internalSort < b.internalSort ? -1 : 1)
+    handleSort = categories => {
+        const sorted_ids = categories.map(({ id, tmpSort: sort_order }) => ({ id, sort_order }));
+        const data = { sorted_ids };
+        this.props.setCategorySort({ data });
         this.setState({ categories });
-        this.setSortOrder();
-    }
-
-    setSortOrder() {
-        const categories = this.state.categories.map(category => {
-            return {
-            id: category.id,
-            sort_order: category.internalSort
-        }});
-        this.props.setCategorySort({ categories });
     }
 
     render() {
-        let categories = this.state.categories || [];
+        const { categories } = this.state;
+        if (!categories) {
+            return (<div><h1 className="text-center">Loading Categories...</h1></div>);
+        }
         return (
-            <div className="tab-pane" id="manage-users">
-                <h1 className="text-center">Manage Categories</h1>
-                <div className="text-right">
-                    <Link to="/add-category" className="btn btn-success">Add Category</Link>
-                </div>
-                <div className="table-responsive">
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th colSpan="2" className="text-center">Sort</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            { categories.map((category, key) => (
-                                <tr key={category.id}>
-                                    <td className={styles.sortColumn}>
-                                        {
-                                            key !== 0 &&
-                                            <button className="btn btn-primary" onClick={this.handleSort.bind(this, category, 'up')}>
-                                                <span className="glyphicon glyphicon-chevron-up"></span>
-                                            </button>
-                                        }
-                                    </td>
-                                    <td className={styles.sortColumn}>
-                                        {
-                                            key !== categories.length - 1 &&
-                                            <button className="btn btn-primary"  onClick={this.handleSort.bind(this, category, 'down')}>
-                                                <span className="glyphicon glyphicon-chevron-down"></span>
-                                            </button>
-                                        }
-                                    </td>
-                                    <td>{category.name}</td>
-                                    <td>{category.description}</td>
-                                    <td><Link to={"/edit-category/" + category.id} className="btn btn-primary">Edit</Link></td>
-                                </tr>
-                            ))}
-                    </tbody>
-                </table>
+            <div>
+                <ManageHeader title='Categories' entity='Category' addRoute='/add-category' />
+                <Table>
+                    <Table.Header>
+                        <th className="text-center">Sort</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th></th>
+                    </Table.Header>
+                    {categories.map(({ id, tmpSort, name, description }, idx) => (
+                        <Table.Row key={id}>
+                            <td>
+                                <Sortable
+                                  items={categories}
+                                  tmpSort={tmpSort}
+                                  idx={idx}
+                                  onSort={this.handleSort}
+                                />
+                            </td>
+                            <td>{name}</td>
+                            <td>{description}</td>
+                            <td><Button to={`/edit-category/${id}`}>Edit</Button></td>
+                        </Table.Row>
+                    ))}
+                </Table>
             </div>
-        </div>
         )
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        categories: state.categories
-    }
-}
-
-export default connect(mapStateToProps, {
-    getCategories,
-    setCategorySort
-})(ManageCategoriesPage);

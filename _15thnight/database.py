@@ -33,11 +33,20 @@ class BaseModel(object):
             return []
         return cls.query.filter(cls.id.in_(id_list)).all()
 
+    def update(self, **kwargs):
+        commit = kwargs.pop('_commit', True)
+        for k in kwargs:
+            setattr(self, k, kwargs[k])
+        if commit:
+            self.save()
+        return self
+
     def save(self, commit=True):
         """Creates or updates a model in the database"""
         db_session.add(self)
         if commit:
             db_session.commit()
+        return self
 
     def delete(self, commit=True):
         """Removes a model from the database"""

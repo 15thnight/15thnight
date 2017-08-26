@@ -2,208 +2,171 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import Immutable from 'seamless-immutable';
 
-import { AlertInfo } from 'alert';
-import { FormErrors, FormGroup, Input } from 'form';
-import {
-    getAlert, sendResponse, clearFormStatus
-} from 'actions';
+import { getAlert, sendResponse } from 'api';
+import { withRequests } from 'react-requests';
+import { AlertInfo, Pledge } from 'c/alert';
+import Button from 'c/button';
+import { Form, FormErrors, FormGroup, Input, Loading } from 'c/form';
+import Timestamp from 'c/timestamp';
 
-import styles from './RespondToPage.css';
+import classes from './RespondToPage.css';
 
-class RespondToPage extends React.Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            alert: null,
-            checked: [],
-            message: {},
-            error: {}
-        }
+@withRouter
+@withRequests
+@connect(
+    ({ alert, alertRedirect }, { params: { id }}) =>
+        ({ alert: alert[id], id, alertRedirect }),
+    { getAlert, sendResponse }
+)
+export default class RespondToPage extends React.Component {
+    state = {
+        pledged: [],
+        message: Immutable({}),
+        error: {}
     }
 
     componentWillMount() {
-        this.props.getAlert(this.props.params.id);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (nextProps.submitFormSuccess) {
-            this.props.clearFormStatus();
-            return this.props.router.push('/');
-        }
-        if (nextProps.alert[this.props.params.id]) {
-            this.setState({
-                alert: nextProps.alert[this.props.params.id]
-            })
-        }
+        const { id } = this.props;
+        this.props.getAlert({ id });
+        this.props.observeRequest(sendResponse, {
+            end: () => this.props.router.push('/'),
+            error: error => this.setState({ error })
+        });
     }
 
     focusMessage(id) {
         ReactDOM.findDOMNode(this.refs['textarea' + id].refs.input).focus();
     }
 
-    handleSubmit(e) {
-        e.preventDefault();
-        let error = {};
-        this.setState({ error });
-        if (this.state.checked.length === 0) {
-            error['form'] = ['You must select at least one need you can provide help for.']
+    handleSubmit = e => {
+        this.setState({ error: {} });
+        const error = {};
+        if (this.state.pledged.length === 0) {
+            error.form = ['You must select at least one need you can provide help for.']
             return this.setState({ error });
         }
         let hasError = false;
-        let needs_provided = [];
-        this.state.checked.map(need_id => {
-            let message = this.state.message[need_id];
+        const pledges = this.state.pledged.reduce((acc, need_id) => {
+            const message = this.state.message[need_id];
             if (!message) {
                 error[need_id] = ['Please provide details about what you can provide.'];
                 hasError = true;
             } else {
-                needs_provided.push({ need_id, message });
+                acc.push({ need_id, message });
             }
-        });
+            return acc;
+        }, []);
         if (hasError) {
             return this.setState({ error });
         }
-        this.props.sendResponse({
-            alert_id: this.props.params.id,
-            needs_provided
-        });
+        const alert_id = parseInt(this.props.id);
+        this.props.sendResponse({ data: { alert_id, pledges } });
     }
 
-    toggleNeed(id) {
+    toggleNeed = id => () => {
         this.setState({ error: {} });
-        let { checked } = this.state;
-        if (checked.indexOf(id) < 0) {
-            checked.push(id);
-        } else {
-            checked = checked.filter(need_id => need_id !== id)
-        }
-        this.setState({ checked }, () => {
-            this.focusMessage(id);
-        });
+        const shouldRemove = this.state.pledged.includes(id);
+        const pledged = shouldRemove ?
+            this.state.pledged.filter(need_id => need_id !== id) :
+            [...this.state.pledged, id];
+        this.setState({ pledged }, () => !shouldRemove && this.focusMessage(id));
     }
 
-    handleMessageClick(need, e) {
-        this.toggleNeed(need.id);
-    }
+    handleMessageChange = (id, value) =>
+        this.setState({ message: this.state.message.merge({ [id]: value }) });
 
-    handleCheckboxChange(need, e) {
-        this.toggleNeed(need.id);
-    }
-
-    handleMessageChange(id, value) {
-        let { message } = this.state;
-        message[id] = value;
-        this.setState({ message });
-    }
+    renderPledgeButton = id => (
+        !this.state.pledged.includes(id)
+            ? <Button lg type="button" onClick={this.toggleNeed(id)}>Pledge this need</Button>
+            : <Button lg style="danger" type="button" onClick={this.toggleNeed(id)}>Cancel Pledge</Button>
+    );
 
     render() {
-        if (!this.state.alert) {
-            return (<h1 className="text-center">Loading Alert...</h1>);
+        const { alert } = this.props;
+        if (!alert) {
+            return <Loading title="Alert" />;
         }
-        let { alert } = this.state;
+        const { responses, needs } = alert;
+        const { pledged } = this.state;
+        const submitButton = (
+            <div className="text-center">
+                <Button style="success" lg>Submit</Button>
+            </div>
+        );
         return (
-           <div className={"text-center col-md-offset-3 col-md-6 " + styles.respondToPage}>
-                <h2>Alert</h2>
-                {
-                    alert.responses.length > 0 &&
-                    <h3>You have responed to this alert { alert.responses.length } time{ alert.responses.length > 1 && 's'}.</h3>
+            <Form
+              className={classes.respondToPage}
+              onSubmit={this.handleSubmit}
+              centered={false}
+            >
+                <h2 className="text-center">Alert</h2>
+                {responses > 0 &&
+                    <h4 className="text-center">
+                        You have responed to this alert { responses } time{ responses > 1 && 's'}.
+                    </h4>
                 }
                 <AlertInfo alert={alert} />
                 <br/>
                 <h4 className="needFormStart">
-                    Please select the services for which you can
-                    provide assistance.
-                    Provide any pertinent details in the text boxes:
-                </h4>
-                <FormErrors errors={this.state.error['form']} />
-                <form className="form-horizontal" onSubmit={this.handleSubmit.bind(this)}>
-                    {alert.needs.map((need, key) => {
-                        let { service, provisions } = need;
-                        return (
-                            <FormGroup
-                                label={service.name}
-                                key={need.id}
-                                id={"need" + key}
-                                className="need">
-                                {
-                                    need.resolved &&
-                                    <div>
-                                        This need has already been pledged by
-                                        another partner agency. If you are still
-                                        willing and able to fulfill it as a backup,
-                                        please respond with details in the description
-                                        box.
-                                    </div>
-                                }
-                                {
-                                    provisions.length > 0 &&
-                                    <div className="form-group">
-                                        <div className="col-xs-offset-1 col-xs-11">
-                                            <div>
-                                                <div>You have responded to this need {provisions.length} time{provisions.length > 1 && 's'}</div>
-                                                { provisions.map(provision => {
-                                                    return (
-                                                        <div>
-                                                            <div>{ provision.created_at }</div>
-                                                            <div>Message: { provision.message }</div>
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                                <div className="form-group">
-                                    <div className="col-xs-1">
-                                        <Input
-                                          type="checkbox"
-                                          onChange={this.handleCheckboxChange.bind(this, need)}
-                                          checked={this.state.checked.indexOf(need.id) >= 0} />
-                                    </div>
-                                    <div className="col-xs-11">
-                                        <Input
-                                          type="textarea"
-                                          name={need.id}
-                                          placeholder={"Enter details about what you can provide for " + service.name}
-                                          disabled={this.state.checked.indexOf(need.id) < 0}
-                                          ref={'textarea' + need.id}
-                                          value={this.state.message[need.id] || ''}
-                                          onChange={this.handleMessageChange.bind(this)}/>
-                                        {
-                                            this.state.checked.indexOf(need.id) < 0 &&
-                                            <div
-                                              className="textareaMask"
-                                              onClick={this.handleMessageClick.bind(this, need)}></div>
-                                        }
-                                        <FormErrors errors={this.state.error[need.id]} />
-                                    </div>
-                                </div>
-                            </FormGroup>
-                        )
-                    })}
+                    Please select the services for which you can pledge assistance.
                     <br/>
-                    <button className="btn btn-lg btn-success" type="submit">
-                        Submit
-                    </button>
-                </form>
-           </div>
+                    Provide any pertinent details in the text boxes and click submit when done:
+                </h4>
+                <div className="text-center">
+                    <FormErrors errors={this.state.error.form} />
+                </div>
+                {submitButton}
+                <br/>
+                {needs.map(({ service_name, pledges, id, resolved }) => (
+                    <div key={id} className="need">
+                        <div className="hidden-sm hidden-md hidden-lg">
+                            <h3>{service_name}</h3>
+                            <div>{this.renderPledgeButton(id)}</div>
+                        </div>
+                        <div className="row">
+                            <div className="col-sm-8 col-xs-7">
+                                <h3 className="hidden-xs">{service_name}</h3>
+                            </div>
+                            <div className="col-sm-4 col-xs-5 text-right">
+                                <span className="hidden-xs">{this.renderPledgeButton(id)}</span>
+                            </div>
+                        </div>
+                        {resolved &&
+                            <div>
+                                The need "{service_name}" has already been pledged by
+                                another partner agency. If you are still
+                                willing and able to fulfill it as a backup,
+                                please respond with details in the description
+                                box.
+                            </div>
+                        }
+                        {pledged.includes(id) &&
+                            <div>
+                                <Input
+                                  type="textarea"
+                                  name={id}
+                                  placeholder={"Enter details about what you can provide for " + service_name}
+                                  ref={'textarea' + id}
+                                  value={this.state.message[id] || ''}
+                                  onChange={this.handleMessageChange}
+                                />
+                                <FormErrors errors={this.state.error[id]} />
+                            </div>
+                        }
+                        {pledges.length > 0 &&
+                            <div>
+                                <h3>You have pledged to fulfill "{service_name}" {pledges.length} time{pledges.length > 1 && 's'}:</h3>
+                                {pledges.map((pledge, key) => <Pledge {...pledge} noProvider />)}
+                            </div>
+                        }
+                    </div>
+                ))}
+                <br/>
+                {submitButton}
+            </Form>
         );
     }
 }
-
-function mapStateToProps(state) {
-    return {
-        alert: state.alert,
-        alertRedirect: state.alertRedirect,
-        submitFormSuccess: state.submitFormSuccess,
-        submitFormError: state.submitFormError
-    }
-}
-
-export default connect(mapStateToProps, {
-    getAlert,
-    sendResponse,
-    clearFormStatus
-})(withRouter(RespondToPage));

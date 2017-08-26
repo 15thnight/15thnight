@@ -4,8 +4,9 @@ import { withRouter } from 'react-router';
 
 import { setAlertRedirect } from 'actions';
 
-class RespondToRedirect extends React.Component {
-
+@withRouter
+@connect(null, { setAlertRedirect })
+export default class RespondToRedirect extends React.Component {
     componentWillMount() {
         this.props.setAlertRedirect(this.props.params.alertId);
         this.props.router.push('/');
@@ -15,11 +16,3 @@ class RespondToRedirect extends React.Component {
         return null;
     }
 }
-
-function mapStateToProps() {
-    return {}
-}
-
-export default connect(mapStateToProps, {
-    setAlertRedirect
-})(withRouter(RespondToRedirect));

@@ -1,20 +1,22 @@
 :local(.alertInfo) {
-    display: inline-block;
     text-align: left;
+
+    .need-list {
+        display: inline-block;
+        vertical-align: top;
+
+        .need {
+            margin-bottom: 10px;
+
+            &:last-child {
+                margin: 0;
+            }
+        }
+    }
 }
 :local(.alertInfoLabel) {
     width: 120px;
     text-align: right;
     display: inline-block;
     margin-right: 13px;
-}
-:local(.needList) {
-    display: inline-block;
-    vertical-align: top;
-}
-:local(.need) {
-    margin-bottom: 10px;
-}
-:local(.need:last-child) {
-    margin: 0;
 }

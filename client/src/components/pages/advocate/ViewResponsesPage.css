@@ -1,50 +1,46 @@
-:local(.resolveProgress) {
-    border-radius: 33px;
-    border: 1px solid #000;
-    background: #ddd;
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-    margin: 15px 0 15px;
-}
+:local(.viewResponsesPage) {
+    .progress {
+        position: relative;
+        height: 40px;
+        margin-top: 20px;
 
-:local(.progressLine) {
-    background-color: green;
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-}
+        .percent {
+            position: absolute;
+            left: 0;
+            right: 0;
+            z-index: 1;
+            font-weight: bold;
+            padding: 9px;
+            font-size: 16px;
+        }
+    }
 
-:local(.progressPercent) {
-    position: relative;
-    z-index: 1;
-    font-weight: bold;
-    padding: 5px;
-    font-size: 18px;
-}
+    .need {
+        margin: 60px 0;
 
-:local(.need) {
-    border-bottom: 1px solid #aaa;
-    padding-bottom: 15px;
-    margin-top: -98px;
-    padding-top: 98px;
-}
+        .row {
+            display: flex;
+            align-items: center;
+        }
 
-:local(.need:last-child) {
-    border-bottom: none;
-}
+        h3 {
+            margin-top: 0px;
+        }
 
-:local(.resolveHistoryStatus) {
-    display: inline-block;
-    width: 100px;
-    text-align: right;
-}
+        &:last-child {
+            border-bottom: none;
+        }
 
-:local(.unresolved) {
-    color: red;
-}
+        .resolved {
+            color: green;
+        }
 
-:local(.resolved) {
-    color: green;
+        .unresolved {
+            color: red;
+        }
+
+        .timestamp {
+            color: #666;
+        }
+    }
 }

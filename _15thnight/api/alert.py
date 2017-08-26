@@ -1,12 +1,13 @@
 from datetime import datetime
 
-from flask import Blueprint, request
-from flask.ext.login import current_user, login_required
+from flask import Blueprint, jsonify, request as r
+from flask_login import current_user, login_required
 
 from _15thnight.core import send_out_alert, send_out_alert_closed
-from _15thnight.forms import AlertForm
+from _15thnight.marshal import marshal_alert
 from _15thnight.models import Alert
-from _15thnight.util import required_access, jsonify, api_error
+from _15thnight.schema import alert_schema
+from _15thnight.util import app_error, api_error, required_access, validate
 
 
 alert_api = Blueprint('alert_api', __name__)
@@ -25,7 +26,7 @@ def get_alerts():
     if current_user.role == 'advocate':
         alerts = Alert.get_advocate_alerts(current_user)
     elif current_user.role == 'provider':
-        scope = request.args.get('scope')
+        scope = r.args.get('scope')
         if scope == 'all':
             alerts = Alert.get_provider_alerts(current_user)
         elif scope == 'responded':
@@ -33,7 +34,7 @@ def get_alerts():
         else:
             alerts = Alert.get_active_alerts_for_provider(current_user)
     else:
-        alerts = Alert.get_admin_alerts()
+        alerts = Alert.get_admin_alerts(current_user)
     return jsonify(alerts)
 
 
@@ -42,31 +43,21 @@ def get_alerts():
 def get_alert(alert_id):
     alert = Alert.get(alert_id)
     if not alert:
-        return api_error('Alert not found')
-    if current_user.role == 'provider':
-        if not alert.provider_has_permission(current_user):
-            return api_error('Permission denied')
-        data = alert.to_provider_json(current_user)
-    elif current_user.role == 'advocate':
-        if alert.user.id != current_user.id:
-            return api_error('Permission denied')
-        data = alert.to_advocate_json()
-    else: # is an admin
-        data = alert.to_advocate_json()
-    return jsonify(data)
+        return app_error('Alert not found', 404)
+    if current_user.role == 'advcoate' and alert.user.id != current_user.id:
+        return app_error('Permission denied', 401)
+    # TODO: can non-notified providers can view alert and under what conditions
+    return jsonify(marshal_alert(alert, current_user))
 
 
 @alert_api.route('', methods=['POST'])
 @required_access('advocate')
+@validate(alert_schema)
 def create_alert():
     """
-    Create an alert. Must be an advocate.
+    Create and send an alert. Must be an advocate.
     """
-    form = AlertForm()
-    if not form.validate_on_submit():
-        return api_error(form.errors)
-
-    send_out_alert(form)
+    send_out_alert(r.json)
     return '', 201
 
 
@@ -91,7 +82,7 @@ def delete_alert(id):
     else:
         alert = Alert.get(id)
     if not alert:
-        return api_error('No alert was found.', 404)
+        return app_error('No alert was found.', 404)
 
     alert.delete()
     return '', 200

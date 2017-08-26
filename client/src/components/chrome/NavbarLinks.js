@@ -1,142 +1,97 @@
 import React from 'react';
 import { Link } from 'react-router';
+import cx from 'classnames';
 
 import DropdownMenu from './DropdownMenu';
 
 
+const USER_LINKS = {
+    provider: [
+        { to: '/active-alerts',    text: "Active Alerts" },
+        { to: '/responded-alerts', text: "Responded Alerts" },
+        { to: '/all-alerts',       text: "All Alerts" },
+        { to: '/help',             text: "Help" },
+    ],
+    advocate: [
+        { to: '/send-alert',    text: 'Send an Alert' },
+        { to: '/alert-history', text: 'Alert History' },
+        { to: '/help',          text: 'Help' },
+    ],
+    admin: [{ to: '/alert-history', text:'Alert History' }],
+    anonymous: [{ to: '/login', text: 'Login' }],
+}
+
+const ADMIN_DROPDOWN_LINKS = [
+    { to: "/manage-users", text: "Users" },
+    { to: "/manage-categories", text: "Categories" },
+    { to: "/manage-services", text: "Services" },
+]
+
+const USER_DROPDOWN_LINKS = [
+    { to: '/edit-profile',    text: 'Edit Profile' },
+    { to: '/change-password', text: 'Change Password'},
+    { divider: true },
+    { href: '/logout',        text: 'Logout'}
+]
+
 export default class NavbarLinks extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            accountDropdownOpen: false,
-            manageDropdownOpen: false,
-        }
+    state = {
+        accountDropdownOpen: false,
+        manageDropdownOpen: false,
     }
 
-    componentDidMount() {
-        document.body.addEventListener('click', this.handleBodyClick.bind(this));
-    }
+    componentDidMount = () =>
+        document.body.addEventListener('click', this.handleBodyClick);
 
-    componentWillUnmount() {
-        document.body.removeEventListener('click', this.handleBodyClick.bind(this));
-    }
+    componentWillUnmount = () =>
+        document.body.removeEventListener('click', this.handleBodyClick);
 
-    handleBodyClick(e) {
+    handleBodyClick = e => {
         if (!this.state.accountDropdownOpen && !this.state.manageDropdownOpen) {
             return;
         }
         let element = e.target;
-        while (element.tagName !== 'HTML') {
+        while (element.tagName.toUpperCase() !== 'HTML') {
             if (element.className.indexOf('dropdown-toggle') >= 0) {
-                return
+                return;
             }
             element = element.parentNode;
         }
         this.setState({ accountDropdownOpen: false, manageDropdownOpen: false });
     }
 
-    handleDropdownToggleClick(menu) {
-        let state = { accountDropdownOpen: false, manageDropdownOpen: false };
-        if (menu === 'account') {
-            state.accountDropdownOpen = !this.state.accountDropdownOpen;
-        } else if (menu === 'manage') {
-            state.manageDropdownOpen = !this.state.manageDropdownOpen;
-        }
-        this.setState(state);
-    }
-
+    toggleDropdown = menu => this.setState({
+        accountDropdownOpen: menu === 'account' ? !this.state.accountDropdownOpen : false,
+        manageDropdownOpen: menu === 'manage' ? !this.state.manageDropdownOpen : false
+    });
 
     render() {
-        let { current_user, pathname } = this.props;
-        let user_menu = (
-            <li>
-                <Link to="/login">Login</Link>
-            </li>
-        );
-        if (current_user) {
-            user_menu = [];
-            switch(current_user.role) {
-                case 'provider':
-                    if (pathname === '/') {
-                        pathname = '/active-alerts'
-                    }
-                    user_menu.push(
-                        <li className={pathname === '/active-alerts' && 'active'} key='active-alerts'>
-                            <Link to='/active-alerts'>Active Alerts</Link>
-                        </li>,
-                        <li className={pathname === '/responded-alerts' && 'active'} key='responded-alerts'>
-                            <Link to='/responded-alerts'>Responded Alerts</Link>
-                        </li>,
-                        <li className={pathname === '/all-alerts' && 'active'} key='all-alerts'>
-                            <Link to='/all-alerts'>All Alerts</Link>
-                        </li>,
-                        <li className={pathname === '/help' && 'active'} key='help'>
-                            <Link to='/help'>Help</Link>
-                        </li>
-                    );
-                    break;
-                case 'advocate':
-                    if (pathname === '/') {
-                        pathname = '/send-alert';
-                    }
-                    user_menu.push(
-                        <li className={pathname === '/send-alert' && 'active'} key='send-alert'>
-                            <Link to='/send-alert'>Send an Alert</Link>
-                        </li>,
-                        <li className={pathname === '/alert-history' && 'active'} key='alert-history'>
-                            <Link to='/alert-history'>Alert History</Link>
-                        </li>,
-                        <li className={pathname === '/help' && 'active'} key='help'>
-                            <Link to='/help'>Help</Link>
-                        </li>
-                    );
-                    break;
-                case 'admin':
-                    user_menu.push(
-                        <li key='alert-history'>
-                            <Link to='/alert-history'>Alert History</Link>
-                        </li>,
-                        <DropdownMenu
-                          key='manage-dropdown'
-                          label="Manage"
-                          isOpen={this.state.manageDropdownOpen}
-                          onClick={() => this.handleDropdownToggleClick('manage')}>
-                            <li>
-                                <Link to="/manage-users">Users</Link>
-                            </li>
-                            <li>
-                                <Link to="/manage-categories">Categories</Link>
-                            </li>
-                            <li>
-                                <Link to="/manage-services">Services</Link>
-                            </li>
-                        </DropdownMenu>
-                    );
-                    break;
-            }
-            user_menu.push(
-                <DropdownMenu
-                  key='account-dropdown'
-                  label="Account"
-                  isOpen={this.state.accountDropdownOpen}
-                  onClick={() => this.handleDropdownToggleClick('account')}>
-                    <li>
-                        <Link to="/edit-profile">Edit Profile</Link>
-                    </li>
-                    <li>
-                        <Link to="/change-password">Change Password</Link>
-                    </li>
-                    <li role="separator" className="divider"></li>
-                    <li>
-                        <a href="/logout">Logout</a>
-                    </li>
-                </DropdownMenu>
-            );
-        }
+        const { current_user, pathname } = this.props;
+        const role = current_user ? current_user.role : 'anonymous';
+        const { manageDropdownOpen, accountDropdownOpen } = this.state;
         return (
             <ul className="nav navbar-nav navbar-right">
-                { user_menu }
+                {USER_LINKS[role].map(({ to, text }, key) =>
+                    <li key={key} className={cx({ active: to === pathname })}>
+                        <Link to={to}>{text}</Link>
+                    </li>
+                )}
+                {role === 'admin' &&
+                    <DropdownMenu
+                      label="Manage"
+                      isOpen={manageDropdownOpen}
+                      onClick={e => this.toggleDropdown('manage')}
+                      links={ADMIN_DROPDOWN_LINKS}
+                    />
+                }
+                {current_user &&
+                    <DropdownMenu
+                      label="Account"
+                      isOpen={accountDropdownOpen}
+                      onClick={e => this.toggleDropdown('account')}
+                      links={USER_DROPDOWN_LINKS}
+                    />
+                }
             </ul>
         )
     }

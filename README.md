@@ -1,5 +1,13 @@
 # 15th Night App
 
+http://www.15night.org/
+
+The 15th Night Community Movement supports the Eugene community to work together to prevent youth from going on to the streets, and quickly getting them off if they do.
+
+This repository contains the back-end software which is used by the movement to connect community advocates such as police and counselors with support providers such as churches and other socially-minded organizations.
+
+In the past year, hundreds of youth at risk have been assisted through this app.  It has helped prevent homelessness, suicides, and put clothes on children.  What previously took weeks now takes only hours, thanks to this platform.
+
 # Development
 
 ## Requirements
